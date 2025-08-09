@@ -1,6 +1,6 @@
 {
   "name": "@gesslar/aunty",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "displayName": "Aunty Rose",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
@@ -14,6 +14,7 @@
   "scripts": {
     "clean": "rm -rfv ./dist",
     "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
+    "exec": "node ./src/build.js",
     "publish": "npm publish --access public",
     "test": "Testing, testing; 1, 2, 3. Yep, we're here."
   },

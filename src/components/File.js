@@ -125,7 +125,7 @@ async function directoryExists(dir) {
   try {
     await fs.access(dir.absolutePath)
     return true
-  } catch(_error) {
+  } catch(_) {
     return false
   }
 }
@@ -440,9 +440,7 @@ async function readFile(fileObject) {
  * @param {FileMap} fileObject - The file map containing the file path
  * @param {string} content - The content to write
  */
-async function writeFile(fileObject, content) {
-  const absolutePath = fileObject.absolutePath
-
+async function writeFile({absolutePath}, content) {
   if(!absolutePath)
     throw new Error("No absolute path in file map")
 
@@ -480,8 +478,10 @@ async function loadDataFile(fileMap) {
  * @throws {Error} If directory creation fails
  */
 async function assureDirectory(dir, options = {}) {
-  if(await directoryExists(dir))
-    return await resolveDirectory(dir)
+  const target = composeDirectory(dir)
+
+  if(await directoryExists(target))
+    return target
 
   try {
     await fs.mkdir(dir, options)

@@ -48,6 +48,7 @@ import Compiler from "./components/Compiler.js"
 
     const options = program.opts()
     const files = program.processedArgs[0]
+
     const invalidFilenames =
       (await Promise.all(
         files.map(async f => Object.assign(f, {exists: await fd.fileExists(f)}))
@@ -148,8 +149,10 @@ import Compiler from "./components/Compiler.js"
         ? fd.composeDirectory(options.o)
         : cwd
 
-      fd.assureDirectory(destDir.path)
+      if(!destDir?.absolutePath)
+        throw new Error("Problems determining destination directory.")
 
+      await fd.assureDirectory(destDir.absolutePath)
       const fileName = `${theme.module}.color-theme.json`
       const file = fd.composeFilename(fileName, destDir)
       const output = `${JSON.stringify(theme.result.output, null, 2)}\n`
