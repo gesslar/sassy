@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @file Build script for Cunty Rose theme compiler.
+ * @file Build script for Aunty Rose theme compiler.
  * This script compiles JSON5 or YAML theme files into VS Code color themes.
  * Supports watch mode for automatic recompilation on file changes.
  */
@@ -147,6 +147,9 @@ import Compiler from "./components/Compiler.js"
       const destDir = options.o
         ? fd.composeDirectory(options.o)
         : cwd
+
+      fd.assureDirectory(destDir.path)
+
       const fileName = `${theme.module}.color-theme.json`
       const file = fd.composeFilename(fileName, destDir)
       const output = `${JSON.stringify(theme.result.output, null, 2)}\n`

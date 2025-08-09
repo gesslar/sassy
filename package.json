@@ -1,7 +1,7 @@
 {
   "name": "@gesslar/aunty",
-  "version": "0.0.1",
-  "displayName": "Cunty Rose",
+  "version": "0.0.2",
+  "displayName": "Aunty Rose",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
   "license": "Unlicense",
@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "rm -rfv ./dist",
     "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
-    "publish": "npm publish",
+    "publish": "npm publish --access public",
     "test": "Testing, testing; 1, 2, 3. Yep, we're here."
   },
   "engines": {
