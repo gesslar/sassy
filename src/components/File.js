@@ -484,7 +484,7 @@ async function assureDirectory(dir, options = {}) {
     return target
 
   try {
-    await fs.mkdir(dir, options)
+    await fs.mkdir(target.absolutePath, options)
 
     return await resolveDirectory(dir)
   } catch(e) {
