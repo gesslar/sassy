@@ -1,0 +1,73 @@
+{
+  "name": "Midnight Ocean",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#1e1e1e",
+    "editor.foreground": "#e6e6e6",
+    "editor.selectionBackground": "#002e63",
+    "editor.lineHighlightBackground": "#002e6300",
+    "activityBar.background": "#1a1a1a",
+    "activityBar.foreground": "#4a9eff",
+    "sideBar.background": "#1e1e1e",
+    "sideBar.foreground": "#e6e6e6",
+    "statusBar.background": "#002e63",
+    "statusBar.foreground": "#e6e6e6",
+    "focusBorder": "#4a9eff00",
+    "panel.border": "#4a9eff00",
+    "errorForeground": "#ff6b6b",
+    "list.errorForeground": "#ff6b6b",
+    "list.warningForeground": "#ffd93d",
+    "input.background": "#1a1a1a",
+    "input.foreground": "#e6e6e6",
+    "input.border": "#4a9eff00",
+    "button.background": "#002e63",
+    "button.foreground": "#e6e6e6",
+    "button.hoverBackground": "#003777"
+  },
+  "tokenColors": [
+    {
+      "name": "Comments",
+      "scope": "comment",
+      "settings": {
+        "foreground": "#e6e6e600",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Keywords",
+      "scope": "keyword, storage.type",
+      "settings": {
+        "foreground": "#4a9eff"
+      }
+    },
+    {
+      "name": "Strings",
+      "scope": "string",
+      "settings": {
+        "foreground": "#51cf66"
+      }
+    },
+    {
+      "name": "Numbers",
+      "scope": "constant.numeric",
+      "settings": {
+        "foreground": "#ffd93d"
+      }
+    },
+    {
+      "name": "Functions",
+      "scope": "entity.name.function",
+      "settings": {
+        "foreground": "#4a9eff"
+      }
+    },
+    {
+      "name": "Classes",
+      "scope": "entity.name.class, entity.name.type",
+      "settings": {
+        "foreground": "#2d5a87",
+        "fontStyle": "bold"
+      }
+    }
+  ]
+}

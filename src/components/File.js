@@ -60,7 +60,6 @@ function fixSlashes(pathName) {
  *
  * @param {string} pathName - The path to convert
  * @returns {string} The URI
- * @throws {Error} If the path is not a valid file path
  */
 function pathToUri(pathName) {
   try {
@@ -136,7 +135,6 @@ async function directoryExists(dir) {
  *
  * @param {string} pathName - The URI to convert
  * @returns {string} The path
- * @throws {Error} If the URI is not a valid file URL
  */
 function uriToPath(pathName) {
   try {
