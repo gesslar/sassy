@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="103.886mm"
+   height="61.056644mm"
+   viewBox="0 0 103.886 61.056644"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="drawing.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.914906"
+     inkscape:cx="205.48559"
+     inkscape:cy="554.70179"
+     inkscape:window-width="2560"
+     inkscape:window-height="1406"
+     inkscape:window-x="2560"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <rect
+       x="116.9519"
+       y="321.34448"
+       width="565.08539"
+       height="230.62479"
+       id="rect356" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-1.7819858,-1.9336241)">
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text354"
+       style="white-space:pre;shape-inside:url(#rect356);fill:#66ff00" />
+    <text
+       xml:space="preserve"
+       style="font-size:50.8px;fill:#66ff00;stroke-width:0.264583"
+       x="0.86758578"
+       y="41.354424"
+       id="text362"><tspan
+         sodipodi:role="line"
+         id="tspan360"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.8px;font-family:'Great Vibes';-inkscape-font-specification:'Great Vibes';fill:#44aa00;stroke-width:0.264583"
+         x="0.86758578"
+         y="41.354424">Aunty</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25.4px;font-family:'Great Vibes';-inkscape-font-specification:'Great Vibes';fill:#44aa00;stroke-width:0.264583"
+       x="7.808187"
+       y="62.754623"
+       id="text416"><tspan
+         sodipodi:role="line"
+         id="tspan414"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25.4px;font-family:Limelight;-inkscape-font-specification:Limelight;fill:#800000;stroke-width:0.264583"
+         x="7.808187"
+         y="62.754623">Rose</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,158 @@
+# Variables for later substitution
+vars:
+  colors:
+    black: hsv(0,0,10)
+    white: hsv(0,0,90)
+    blue: hsv(200,60,60)
+    red: hsv(0,70,100)
+    yellow: hsv(50,60,100)
+    orange: hsv(35,75,85)
+    green: hsv(160,60,80)
+    green2: hsv(100,60,80)
+    purple: hsv(300,60,80)
+    pink: hsv(320,40,100)
+    teal: hsv(200,50,50)
+    teal2: hsv(179,91,100)
+    gold: hsv(45,85,100)
+
+  # The following define secondary basics that can be relied upon by the
+  # theme's definition.
+  std:
+    fg.hover: $(std.fg)
+    fg.inverse: invert($(std.fg))
+    fg.secondary: darken($(std.fg), 5)
+    fg.inactive: darken($(std.fg), 25)
+    fg.faint: fade($(std.fg), 0.50)
+    fg.accent: lighten($(std.accent), 50)
+    fg.accent.faint: fade(lighten($(std.accent), 30), 0.50)
+    fg.accent.whisper: fade($(std.fg.accent.faint), 0.30)
+    fg.accent.secondary: lighten($(std.accent.secondary), 50)
+    fg.accent.secondary.faint: fade(lighten($(std.accent.secondary), 30), 0.50)
+    fg.success: $(std.fg)
+    fg.warning: $(std.fg)
+    fg.info: lighten($(status.info), 25)
+    fg.error: lighten($(status.error), 70)
+    fg.badge: $(std.bg)
+
+    bg: $(std.bg)
+    bg.inverse: invert($(std.bg))
+    bg.faint: fade($(std.bg.accent), 0.40)
+    bg.inactive: darken($(std.bg), 15)
+    bg.accent: darken($(accent), 15)
+    bg.badge: $(std.bg.accent.secondary)
+    bg.accent.faint: fade($(accent), 0.40)
+    bg.accent.faint.strong: fade($(std.bg.accent.faint), 0.50)
+    bg.accent.whisper: fade($(std.bg.accent.faint), 0.80)
+    bg.accent.strong: darken($(accent), 25)
+    bg.accent.secondary: lighten($(std.accent.secondary), 25)
+    bg.hover: darken($(std.bg.accent), 15)
+    bg.hover.faint: fade($(std.bg.hover), 0.25)
+    bg.hover.whisper: fade($(std.bg.hover.faint), 0.5)
+    bg.success: $(status.success)
+    bg.warning: $(status.warning)
+    bg.info: $(status.info)
+    bg.error: $(status.error)
+    bg.drop: fade($(std.accent), 0.75)
+    bg.sticky: fade($(std.bg), 0.10)
+    bg.sticky.hover: fade($(std.bg.accent.faint), 0.45)
+
+    bg.panel.outer: $(std.bg)
+    bg.panel.outer.inactive: $(std.bg.inactive)
+    bg.panel.inner: lighten($(std.bg.panel.outer), 10)
+    bg.panel.inner.inactive: lighten($(std.bg.panel.outer.inactive), 10)
+    bg.panel.innermost: lighten($(std.bg.panel.inner), 10)
+    bg.panel.innermost.inactive: fade($(std.bg.panel.inner.inactive), 0.25)
+
+    highlight:
+      fg:
+        accent: invert($(std.highlight.bg.accent))
+        read: invert($(std.highlight.bg.read))
+        write: invert($(std.highlight.bg.write))
+        delete: invert($(std.highlight.bg.delete))
+        rename: invert($(std.highlight.bg.rename))
+        match: $(transparent)
+      bg:
+        accent: alpha($(std.bg.accent), 0.25)
+        read: alpha($(colors.green), 0.25)
+        write: alpha($(colors.orange), 0.25)
+        delete: alpha($(colors.red), 0.25)
+        rename: alpha($(colors.purple), 0.25)
+        match: $(colors.green2)
+
+    outline: darken($(std.line), 15)
+    outline.strong: $(std.line.strong)
+    outline.hover: $(std.line.strong)
+    outline.faint: $(std.line.faint)
+    outline.whisper: $(std.line.whisper)
+    outline.faint.strong: $(std.line.faint.strong)
+    outline.secondary: $(std.line.secondary)
+    outline.success: fade(lighten($(status.success), 25), 0.40)
+    outline.error: fade(lighten($(status.error), 25), 0.40)
+    outline.warning: fade(lighten($(status.warning), 25), 0.40)
+    outline.info: fade(lighten($(status.info), 25), 0.40)
+    outline.sticky: $(transparent)
+
+    line: $(std.accent)
+    line.strong: lighten($(std.line), 25)
+    line.faint: fade($(std.line), 0.50)
+    line.faint.strong: lighten($(std.line.faint), 25)
+    line.whisper: fade($(std.line.faint), 0.65)
+    line.secondary: $(std.accent.secondary)
+
+    shadow.sticky: fade($(std.shadow), 0.25)
+
+  status:
+    warning: $(colors.orange)
+    info: $(colors.teal)
+    error: $(colors.red)
+    success: $(colors.green)
+
+    added: lighten($(status.success), 20)
+    modified: lighten($(status.warning), 20)
+    deleted: lighten($(status.error), 20)
+    ignored: darken($(main), 50)
+
+  ops:
+    read: $(colors.green)
+    write: $(colors.blue)
+    delete: $(colors.red)
+    rename: $(colors.purple)
+
+  accent: $(std.accent)
+  transparent: "#00000000"
+
+  control:
+    base: darken($(std.accent), 25)
+
+    bg: fade($(control.base), 0.50)
+    bg.secondary: darken($(control.bg), 10)
+    bg.hover: $(std.bg.accent)
+    bg.active: darken($(control.bg), 25)
+    bg.secondary.hover: darken($(control.bg.secondary), 25)
+
+    fg: $(std.fg)
+    fg.inverse: invert($(control.fg))
+    fg.secondary: $(control.fg)
+    fg.secondary.hover: $(control.fg)
+    fg.hover: $(std.fg.hover)
+    fg.active: $(std.fg.accent.secondary)
+
+    outline: $(std.outline)
+    outline.active: lighten($(std.outline), 50)
+    outline.focus: lighten($(control.outline), 50)
+
+    shadow: fade($(std.shadow), 0.1)
+
+  # Used for various level-related things.
+  level:
+    - $(colors.orange)
+    - $(colors.yellow)
+    - $(colors.green)
+    - $(colors.teal)
+    - $(colors.blue)
+    - $(colors.purple)
+    - $(colors.pink)
+    - $(colors.red)
+
+  # Use this to find stupid elements that cannot be found.
+  test: "#ff0000ee"

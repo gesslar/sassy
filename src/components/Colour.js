@@ -1,0 +1,279 @@
+/**
+ * @file Color manipulation utilities for theme processing.
+ * Provides comprehensive color operations including lightening, darkening,
+ * mixing, alpha manipulation, and format conversions.
+ */
+
+import Color from "color"
+
+/**
+ * Clamps a number between minimum and maximum values.
+ *
+ * @param {number} num - The number to clamp
+ * @param {number} min - The minimum value
+ * @param {number} max - The maximum value
+ * @returns {number} The clamped value
+ */
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
+
+/**
+ * Regular expression for matching long hex color codes with optional alpha.
+ * Matches patterns like #ff0000 or #ff0000ff
+ *
+ * @type {RegExp}
+ */
+const longHex = /^(?<colour>#[a-f0-9]{6})(?<alpha>[a-f0-9]{2})?$/i
+
+/**
+ * Regular expression for matching short hex color codes with optional alpha.
+ * Matches patterns like #f00 or #f00f
+ *
+ * @type {RegExp}
+ */
+const shortHex = /^(?<colour>#[a-f0-9]{3})(?<alpha>[a-f0-9]{1})?$/i
+
+/**
+ * Color manipulation utility class providing static methods for color operations.
+ * Handles hex color parsing, alpha manipulation, mixing, and format conversions.
+ */
+export default class Colour {
+  /**
+   * Lightens or darkens a hex color by a specified amount.
+   *
+   * @param {string} hex - The hex color code (e.g., "#ff0000" or "#f00")
+   * @param {number} amount - The amount to lighten (+) or darken (-) as a percentage
+   * @returns {string} The modified hex color with preserved alpha
+   */
+  static lightenOrDarken(hex, amount=0) {
+    const extracted = Colour.parseHexColour(hex)
+    const colour = Color(extracted.colour)
+    const change = clamp(Math.abs(amount/100), 0, 1)
+
+    const modifiedColour = amount >= 0
+      ? colour.lighten(change).hex()
+      : colour.darken(change).hex()
+
+    const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
+
+    return result
+  }
+
+  /**
+   * Inverts a hex color by flipping its lightness value.
+   * Preserves hue and saturation while inverting the lightness component.
+   *
+   * @param {string} hex - The hex color code to invert
+   * @returns {string} The inverted hex color with preserved alpha
+   */
+  static invert(hex) {
+    const extracted = Colour.parseHexColour(hex)
+    const hsl = Color(extracted.colour).hsl()
+    hsl.color[2] = 100 - hsl.color[2]
+    const modifiedColour = hsl.hex()
+
+    const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
+
+    return result
+  }
+
+  /**
+   * Converts a hex alpha value to a decimal percentage.
+   * Takes a 2-digit hex alpha value and converts it to a percentage (0-100).
+   *
+   * @param {string} hex - The hex alpha value (e.g., "ff", "80")
+   * @returns {number} The alpha as a percentage rounded to 2 decimal places
+   */
+  static hexAlphaToDecimal(hex) {
+    // Parse the hex value to a decimal number
+    const decimalValue = parseInt(hex, 16)
+
+    // Convert to a percentage out of 100
+    const percentage = (decimalValue / 255) * 100
+
+    // Return the result rounded to two decimal places
+    return Math.round(percentage * 100) / 100
+  }
+
+  /**
+   * Converts a decimal percentage to a hex alpha value.
+   * Takes a percentage (0-100) and converts it to a 2-digit hex alpha value.
+   *
+   * @param {number} dec - The alpha percentage (0-100)
+   * @returns {string} The hex alpha value (e.g., "ff", "80")
+   */
+  static decimalAlphaToHex(dec) {
+    // Ensure the input is between 0 and 100
+    const percentage = clamp(dec, 0, 100)
+
+    // Convert percentage to decimal (0-255)
+    const decimalValue = Math.round((percentage * 255) / 100)
+
+    // Convert to hex and ensure it's two digits
+    return decimalValue.toString(16).padStart(2, "0")
+  }
+
+  /**
+   * Normalizes a short hex color code to a full 6-character format.
+   * Converts 3-character hex codes like "#f00" to "#ff0000".
+   *
+   * @param {string} code - The short hex color code
+   * @returns {string} The normalized 6-character hex color code
+   */
+  static normalizeHex(code) {
+    return code.split("").reduce((acc,curr) => acc + curr.repeat(2)).toLowerCase()
+  }
+
+  /**
+   * Parses a hex color string and extracts color and alpha components.
+   * Supports both short (#f00) and long (#ff0000) formats with optional alpha.
+   *
+   * @param {string} hex - The hex color string to parse
+   * @returns {object} Object containing color and optional alpha information
+   * @throws {Error} If the hex value is invalid or missing
+   */
+  static parseHexColour(hex) {
+    const parsed =
+      hex.match(longHex)?.groups ||
+      hex.match(shortHex)?.groups ||
+      null
+
+    if(!parsed)
+      throw new Error("Invalid or missing hex value.")
+
+    const result = {}
+
+    result.colour = parsed.colour.length === 3
+      ? Colour.normalizeHex(parsed.colour)
+      : parsed.colour
+
+    if(parsed.alpha) {
+      parsed.alpha = parsed.alpha.length === 1
+        ? Colour.normalizeHex(parsed.alpha)
+        : parsed.alpha
+
+      result.alpha = {
+        hex: parsed.alpha,
+        decimal: Colour.hexAlphaToDecimal(parsed.alpha) / 100.0
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * Sets the alpha transparency of a hex color to a specific value.
+   * Replaces any existing alpha with the new value.
+   *
+   * @param {string} hex - The hex color code
+   * @param {number} amount - The alpha value (0-1, where 0 is transparent and 1 is opaque)
+   * @returns {string} The hex color with the new alpha value
+   */
+  static setAlpha(hex, amount) {
+    const work = Colour.parseHexColour(hex)
+    const alpha = clamp(amount, 0, 1)
+    const result = Color(work.colour).alpha(alpha).hexa().toLowerCase()
+
+    return result
+  }
+
+  /**
+   * Adjusts the alpha transparency of a hex color by a relative amount.
+   * Multiplies the current alpha by (1 + amount) and clamps the result.
+   *
+   * @param {string} hex - The hex color code
+   * @param {number} amount - The relative amount to adjust alpha (-1 to make transparent, positive to increase)
+   * @returns {string} The hex color with adjusted alpha
+   */
+  static addAlpha(hex, amount) {
+    const work = Colour.parseHexColour(hex)
+    const currentAlpha = (work.alpha?.decimal ?? 1)
+    const newAlpha = clamp(currentAlpha * (1 + amount), 0, 1)
+    const result = Colour.setAlpha(hex, newAlpha)
+
+    return result
+  }
+
+  /**
+   * Removes alpha channel from a hex color, returning only the solid color.
+   *
+   * @param {string} hex - The hex color code with or without alpha
+   * @returns {string} The solid hex color without alpha
+   */
+  static solid(hex) {
+    return Colour.parseHexColour(hex).colour
+  }
+
+  /**
+   * Mixes two hex colors together in a specified ratio.
+   * Blends both the colors and their alpha channels if present.
+   *
+   * @param {string} color1 - The first hex color
+   * @param {string} color2 - The second hex color
+   * @param {number} ratio - The mixing ratio as percentage (0-100, where 50 is equal mix)
+   * @returns {string} The mixed hex color with blended alpha
+   */
+  static mix(color1, color2, ratio = 50) {
+    const c1 = Colour.parseHexColour(color1)
+    const c2 = Colour.parseHexColour(color2)
+
+    // Convert ratio to 0-1 range (50% becomes 0.5)
+    const t = clamp(ratio, 0, 100) / 100
+
+    const color1Obj = Color(c1.colour)
+    const color2Obj = Color(c2.colour)
+
+    const mixedColor = color1Obj.mix(color2Obj, t).hex()
+
+    // Handle alpha - blend the alphas too if present
+    let alpha = ""
+    if(c1.alpha || c2.alpha) {
+      const alpha1 = c1.alpha?.decimal ?? 1
+      const alpha2 = c2.alpha?.decimal ?? 1
+      const mixedAlpha = alpha1 * (1 - t) + alpha2 * t
+      alpha = Colour.decimalAlphaToHex(mixedAlpha)
+    }
+
+    const result = `${mixedColor}${alpha}`.toLowerCase()
+
+    return result
+  }
+
+  /**
+   * Converts color values from various formats to hex.
+   * Supports RGB, RGBA, HSL, HSLA, HSV, and HSVA color modes.
+   *
+   * @param {string} mode - The color mode ("rgb", "rgba", "hsl", "hsla", "hsv", "hsva")
+   * @param {number} alpha - The alpha value (0-1) for non-alpha modes
+   * @param {...number} args - The color component values (depends on mode)
+   * @returns {string} The resulting hex color
+   * @throws {Error} If the wrong number of values is provided
+   */
+  static toHex(mode, alpha, ...args) {
+    const values = args
+      .filter(v => v != null)
+      .map((v, index) => {
+        if(mode === "rgb" || mode === "rgba")
+          return clamp(Number(v), 0, 255)
+
+        if(index === 0 && mode.match(/^(hsl|hsv)/))
+          return clamp(Number(v), 0, 360)
+
+        return clamp(Number(v), 0, 100)
+      })
+
+    if(values.length !== 3)
+      throw new Error(`${mode}() requires three number values.`)
+
+    if(alpha != null)
+      alpha = clamp(Number(alpha), 0, 1)
+
+    return mode.endsWith("a")
+      ? Color[mode.slice(0, -1)](values)
+        .alpha(alpha ?? 1)
+        .hexa()
+        .toLowerCase()
+      : Color[mode](values)
+        .hex()
+        .toLowerCase()
+  }
+}
