@@ -277,8 +277,7 @@ function newTypeSpec(string, options) {
  */
 function isType(value, type, options = {}) {
   const typeSpec = type instanceof TypeSpec ? type : newTypeSpec(type, options)
-  // we're comparing a typeSpec object to a File object. this will always
-  // return false. do fix.
+
   return typeSpec.match(value, options)
 }
 
