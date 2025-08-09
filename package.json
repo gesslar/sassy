@@ -1,0 +1,54 @@
+{
+  "name": "@gesslar/aunty",
+  "version": "0.0.1",
+  "displayName": "Cunty Rose",
+  "description": "Make gorgeous themes that speak as boldly as you do.",
+  "publisher": "gesslar",
+  "license": "Unlicense",
+  "type": "module",
+  "main": "src/build.js",
+  "bin": "src/build.js",
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "clean": "rm -rfv ./dist",
+    "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
+    "publish": "npm publish",
+    "test": "Testing, testing; 1, 2, 3. Yep, we're here."
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gesslar/aunty"
+  },
+  "keywords": [
+    "asmr",
+    "generator",
+    "huffing",
+    "json5",
+    "sniffsniffsniff",
+    "taylorswift",
+    "theme",
+    "vs code",
+    "vscode",
+    "yaml"
+  ],
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "color": "^5.0.0",
+    "commander": "^14.0.0",
+    "globby": "^14.1.0",
+    "json5": "^2.2.3",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin-js": "^4.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "eslint": "^9.28.0",
+    "eslint-plugin-jsdoc": "^50.6.17"
+  }
+}

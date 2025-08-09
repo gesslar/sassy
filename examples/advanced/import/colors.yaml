@@ -1,0 +1,1219 @@
+theme:
+  colors:
+    contrastActiveBorder: $(transparent)
+    contrastBorder: $(transparent)
+    # Let's get some of the singletons out of the way first
+    focusBorder: $(control.outline.focus)
+    foreground: $(std.fg)
+    selection:
+      background: $(std.bg.accent.faint)
+    descriptionForeground: $(std.fg.inactive)
+    errorForeground: $(std.fg.error)
+
+    icon:
+      foreground: $(std.fg)
+
+    sash:
+      hoverBorder: $(std.outline.faint)
+
+    widget:
+      shadow: $(control.shadow)
+      border: $(control.outline)
+
+    # Title Bar colors
+    titleBar:
+      # Active
+      activeForeground: $(std.fg)
+      activeBackground: $(std.bg.panel.outer)
+      # Inactive
+      inactiveForeground: $(std.fg.inactive)
+      inactiveBackground: $(std.bg.panel.outer.inactive)
+      # Title Bar Border
+      border: $(std.outline.faint)
+    # Menu and Menu Bar
+    # Menu bar is the top that houses menu; file, edit, etc
+    menubar:
+      # These are actually hovers, idk why they don't call them that
+      selectionForeground: $(std.fg.hover)
+      selectionBackground: $(std.bg.hover)
+      # selectionBorder: $(std.outline) # Enabling this will draw a dashed border
+    # Menu (Dropdowns themselves)
+    menu:
+      # Normal
+      foreground: $(titleBar.activeForeground)
+      background: $(titleBar.activeBackground)
+      # Menu hover
+      selectionForeground: $(menubar.selectionForeground)
+      selectionBackground: $(menubar.selectionBackground)
+      selectionBorder: $(std.outline)
+      # Menu Separator & Border
+      separatorBackground: $(std.line.whisper)
+      border: $(std.outline.whisper)
+
+    # Badge
+    badge:
+      foreground: $(std.fg.badge)
+      background: $(std.bg.badge)
+
+    # Side bar
+    sideBar:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.inner)
+      border: $(std.outline.whisper)
+      dropBackground: $(std.bg.accent.whisper)
+    sideBarTitle:
+      foreground: $(std.fg.accent.secondary)
+    sideBarSectionHeader:
+      foreground: $(std.fg.secondary)
+      background: darken($(std.bg.panel.inner), 15)
+      border: $(std.outline.whisper)
+
+    # Git colors
+    # I can't get these to work. Maybe you can? nfi
+    gitDecoration:
+      addedResourceForeground: $(status.added)
+      modifiedResourceForeground: $(status.modified)
+      deletedResourceForeground: $(status.deleted)
+      renamedResourceForeground: mix($(gitDecoration.addedResourceForeground), $(gitDecoration.deletedResourceForeground), 50)
+      stageModifiedResourceForeground: $(gitDecoration.modifiedResourceForeground)
+      stageDeletedResourceForeground: $(gitDecoration.deletedResourceForeground)
+      untrackedResourceForeground: lighten($(gitDecoration.addedResourceForeground), 25)
+      ignoredResourceForeground: $(status.ignored)
+      conflictingResourceForeground: $(status.error)
+      submoduleResourceForeground: $(status.info)
+    git:
+      blame:
+        editorDecorationForeground: fade($(gitDecoration.addedResourceForeground), 0.5)
+    # Source Control Graph colors
+    scmGraph:
+      historyItemHoverLabelForeground: $(std.fg.hover)
+      historyItemHoverAdditionsForeground: $(std.fg.success)
+      historyItemHoverDeletionsForeground: $(std.fg.error)
+      # Default label colors (hover background box)
+      historyItemHoverDefaultLabelForeground: $(std.fg.hover)
+      historyItemHoverDefaultLabelBackground: $(std.bg.hover)
+      # Graph lines: 5 alternating colors
+      foreground1: $(level.1)
+      foreground2: $(level.2)
+      foreground3: $(level.3)
+      foreground4: $(level.4)
+      foreground5: $(level.5)
+      # Branch / tag references
+      historyItemRefColor: $(std.bg.accent)
+      historyItemRemoteRefColor: $(std.bg.accent.secondary)
+      historyItemBaseRefColor: lighten($(scmGraph.historyItemRefColor), 25)
+
+    statusBar:
+      foreground: $(control.fg)
+      background: $(control.bg)
+      border: $(control.outline)
+      # No Folder Open - no reason to differentiate
+      noFolderForeground: darken($(statusBar.foreground), 10)
+      noFolderBackground: darken($(statusBar.background), 10)
+      noFolderBorder: darken($(statusBar.border), 10)
+      # Debugging (stronger presence, but still on-brand)
+      debuggingBackground: $(std.bg.accent.secondary)
+      debuggingForeground: $(std.fg.accent.secondary)
+      debuggingBorder: $(std.outline.secondary)
+      focusBorder: $(std.outline)
+    statusBarItem:
+      # Status Bar Item Interaction
+      hoverForeground: $(std.fg.hover)
+      hoverBackground: $(std.bg.hover)
+      activeBackground: lighten($(statusBarItem.hoverBackground), 25)
+      # Compact hover (for overflow/duals)
+      compactHoverBackground: lighten($(statusBarItem.hoverBackground), 25)
+      # Focus Styles
+      focusBorder: $(std.outline.faint.strong)
+      # Prominent Items
+      prominentForeground: lighten($(std.bg.accent), 100)
+      prominentBackground: darken($(std.bg.accent), 35)
+      prominentHoverForeground: $(statusBarItem.prominentForeground)
+      prominentHoverBackground: lighten($(statusBarItem.prominentBackground), 25)
+      # Remote Indicator
+      remoteForeground: $(statusBar.foreground)
+      remoteBackground: $(transparent)
+      remoteHoverForeground: $(statusBarItem.hoverForeground)
+      remoteHoverBackground: $(statusBarItem.hoverBackground)
+      # Offline Indicator
+      offlineForeground: invert($(statusBarItem.prominentForeground))
+      offlineBackground: invert($(statusBarItem.prominentBackground))
+      offlineHoverForeground: invert($(statusBarItem.prominentHoverForeground))
+      offlineHoverBackground: invert($(statusBarItem.prominentHoverBackground))
+      # Error State Items
+      errorForeground: $(std.fg)
+      errorBackground: $(std.bg.error)
+      errorHoverForeground: $(statusBarItem.errorForeground)
+      errorHoverBackground: solidify($(statusBarItem.errorBackground), 30)
+      # Warning State Items
+      warningForeground: $(std.fg)
+      warningBackground: $(std.bg.warning)
+      warningHoverForeground: $(statusBarItem.warningForeground)
+      warningHoverBackground: solidify($(statusBarItem.warningBackground), 30)
+
+    # Activity Bar
+    activityBar:
+      # Base
+      foreground: $(std.fg)
+      background: $(std.bg.panel.inner)
+      inactiveForeground: $(std.fg.inactive)
+      border: $(std.outline.whisper)
+      # Active State
+      activeBackground: $(std.bg.accent.faint)
+      activeBorder: $(std.line.faint)
+      activeFocusBorder: $(std.line.faint.strong)
+      # Dragging
+      dropBorder: $(activityBar.activeBorder)
+    # Badge (normal)
+    activityBarBadge:
+      foreground: $(std.fg.badge)
+      background: $(std.bg.badge)
+    # Badge (warning)
+    activityWarningBadge:
+      foreground: $(std.fg.badge)
+      background: $(status.warning)
+    # Badge (error)
+    activityErrorBadge:
+      foreground: $(std.fg.badge)
+      background: $(status.error)
+    # Activity Bar Top
+    activityBarTop:
+      foreground: $(activityBar.foreground)
+      background: $(activityBar.background)
+      inactiveForeground: $(activityBar.inactiveForeground)
+      activeBackground: $(activityBar.activeBackground)
+      activeBorder: $(activityBar.activeBorder)
+      dropBorder: $(activityBar.dropBorder)
+    # Profiles
+    profiles:
+      sashBorder: $(std.outline.whisper)
+    profileBadge:
+      foreground: $(std.fg.badge)
+      background: $(std.bg.badge)
+
+    # Controls and inputs and things of that nature
+    # Toolbars
+    toolbar:
+      hoverBackground: $(std.bg.hover)
+      # hoverOutline: $(std.outline.hover)
+      activeBackground: lighten($(toolbar.hoverBackground), 25)
+    # Editor Actions - no idea what this is. i mean, i know what the
+    # editorAction toolbar is, but these settings don't seem to apply
+    editorActionList:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.inner)
+      focusForeground: $(std.fg)
+      focusBackground: $(std.bg.panel.inner.inactive)
+    # Button control
+    button:
+      foreground: $(control.fg)
+      background: $(control.bg)
+      border: $(control.outline)
+      hoverBackground: $(control.bg.hover)
+      secondaryForeground: $(control.fg.secondary)
+      secondaryBackground: $(control.bg.secondary)
+      secondaryHoverBackground: $(control.bg.secondary.hover)
+      separator: $(std.line.faint)
+    # Checkbox
+    checkbox:
+      foreground: $(control.fg)
+      background: $(control.bg)
+      border: $(control.outline)
+      selectBackground: $(control.bg.active)
+      selectBorder: $(control.outline.focus)
+    # Radio buttons
+    radio:
+      activeForeground: $(control.fg.active)
+      activeBackground: $(control.bg.active)
+      activeBorder: $(control.outline.focus)
+      inactiveForeground: $(control.fg)
+      inactiveBackground: $(control.bg)
+      inactiveBorder: $(control.outline)
+      inactiveHoverBackground: $(control.bg.hover)
+    # Dropdown control
+    dropdown:
+      foreground: $(control.fg)
+      background: $(menu.background)
+      listBackground: $(menu.background)
+      border: $(control.outline)
+    # Input control
+    input:
+      foreground: $(control.fg)
+      placeholderForeground: $(std.fg.accent.secondary)
+      background: $(control.bg)
+      border: $(control.outline)
+    inputOption: # These are buttons!
+      activeForeground: $(button.foreground)
+      activeBackground: $(button.background)
+      activeBorder: $(control.outline.active)
+      hoverBackground: $(button.hoverBackground)
+    inputValidation:
+      errorForeground: $(std.fg.error)
+      errorBackground: $(std.bg.error)
+      errorBorder: $(std.outline.error)
+      warningForeground: $(std.fg.warning)
+      warningBackground: $(std.bg.warning)
+      warningBorder: $(std.outline.warning)
+      infoForeground: $(std.fg.info)
+      infoBackground: $(std.bg.info)
+      infoBorder: $(std.outline.info)
+    # Scrollbar control
+    scrollbar:
+      shadow: $(std.shadow)
+    scrollbarSlider:
+      background: fade($(std.bg.accent.faint), 0.80)
+      hoverBackground: solidify(lighten($(scrollbarSlider.background), 10), 0.50)
+      activeBackground: solidify(lighten($(scrollbarSlider.hoverBackground), 10), 0.25)
+    # Progress bar
+    progressBar:
+      background: $(std.bg.success)
+    # Breadcrumbs colors
+    breadcrumb:
+      foreground: $(std.fg.accent)
+      background: $(std.bg.panel.inner)
+      focusForeground: $(std.fg)
+      activeSelectionForeground: mix($(std.fg.accent.secondary), $(std.fg), 50)
+    breadcrumbPicker:
+      background: $(menu.background)
+    # Lists and trees
+    list:
+      activeSelectionForeground: $(std.fg)
+      activeSelectionBackground: $(std.bg.accent.whisper)
+      activeSelectionIconForeground: $(std.fg.accent.secondary)
+      inactiveSelectionForeground: $(list.activeSelectionForeground)
+      inactiveSelectionBackground: $(list.activeSelectionBackground)
+      inactiveSelectionIconForeground: $(list.activeSelectionIconForeground)
+      focusForeground: $(list.activeSelectionForeground)
+      focusBackground: lighten($(list.activeSelectionBackground), 25)
+      focusHighlightForeground: $(list.activeSelectionForeground)
+      focusOutline: $(std.outline.strong)
+      focusAndSelectionOutline: $(std.outline.faint.strong)
+      hoverForeground: $(control.fg.hover)
+      hoverBackground: $(control.bg.hover)
+      dropBackground: $(std.bg.drop)
+      dropBetweenBackground: solidify($(std.bg.accent), .25)
+      highlightForeground: $(std.fg.accent.secondary)
+      filterMatchBackground: $(std.bg.accent.faint)
+      filterMatchBorder: $(std.outline.faint.strong)
+      errorForeground: $(std.fg.error)
+      warningForeground: $(std.fg.warning)
+      invalidItemForeground: $(std.fg.error)
+      deemphasizedForeground: $(std.fg.inactive)
+    listFilterWidget:
+      background: $(control.bg)
+      outline: $(control.outline)
+      noMatchesOutline: $(std.outline.warning)
+      shadow: $(control.shadow)
+    tree:
+      indentGuidesStroke: $(std.line)
+      inactiveIndentGuidesStroke: $(std.line.whisper)
+      # The following two are used in the profiles page.
+      tableColumnsBorder: $(control.outline) # Hover over a table/list, separators
+      tableOddRowsBackground: fade($(control.bg.secondary), 0.95) # Weirdly used as background for column headers
+
+    # Editor Groups & Tabs
+    # Editor Groups
+    editorGroupHeader:
+      noTabsBackground: $(std.bg.panel.inner) # workbench.editor.showTabs = "single"
+      tabsBackground: $(std.bg.panel.inner)
+      tabsBorder: $(std.outline.whisper)
+      border: $(std.outline.whisper)
+    editorGroup:
+      border: $(std.outline.whisper)
+      dropBackground: $(std.bg.drop)
+      emptyBackground: $(std.bg.panel.inner)
+      focusedEmptyBorder: $(std.outline)
+      dropIntoPromptForeground: $(std.fg)
+      dropIntoPromptBackground: $(std.bg.panel.inner)
+      dropIntoPromptBorder: $(std.outline)
+    # Tabs
+    tab:
+      activeForeground: $(std.fg)
+      inactiveForeground: $(std.fg.inactive)
+      unfocusedActiveForeground: $(std.fg.inactive)
+      unfocusedInactiveForeground: $(std.fg.inactive)
+      activeBackground: mix($(std.bg.accent), $(std.bg.panel.inner), 80)
+      inactiveBackground: $(std.bg.panel.inner.inactive)
+      unfocusedActiveBackground: fade($(tab.activeBackground), 0.75)
+      unfocusedInactiveBackground: fade($(std.bg.panel.inner.inactive), 0.50)
+      selectedBackground: lighten($(tab.activeBackground), 100)
+      selectedForeground: $(std.fg)
+      border: $(std.outline.whisper)
+      activeBorder: $(transparent)
+      activeBorderTop: $(std.outline)
+      selectedBorderTop: lighten($(tab.activeBorderTop), 25)
+      unfocusedActiveBorder: $(transparent)
+      unfocusedActiveBorderTop: $(transparent)
+      hoverForeground: $(std.fg.hover)
+      unfocusedHoverForeground: $(std.fg.inactive)
+      hoverBackground: lighten($(tab.activeBackground), 50)
+      unfocusedHoverBackground: darken($(tab.hoverBackground), 20)
+      hoverBorder: $(std.outline)
+      unfocusedHoverBorder: $(std.outline.faint)
+      lastPinnedBorder: $(tab.activeBorderTop)
+      # Modified Indicator
+      activeModifiedBorder: fade($(status.added), 0.2)
+      inactiveModifiedBorder: fade($(tab.activeModifiedBorder), 0.4)
+      unfocusedActiveModifiedBorder: fade($(tab.activeModifiedBorder), 0.2)
+      unfocusedInactiveModifiedBorder: fade($(tab.inactiveModifiedBorder), 0.2)
+
+    # Oof, the editor stuff. SO MUCH EDITOR STUFF!
+
+    # Editor pane & splitters
+    editor:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.innermost)
+      # Placeholder Text
+      placeholder:
+        foreground: $(std.fg.inactive)
+      # Text selection
+      selectionForeground: $(std.fg)
+      selectionBackground: lighten($(std.highlight.bg.accent), 50)
+      inactiveSelectionBackground: darken($(editor.selectionBackground), 10)
+      # Matching content
+      selectionHighlightBackground: mix($(std.bg.accent.faint), $(std.bg.panel.innermost), 90)
+      selectionHighlightBorder: lighten($(editor.selectionHighlightBackground), 25)
+      # Word/Identifier highlights
+      wordHighlightBackground: $(std.highlight.bg.read) # Background color of a symbol during read-access, like reading a variable.
+      wordHighlightBorder: $(std.highlight.fg.read) # Border color of a symbol during read-access.
+      wordHighlightStrongBackground: $(std.highlight.bg.write) # Background color of a symbol during write-access, like writing to a variable.
+      wordHighlightStrongBorder: $(std.highlight.fg.write) # Border color of a symbol during write-access.
+      wordHighlightTextBackground: $(std.highlight.bg.accent) # Color for regions with the same content as the selection.
+      wordHighlightTextBorder: $(std.highlight.fg.accent) # Border color for regions with the same content as the selection.
+      # Find matches
+      #
+      # GDI MS - Why you reverse findMatchHighlightForeground and findMatchForeground
+      # I effing see you.
+      #
+      # CURRENT match (focused one)
+      findMatchHighlightForeground: fade($(std.bg.panel.innermost), 0.10)
+      findMatchBackground: $(std.highlight.bg.match) # Background color of the current find match.
+      findMatchBorder: fade($(editor.findMatchHighlightForeground), 0.5)
+      # OTHER matches (passive highlights)
+      findMatchForeground: $(std.highlight.bg.match) # Foreground color of the current find match.
+      findMatchHighlightBackground: fade($(editor.findMatchHighlightForeground), 0.25)
+      findMatchHighlightBorder: fade($(editor.findMatchForeground), 0.5)
+      # Range highlights
+      findRangeHighlightBackground: fade($(editor.findMatchHighlightBackground), 0.90) # Background color of the range highlight.
+      findRangeHighlightBorder: $(editor.findMatchHighlightBorder) # Border color of the range highlight.
+      # Folding
+      foldBackground: $(std.bg.accent.whisper)
+      foldPlaceholderForeground: lighten($(std.fg.accent), 50)
+      # Active line highlight
+      lineHighlightBackground: fade(lighten($(std.bg.panel.innermost), 25) , 0.25)
+      lineHighlightBorder: fade($(std.outline.whisper), 0.25) # Border color of the active line highlight.
+      # Hover highlight
+      hoverHighlightBackground: fade($(std.bg.accent.faint), 0.60) # Background color of the hover highlight.
+      # Symbol navigation (e.g., Go to Definition)
+      symbolHighlightBackground: $(editor.findMatchHighlightBackground)
+      symbolHighlightBorder: $(editor.findMatchHighlightBorder) # Border color of the symbol highlight.
+      # Range highlight (Quick Open, Ctrl+Shift+O, etc.)
+      rangeHighlightBackground: $(editor.findRangeHighlightBackground) # Background color of the range highlight.
+      rangeHighlightBorder: $(editor.findRangeHighlightBorder) # Border color of the range highlight.
+      # Inline Values (Editor)
+      inlineValuesForeground: fade($(std.fg.info), 0.15) # Subtle, but visible
+      inlineValuesBackground: fade($(std.bg.info), 0.90) # Soft, muted background
+      # Stack Frame Highlights (Editor)
+      stackFrameHighlightBackground: alpha($(editor.findMatchHighlightBackground), 0.10) # Soft, ambient highlight
+      focusedStackFrameHighlightBackground: alpha($(editor.findMatchHighlightBackground), 0.20) # Stronger focus highlight
+      snippetTabstopHighlightBackground: $(std.bg.accent.faint) # soft, ambient glow
+      snippetTabstopHighlightBorder: $(std.outline.faint) # soft, ambient border
+      snippetFinalTabstopHighlightBackground: $(std.bg.accent.faint.strong) # stronger, more pronounced glow
+      snippetFinalTabstopHighlightBorder: $(std.outline.faint.strong) # stronger, more pronounced border
+
+    # Line Numbers
+    editorLineNumber:
+      foreground: $(std.fg.accent.faint)
+      activeForeground: $(std.fg.accent)
+      dimmedForeground: $(std.fg.accent.whisper)
+    # Cursor
+    editorCursor:
+      foreground: $(std.fg.accent.secondary)
+      background: $(std.bg.panel.outer) # When the cursor is a block, this is the FOREGROUND of the character it's on. Background, my ass.
+    # Multi-cursor
+    editorMultiCursor:
+      primary:
+        foreground: $(editorCursor.foreground)
+        background: $(editorCursor.background)
+      secondary:
+        foreground: fade(darken($(editorCursor.foreground), 25), 0.25)
+        background: $(editorCursor.background)
+    editorPane:
+      background: $(std.bg.panel.inner)
+    sideBySideEditor:
+      horizontalBorder: $(std.outline.faint)
+      verticalBorder: $(std.outline.whisper)
+
+    # Whitespace
+    editorWhitespace:
+      foreground: $(std.fg.accent.whisper) # Whitespace characters (spaces, tabs, etc.) when enabled
+    # Indent Guides
+    editorIndentGuide:
+      background1: alpha($(std.line), .55)
+      background2: darken($(editorIndentGuide.background1), 5)
+      background3: darken($(editorIndentGuide.background2), 5)
+      background4: darken($(editorIndentGuide.background3), 5)
+      background5: darken($(editorIndentGuide.background4), 5)
+      background6: darken($(editorIndentGuide.background5), 5)
+      activeBackground1: lighten($(editorIndentGuide.background1), 25)
+      activeBackground2: lighten($(editorIndentGuide.background1), 25)
+      activeBackground3: lighten($(editorIndentGuide.background1), 25)
+      activeBackground4: lighten($(editorIndentGuide.background1), 25)
+      activeBackground5: lighten($(editorIndentGuide.background1), 25)
+      activeBackground6: lighten($(editorIndentGuide.background1), 25)
+
+    # Bracket Match
+    editorBracketMatch:
+      background: $(std.bg.accent.whisper)
+      border: $(std.outline.faint.strong)
+
+    # Bracket Pair Colorization
+    editorBracketHighlight:
+      foreground1: $(level.1)
+      foreground2: $(level.2)
+      foreground3: $(level.3)
+      foreground4: $(level.4)
+      foreground5: $(level.5)
+      foreground6: $(level.6)
+      unexpectedBracket:
+        foreground: "#ff0077"
+
+    # Bracket Pair Guides
+    editorBracketPairGuide:
+      # Backgrounds (inactive scopes)
+      background1: darken($(std.bg.accent.faint), 25)
+      background2: darken($(std.bg.accent.faint), 25)
+      background3: darken($(std.bg.accent.faint), 25)
+      background4: darken($(std.bg.accent.faint), 25)
+      background5: darken($(std.bg.accent.faint), 25)
+      background6: darken($(std.bg.accent.faint), 25)
+      # Active scope
+      activeBackground1: $(std.bg.accent.faint)
+      activeBackground2: $(std.bg.accent.faint)
+      activeBackground3: $(std.bg.accent.faint)
+      activeBackground4: $(std.bg.accent.faint)
+      activeBackground5: $(std.bg.accent.faint)
+      activeBackground6: $(std.bg.accent.faint)
+
+    # Overview Ruler
+    editorOverviewRuler:
+      background: $(std.bg.panel.inner)
+      border: $(std.outline.whisper)
+      findMatchForeground: fade($(editor.findMatchForeground), 0.25)
+      rangeHighlightForeground: $(editor.findMatchHighlightForeground)
+      selectionHighlightForeground: $(editor.findMatchHighlightForeground)
+      wordHighlightForeground: fade($(editor.findMatchForeground), 0.15)
+      wordHighlightStrongForeground: $(editor.wordHighlightStrongBackground)
+      wordHighlightTextForeground: fade($(editor.findMatchForeground), 0.25)
+      modifiedForeground: $(status.modified)
+      addedForeground: $(status.added)
+      deletedForeground: $(status.deleted)
+      errorForeground: $(status.error)
+      warningForeground: $(status.warning)
+      infoForeground: $(status.info)
+      bracketMatchForeground: $(std.fg.accent)
+      inlineChatInserted: darken($(std.bg.success), 50)
+      inlineChatRemoved: darken($(std.bg.error), 50)
+      currentContentForeground: $(std.fg.accent.secondary)
+      incomingContentForeground: $(std.fg.success)
+      commonContentForeground: $(std.fg.info)
+
+    # Editor Diagnostics
+    editorError:
+      foreground: $(std.fg.error)
+      border: lighten($(std.outline.error), 100)
+      background: fade($(std.bg.error), 0.60)
+
+    editorWarning:
+      foreground: $(std.fg.warning)
+      border: lighten($(std.outline.warning), 100)
+      background: fade($(std.bg.warning), 0.60)
+
+    editorInfo:
+      foreground: $(std.fg.info)
+      border: lighten($(std.outline.info), 100)
+      background: fade($(std.bg.info), 0.60)
+
+    editorHint:
+      foreground: $(std.fg.success)
+      border: $(std.outline.success)
+
+    # Problems Icons
+    problemsErrorIcon:
+      foreground: $(std.fg.error)
+    problemsWarningIcon:
+      foreground: $(std.fg.warning)
+    problemsInfoIcon:
+      foreground: $(std.fg.info)
+
+    # Unused Code
+    # editorUnnecessaryCode:
+    #   border: $(std.outline)
+    #   opacity: "#000000c0"
+
+    # Gutter background
+    editorGutter:
+      background: $(std.bg.panel.inner)
+      # Git-style modifications
+      modifiedBackground: $(status.modified)
+      modifiedSecondaryBackground: darken($(status.modified), 50)
+      addedBackground: $(status.added)
+      addedSecondaryBackground: darken($(status.added), 50)
+      deletedBackground: $(status.deleted)
+      deletedSecondaryBackground: darken($(status.deleted), 50)
+      # Comments and control glyphs
+      commentRangeForeground: $(std.fg.accent)
+      commentGlyphForeground: $(std.fg.accent.secondary)
+      commentUnresolvedGlyphForeground: $(std.fg.error)
+      foldingControlForeground: $(std.fg.accent)
+      # Misc gutter glyphs
+      itemGlyphForeground: $(std.fg.accent.secondary)
+      itemBackground: $(std.bg.panel.inner.inactive)
+    editorCommentsWidget:
+      resolvedBorder: $(std.outline.success)
+      unresolvedBorder: $(std.outline.info)
+      rangeBackground: $(std.bg.accent.faint)
+      rangeActiveBackground: $(std.bg.accent.faint.strong)
+      replyInputBackground: $(std.bg.panel.inner)
+
+    # Editor widget colors
+    # Editor Widget (Find/Replace, Peek input, etc.)
+    editorWidget:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.outer)
+      border: $(std.outline.faint)
+      resizeBorder: $(std.outline)
+    # Suggest Widget
+    editorSuggestWidget:
+      background: $(std.bg.panel.inner)
+      border: $(std.outline.faint)
+      foreground: $(std.fg)
+      focusHighlightForeground: $(std.fg.accent.secondary)
+      highlightForeground: darken($(editorSuggestWidget.focusHighlightForeground), 25) # subtle, but visible
+      selectedForeground: $(menubar.selectionForeground)
+      selectedBackground: $(menubar.selectionBackground)
+      selectedIconForeground: $(editorSuggestWidget.selectedForeground)
+    editorSuggestWidgetStatus:
+      foreground: $(std.fg.inactive)
+    # Editor Hover Widget
+    editorHoverWidget:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.inner)
+      border: $(std.outline.faint)
+      highlightForeground: $(std.fg.accent.secondary)
+      statusBarBackground: lighten($(editorHoverWidget.background), 25)
+    # Ghost Text (Inline Suggest/Preview)
+    editorGhostText:
+      foreground: $(std.fg.faint)
+      background: $(std.bg.faint)
+      border: $(transparent)
+    # Sticky Scroll
+    editorStickyScroll:
+      background: $(std.bg.sticky) # soft, ambient background
+      border: $(std.outline.sticky)
+      shadow: $(std.shadow.sticky) # ambient shadow
+    editorStickyScrollHover:
+      background: $(std.bg.sticky.hover) # slightly more pronounced hover background
+
+    # Debug Exception Widget
+    debugExceptionWidget:
+      background: $(editorWidget.background)
+      border: $(inputValidation.errorBorder)
+    # Marker Navigation: Base Background
+    editorMarkerNavigation:
+      background: $(std.bg.panel.inner)
+    # Marker Navigation: Error/Warning/Info Bars (borders)
+    editorMarkerNavigationError:
+      background: $(std.bg.error)
+      headerBackground: $(std.bg.error)
+    editorMarkerNavigationWarning:
+      background: $(std.bg.warning)
+      headerBackground: $(std.bg.warning)
+    editorMarkerNavigationInfo:
+      background: $(std.bg.info)
+      headerBackground: $(std.bg.info)
+    editorLink:
+      activeForeground: $(std.fg.accent.secondary)
+    editorRuler:
+      foreground: darken($(std.line.secondary), 50)
+    editorCodeLens:
+      foreground: $(std.fg.accent.secondary.faint)
+    editorLightBulb:
+      foreground: $(colors.gold)
+    editorLightBulbAutoFix:
+      foreground: $(std.fg.info)
+
+    # sideBarSectionHeader:
+    #   foreground: $(std.fg.secondary)
+    #   background: darken($(std.bg.panel.inner), 15)
+    #   border: $(std.outline.whisper)
+
+    # Whee! Panel stuff! YUM!
+    # Panel colors
+    panel:
+      # Panel Base + Frame
+      background: $(std.bg.panel.inner)
+      border: $(std.outline.whisper)
+      dropBorder: $(std.bg.drop)
+    # Panel Title Bar
+    panelTitle:
+      activeBorder: $(std.outline)
+      activeForeground: $(std.fg)
+      inactiveForeground: $(std.fg.inactive)
+      border: $(std.outline.whisper)
+    # Panel Title Badge (eg. terminal counts)
+    panelTitleBadge:
+      background: $(std.bg.badge)
+      foreground: $(std.fg.badge)
+    # Panel Section Headers
+    panelSectionHeader:
+      background: $(sideBarSectionHeader.background)
+      foreground: $(sideBarSectionHeader.foreground)
+      border: $(sideBarSectionHeader.border)
+    # Panel Sections
+    panelSection:
+      border: $(std.outline.whisper)
+      dropBackground: $(std.bg.drop)
+    #A Panel Input
+    panelInput:
+      border: $(control.outline)
+    # Panel Sticky Scroll
+    panelStickyScroll:
+      background: $(std.bg.sticky)
+      border: $(std.outline.sticky)
+      shadow: $(std.shadow.sticky)
+
+    # Welcome page colors
+    welcomePage:
+      background: $(std.bg.panel.innermost)
+      progress:
+        background: darken($(std.bg.success), 75)
+        foreground: $(std.fg.success)
+      tileBackground: lighten($(welcomePage.background), 35)
+      tileHoverBackground: $(std.bg.hover)
+      tileBorder: $(std.outline.whisper)
+    # Honestly, why do we have two different cases for "t" in "walkthrough"?
+    walkThrough:
+      embeddedEditorBackground: $(std.bg.panel.innermost)
+    walkthrough:
+      stepTitle:
+        foreground: $(std.fg.accent.secondary)
+
+    # Settings Editor colors
+    settings:
+      headerForeground: $(std.fg.accent.secondary)
+      settingsHeaderHoverForeground: $(std.fg.accent) # menu on the left, and other things
+      headerBorder: $(std.outline.whisper)
+      sashBorder: $(std.outline.whisper)
+      modifiedItemIndicator: $(status.modified)
+      dropdownBackground: $(control.bg)
+      dropdownForeground: $(control.fg)
+      dropdownBorder: $(control.outline)
+      dropdownListBorder: $(control.outline)
+      checkboxBackground: $(control.bg)
+      checkboxForeground: $(control.fg)
+      checkboxBorder: $(control.outline)
+      # A row is a section in a settings page.
+      rowHoverBackground: $(std.bg.hover.whisper)
+      focusedRowBackground: lighten($(std.bg.panel.innermost), 25)
+      focusedRowBorder: $(std.outline.faint)
+      textInputBackground: $(control.bg)
+      textInputForeground: $(control.fg)
+      textInputBorder: $(control.outline)
+      numberInputBackground: $(control.bg)
+      numberInputForeground: $(control.fg)
+      numberInputBorder: $(control.outline)
+
+    # Output View Backgrounds
+    outputView:
+      background: $(std.bg.panel.innermost)
+    outputViewStickyScroll:
+      background: $(std.bg.sticky)
+
+    # Integrated Terminal colors
+    terminal:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.innermost)
+      ansiBlack: "#1e1e1e"
+      ansiBlue: "#8787d7"
+      ansiBrightBlack: "#252525"
+      ansiBrightBlue: "#8787d7"
+      ansiBrightCyan: "#87c7c7"
+      ansiBrightGreen: "#87c7c7"
+      ansiBrightMagenta: "#c787b0"
+      ansiBrightRed: "#a8a8a8"
+      ansiBrightWhite: "#e1e1e1"
+      ansiBrightYellow: "#d7c787"
+      ansiCyan: "#87c7c7"
+      ansiGreen: "#87b087"
+      ansiMagenta: "#c787b0"
+      ansiRed: "#d78787"
+      ansiWhite: "#d1d1d1"
+      ansiYellow: "#d7c787"
+      selectionBackground: $(std.bg.accent.faint)
+      border: $(std.outline.whisper)
+      selectionForeground: $(std.fg.inverse)
+      inactiveSelectionBackground: $(std.bg.accent.whisper)
+
+      findMatchHighlightBackground: fade($(std.highlight.bg.match), 0.7)
+      findMatchHighlightBorder: fade($(std.highlight.bg.match), 0.5)
+      findMatchBackground: fade($(std.highlight.bg.match), 0.5)
+      findMatchBorder: fade($(std.highlight.bg.match), 0.1)
+      # The help for this says: "Border color of the other search matches in
+      # the terminal." however, that is not true. It is in fact the colour
+      # of items, like file paths, that would prompt you to open a file.
+      # So it must be quite faint.
+      hoverHighlightBackground: fade($(std.bg.accent.faint), 0.5)
+
+      initialHintForeground: $(std.fg.inactive)
+      dropBackground: $(std.bg.drop)
+      tab:
+        activeBorder: $(std.outline)
+
+    terminalCursor:
+      foreground: $(editorCursor.foreground)
+      background: $(editorCursor.background)
+
+    terminalCommandDecoration:
+      defaultBackground: $(std.fg)
+      successBackground: $(std.bg.success)
+      errorBackground: $(std.bg.error)
+
+    terminalOverviewRuler:
+      cursorForeground: $(terminalCursor.foreground)
+      findMatchForeground: $(terminal.findMatchHighlightBackground)
+      border: $(std.outline.whisper)
+
+    # Doing this slightly differently to the rest since it's a bit lighter
+    # than the rest of the stickies.
+    terminalStickyScroll:
+      background: darken($(std.bg.accent), 75)
+      border: $(std.outline.sticky)
+
+    terminalStickyScrollHover:
+      background: lighten($(terminalStickyScroll.background), 50)
+
+    terminalCommandGuide:
+      foreground: $(std.fg.accent.secondary)
+
+    terminalSymbolIcon:
+      aliasForeground: "#b0e9ff"
+      flagForeground: "#e5bf72"
+      optionForeground: "#c787b0"
+      optionValueForeground: "#87c7c7"
+      methodForeground: "#a3c4a3"
+      argumentForeground: "#d78787"
+      inlineSuggestionForeground: "#8787d7"
+      fileForeground: "#ffffff"
+      folderForeground: "#e1e1e1"
+
+    # Minimap
+    minimap:
+      # General minimap
+      background: $(std.bg.panel.inner)
+      selectionHighlight: $(std.bg.accent.faint)
+      # Errors & Warnings
+      errorHighlight: $(std.bg.error)
+      warningHighlight: $(std.bg.warning)
+
+    # Slider (scroll thumb) visuals
+    minimapSlider:
+      background: $(scrollbarSlider.background)
+      hoverBackground: fade($(scrollbarSlider.hoverBackground), 0.25)
+      activeBackground: fade($(scrollbarSlider.activeBackground), 0.25)
+
+    # Gutter decorations for git-style diff markers
+    minimapGutter:
+      addedBackground: $(status.added)
+      modifiedBackground: $(status.modified)
+      deletedBackground: $(status.deleted)
+
+    # Command Center colors
+    commandCenter:
+      # Command Center Base
+      foreground: $(control.fg)
+      background: $(control.bg)
+      border: $(control.outline)
+      # Active (hovered or clicked)
+      activeForeground: $(control.fg.active)
+      activeBackground: $(control.bg.active)
+      activeBorder: $(std.outline.faint)
+      # Inactive Window
+      inactiveForeground: lighten($(commandCenter.foreground), 15)
+      inactiveBorder: $(std.outline.faint)
+      # Debugging State - requires debug.toolBarLocation = commandCenter
+      debuggingBackground: fade($(statusBar.debuggingBackground), 0.5)
+
+    # Banner colors
+    banner:
+      background: $(std.bg.warning)
+      foreground: $(std.fg.warning)
+      iconForeground: $(std.fg.warning)
+
+    # Notification Center
+    notificationCenter:
+      border: $(std.outline.faint)
+    notificationCenterHeader:
+      foreground: $(std.fg.accent.secondary)
+      background: $(std.bg.panel.outer)
+    # Notification Toasts
+    notificationToast:
+      border: $(std.outline)
+    # Notification Items
+    notifications:
+      foreground: $(std.fg)
+      background: $(std.bg.panel.inner)
+      border: $(std.outline.faint)
+    # Links inside notifications
+    notificationLink:
+      foreground: $(std.fg.accent.secondary)
+    # Icons
+    notificationsErrorIcon:
+      foreground: $(std.bg.error)
+    notificationsWarningIcon:
+      foreground: $(std.bg.warning)
+    notificationsInfoIcon:
+      foreground: $(std.bg.info)
+
+    # Extension colors
+    # Extension View Prominent Button (e.g. "Install")
+    extensionButton:
+      prominentForeground: $(control.fg)
+      prominentBackground: $(control.bg.secondary)
+      prominentHoverBackground: $(control.bg.secondary.hover)
+      # Secondary Buttons (e.g. "Enable", "Disable", etc.)
+      foreground: $(control.fg)
+      background: $(control.bg)
+      hoverBackground: $(control.bg.hover)
+      separator: $(std.line.faint)
+    # Remote Badge (for remote extensions like WSL)
+    extensionBadge:
+      remoteForeground: $(std.fg.success)
+      remoteBackground: $(std.bg.success)
+    # Icons for various metadata
+    extensionIcon:
+      starForeground: $(colors.gold)
+      verifiedForeground: $(colors.green)
+      preReleaseForeground: $(colors.purple)
+      sponsorForeground: $(colors.pink)
+      privateForeground: $(colors.red)
+
+    # Quick picker colors
+    # Quick Picker Group Labels & Borders (e.g. "recently used", "commands")
+    pickerGroup:
+      foreground: $(control.fg.inverse)
+      border: $(std.outline.faint)
+    # Main Background & Foreground
+    quickInput:
+      foreground: $(menu.foreground)
+      background: $(menu.background)
+    # Focused Item (arrow keys / mouse hover)
+    quickInputList:
+      focusForeground: $(menu.selectionForeground)
+      focusBackground: $(menu.selectionBackground)
+      focusIconForeground: $(menu.selectionForeground)
+    # Title Area (if visible — eg. Ctrl-O)
+    quickInputTitle:
+      background: $(quickInput.background)
+
+    # Text colors
+    # Colors inside a text document, such as the welcome page.
+    # Or markdown preview.
+    textBlockQuote:
+      background: $(std.bg.accent.faint)
+      border: $(std.outline.faint)
+    textCodeBlock:
+      background: $(std.bg.accent.faint)
+    textLink:
+      foreground: $(std.fg.accent.secondary)
+      activeForeground: $(std.accent.secondary)
+    textPreformat:
+      foreground: $(std.fg)
+      background: darken($(std.bg.accent.secondary), 25)
+    textSeparator:
+      foreground: $(std.fg.secondary)
+
+    # Inline Edit
+    inlineEdit:
+      gutterIndicator:
+        primaryBorder: $(std.accent)
+        primaryForeground: $(colors.teal)
+        primaryBackground: fade($(std.accent), 0.20)
+        secondaryBorder: $(status.success)
+        secondaryForeground: $(colors.yellow)
+        secondaryBackground: fade($(std.accent), 0.07)
+        successfulBorder: $(status.success)
+        successfulForeground: $(status.success)
+        successfulBackground: fade($(std.accent), 0.13)
+        background: $(std.bg.panel.outer)
+      originalBackground: fade($(std.accent), 0.20)
+      modifiedBackground: fade($(colors.teal), 0.20)
+      originalChangedLineBackground: fade($(std.accent), 0.27)
+      originalChangedTextBackground: fade($(std.accent), 0.20)
+      modifiedChangedLineBackground: fade($(std.accent), 0.20)
+      modifiedChangedTextBackground: fade($(colors.teal), 0.27)
+      originalBorder: $(std.accent)
+      modifiedBorder: $(colors.teal)
+      tabWillAcceptModifiedBorder: $(status.success)
+      tabWillAcceptOriginalBorder: $(status.success)
+
+    # Diff editor colors
+    # Diff Editor: Inserted/Removed Text
+    diffEditor:
+      insertedTextBackground: fade($(status.success), 0.80)
+      insertedTextBorder: fade($(status.success), 0.80)
+      removedTextBackground: fade($(status.error), 0.80)
+      removedTextBorder: fade($(status.error), 0.80)
+      # Diff Editor: Full Line Highlights
+      insertedLineBackground: fade($(status.success), 0.80)
+      removedLineBackground: fade($(status.error), 0.80)
+
+    diffEditorGutter:
+      insertedLineBackground: fade($(status.success), 0.70)
+      removedLineBackground: fade($(status.error), 0.70)
+
+    diffEditorOverview:
+      insertedForeground: fade($(status.success), 0.53)
+      removedForeground: fade($(status.error), 0.53)
+
+    # Inline Chat colors
+    inlineChat:
+      background: $(std.bg.panel.outer)
+      foreground: $(std.fg)
+      border: fade($(std.accent), 0.27)
+      shadow: $(control.shadow)
+
+    inlineChatInput:
+      background: $(std.bg.panel.inner)
+      border: fade($(std.accent), 0.20)
+      focusBorder: fade($(std.accent), 0.53)
+      placeholderForeground: $(std.fg.inactive)
+
+    inlineChatDiff:
+      inserted: fade($(status.success), 0.13)
+      removed: fade($(status.error), 0.13)
+
+    # Panel Chat colors
+    interactive:
+      activeCodeBorder: fade($(std.accent), 0.40)
+      inactiveCodeBorder: fade($(std.accent), 0.20)
+
+    # Peek view colors
+    peekView:
+      border: fade($(std.accent), 0.53)
+
+    peekViewTitle:
+      background: fade($(std.bg.panel.inner), 0.47)
+
+    peekViewTitleLabel:
+      foreground: $(std.fg)
+
+    peekViewTitleDescription:
+      foreground: $(std.fg.inactive)
+
+    peekViewResult:
+      background: fade($(std.bg.panel.inner), 0.47)
+      fileForeground: $(std.fg)
+      lineForeground: $(std.fg.secondary)
+      matchHighlightBackground: $(transparent)
+      selectionBackground: $(std.bg.panel.inner)
+      selectionForeground: $(std.fg)
+
+    peekViewEditorGutter:
+      background: fade($(std.accent), 0.07)
+
+    peekViewEditor:
+      matchHighlightBackground: fade($(colors.teal), 0.20)
+      matchHighlightBorder: fade($(std.accent), 0.47)
+      background: fade($(std.bg.panel.inner), 0.50)
+
+    peekViewEditorStickyScroll:
+      background: fade($(std.bg.panel.inner), 0.47)
+
+    # Merge conflicts colors
+    merge:
+      # Merge Conflict: Current Content
+      currentHeaderBackground: fade($(std.accent), 0.20)
+      currentContentBackground: fade($(std.accent), 0.07)
+      # Merge Conflict: Incoming Content
+      incomingHeaderBackground: fade($(status.success), 0.20)
+      incomingContentBackground: fade($(status.success), 0.07)
+      # Merge Conflict: Common Ancestor
+      commonContentBackground: fade($(std.fg.secondary), 0.07)
+      commonHeaderBackground: fade($(std.fg.secondary), 0.20)
+      # Merge Conflict: Border Line Highlight
+      border: fade($(std.accent), 0.27)
+      # Merge Conflict: Unhandled Marker Highlight
+
+    mergeEditor:
+      change:
+        background: fade($(std.accent), 0.20)
+        word:
+          background: fade($(std.accent), 0.27)
+      conflict:
+        unhandledUnfocused:
+          border: fade($(status.error), 0.33)
+        unhandledFocused:
+          border: fade($(status.error), 0.67)
+        handledUnfocused:
+          border: fade($(status.success), 0.33)
+        handledFocused:
+          border: fade($(status.success), 0.67)
+        handled:
+          minimapOverViewRuler: fade($(status.success), 0.67)
+        unhandled:
+          minimapOverViewRuler: fade($(status.error), 0.67)
+        input1:
+          background: fade($(std.accent), 0.20)
+        input2:
+          background: fade($(status.success), 0.13)
+      conflictingLines:
+        background: fade($(status.error), 0.13)
+      changeBase:
+        background: fade($(std.fg.secondary), 0.13)
+        word:
+          background: fade($(std.fg.secondary), 0.27)
+
+    # Action Bar colors
+    actionBar:
+      toggledBackground: $(std.bg.panel.inner)
+
+    simpleFindWidget:
+      sashBorder: $(test)
+
+    # Gauge colors
+    gauge:
+      background: $(std.bg.panel.outer)
+      foreground: $(status.success)
+      border: fade($(std.accent), 0.20)
+      warningBackground: darken($(status.warning), 60)
+      warningForeground: $(colors.yellow)
+      errorBackground: darken($(status.error), 60)
+      errorForeground: $(status.error)
+
+    # Keybinding label colors
+    keybindingLabel:
+      background: fade($(std.bg.panel.inner), 0.73)
+      foreground: $(std.fg)
+      border: fade($(std.accent), 0.33)
+      bottomBorder: fade($(std.accent), 0.47)
+
+    # Keyboard shortcut table colors
+    keybindingTable:
+      headerBackground: $(std.bg.panel.outer)
+      rowsBackground: $(std.bg.panel.inner)
+
+    # Debug colors
+    debugToolBar:
+      background: $(std.bg.panel.outer)
+      border: fade($(std.accent), 0.20)
+
+    debugView:
+      exceptionLabelForeground: $(std.fg)
+      exceptionLabelBackground: $(status.error)
+      stateLabelForeground: $(std.bg.panel.inner)
+      stateLabelBackground: $(colors.yellow)
+      valueChangedHighlight: fade($(colors.teal), 0.40)
+
+    debugTokenExpression:
+      name: $(std.fg)
+      value: $(colors.teal)
+      string: $(colors.pink)
+      boolean: $(status.error)
+      number: $(colors.yellow)
+      error: $(colors.pink)
+      type: fade($(std.fg.secondary), 0.67)
+
+    # Testing colors
+    testing:
+      runAction: $(status.success)
+      iconErrored: $(status.error)
+      iconFailed: $(status.error)
+      iconPassed: $(status.success)
+      iconQueued: $(colors.yellow)
+      iconUnset: fade($(std.fg.secondary), 0.67)
+      iconSkipped: $(colors.blue)
+      peekBorder: fade($(std.accent), 0.53)
+      peekHeaderBackground: fade($(std.bg.panel.inner), 0.47)
+      messagePeekBorder: fade($(std.accent), 0.53)
+      messagePeekHeaderBackground: fade($(std.bg.panel.inner), 0.47)
+      coveredBackground: fade($(status.success), 0.13)
+      coveredBorder: fade($(status.success), 0.53)
+      coveredGutterBackground: fade($(status.success), 0.20)
+      uncoveredBranchBackground: fade($(status.error), 0.07)
+      uncoveredBackground: fade($(status.error), 0.13)
+      uncoveredBorder: fade($(status.error), 0.53)
+      uncoveredGutterBackground: fade($(status.error), 0.20)
+      coverCountBadgeBackground: $(std.accent)
+      coverCountBadgeForeground: $(std.fg)
+      message:
+        error:
+          lineBackground: fade($(status.error), 0.13)
+          badgeBackground: $(status.error)
+          badgeBorder: fade($(status.error), 0.53)
+          badgeForeground: $(std.bg.panel.inner)
+        info:
+          decorationForeground: $(colors.blue)
+          lineBackground: fade($(colors.blue), 0.13)
+
+    # Retired testing icons (same but faded)
+    testing.iconErrored.retired: fade($(status.error), 0.40)
+    testing.iconFailed.retired: fade($(status.error), 0.40)
+    testing.iconPassed.retired: fade($(status.success), 0.40)
+    testing.iconQueued.retired: fade($(colors.yellow), 0.40)
+    testing.iconUnset.retired: fade($(std.fg.secondary), 0.33)
+    testing.iconSkipped.retired: fade($(colors.blue), 0.40)
+
+    # Debug Icons colors
+    debugIcon:
+      breakpointForeground: $(status.error)
+      breakpointDisabledForeground: $(std.fg.inactive)
+      breakpointUnverifiedForeground: fade($(status.error), 0.47)
+      breakpointCurrentStackframeForeground: $(colors.gold)
+      breakpointStackframeForeground: $(status.success)
+      startForeground: $(std.accent)
+      pauseForeground: $(colors.yellow)
+      stopForeground: $(status.error)
+      disconnectForeground: $(std.fg.secondary)
+      restartForeground: $(colors.teal)
+      stepOverForeground: $(colors.blue)
+      stepIntoForeground: $(status.success)
+      stepOutForeground: $(colors.teal)
+      continueForeground: $(status.success)
+      stepBackForeground: $(colors.pink)
+
+    # Debug Console colors
+    debugConsole:
+      infoForeground: $(colors.teal)
+      warningForeground: $(colors.yellow)
+      errorForeground: $(status.error)
+      sourceForeground: $(std.accent)
+
+    debugConsoleInputIcon:
+      foreground: $(std.fg.secondary)
+
+    # Chart colors
+    charts:
+      foreground: $(std.fg)
+      lines: $(std.accent)
+      red: $(status.error)
+      blue: $(std.accent)
+      yellow: $(colors.yellow)
+      orange: $(colors.orange)
+      green: $(status.success)
+      purple: $(colors.purple)
+
+    chart:
+      line: $(std.accent)
+      axis: fade($(std.accent), 0.33)
+      guide: fade($(std.accent), 0.20)
+
+    # Chat colors
+    chat:
+      editedFileForeground: $(colors.yellow)
+      slashCommandBackground: $(std.bg.panel.inner)
+      slashCommandForeground: $(std.accent)
+
+    # Ports
+    ports:
+      iconRunningProcessForeground: $(status.success)
