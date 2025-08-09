@@ -120,7 +120,14 @@ export default class Colour {
    * @returns {string} The normalized 6-character hex color code
    */
   static normalizeHex(code) {
-    return code.split("").reduce((acc,curr) => acc + curr.repeat(2)).toLowerCase()
+    const matches = code.match(shortHex)
+
+    if(!matches)
+      throw new Error(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
+
+    const [_,hex] = matches
+
+    return hex.split("").reduce((acc,curr) => acc + curr.repeat(2)).toLowerCase()
   }
 
   /**
