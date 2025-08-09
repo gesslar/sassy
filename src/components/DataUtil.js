@@ -231,7 +231,7 @@ async function allocateObject(source, spec) {
  * @returns {Promise<object>} The mapped object
  */
 async function mapObject(original, transformer, mutate = false) {
-  validType(original, "object", true)
+  validType(original, "object", {allowEmpty: true})
   validType(transformer, "function")
   validType(mutate, "boolean")
 
