@@ -79,7 +79,7 @@ export default class Evaluator {
         }
       })
     } while(++it < Evaluator.maxIterations &&
-            !Evaluator.hasUnresolvedTokens(target))
+            Evaluator.hasUnresolvedTokens(target))
   }
 
   /**
