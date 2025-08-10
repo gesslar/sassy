@@ -175,7 +175,7 @@ export default class FileObject {
   }
 
   /**
-   * Returns the file name wihtout the path or extension.
+   * Returns the file name without the path or extension.
    *
    * @returns {string} The file name without extension
    */
