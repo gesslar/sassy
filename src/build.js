@@ -12,8 +12,10 @@ import process from "node:process"
 import {fileURLToPath,URL} from "node:url"
 import chokidar from "chokidar"
 
-import * as fd from "./components/File.js"
+import * as File from "./components/File.js"
 import Compiler from "./components/Compiler.js"
+import FileObject from "./components/FileObject.js"
+import DirectoryObject from "./components/DirectoryObject.js"
 
 /**
  * Main application entry point.
@@ -23,9 +25,10 @@ import Compiler from "./components/Compiler.js"
 
 ;(async() => {
   try {
-    const cr = await fd.resolveDirectory(fileURLToPath(new URL("..", import.meta.url)))
-    const cwd = await fd.resolveDirectory(process.cwd())
-    const packageJson = await fd.loadDataFile(await fd.resolveFilename("package.json", cr))
+    const cr = new DirectoryObject(fileURLToPath(new URL("..", import.meta.url)))
+    const cwd = new DirectoryObject(process.cwd())
+    const packageJson = new FileObject("package.json", cr)
+    const packageJsonData = await File.loadDataFile(packageJson)
 
     /**
      * Composes a filename with the current working directory.
@@ -35,44 +38,46 @@ import Compiler from "./components/Compiler.js"
      * @param {Array} acc - Accumulator array for collecting composed filenames
      * @returns {Array} Array of composed filenames
      */
-    const compose = (file, acc = []) => [...acc, fd.composeFilename(file, cwd)]
-
     program
-      .name(packageJson.name)
-      .description(packageJson.description)
-      .version(packageJson.version)
+      .name(packageJsonData.name)
+      .description(packageJsonData.description)
+      .version(packageJsonData.version)
       .option("-w, --watch", "watch for changes")
       .option("-o <dir>, --output-dir <dir>", "specify an output directory")
-      .argument("<file...>", "one or more JSON5 or YAML files to compile (supports glob patterns)", compose)
+      .argument("<file...>", "one or more JSON5 or YAML files to compile (supports glob patterns)")
       .parse()
 
     const options = program.opts()
-    const files = program.processedArgs[0]
+    const processedArgs = program.processedArgs[0]
 
-    const invalidFilenames =
-      (await Promise.all(
-        files.map(async f => Object.assign(f, {exists: await fd.fileExists(f)}))
-      ))
-        .filter(f => !f.exists)
+    // Transform pipeline. A bit declarative, but it's all right because it
+    // makes it cleaner to read and visually process.
+    const files = processedArgs.map(f => new FileObject(f, cwd))
+
+    const invalidFilenames = (await Promise.all(files
+      .map(async file => ({file, exists: await file.exists}))))
+      .filter(result => !(result.exists && result.file.isFile))
+      .map(result => result.file.path)
 
     if(invalidFilenames.length > 0) {
       throw new Error(composeMessage(
         "One or more files could not be found:\n",
         invalidFilenames,
-        f => f.path
+        f => f
       ))
     }
 
-    await Promise.all(files.map(async file =>
-      Object.assign(file, {source: await fd.loadDataFile(file)})
-    ))
+    const bundles = await Promise.all(files.map(async file => {
+      return {file, source: await File.loadDataFile(file)}
+    }))
 
-    const invalidSources = files.filter(file => !("config" in file.source))
-    if(invalidSources.length > 0) {
+    const invalidContent = bundles.filter(bundle => !("config" in bundle.source))
+
+    if(invalidContent.length > 0) {
       throw new Error(composeMessage(
         "Missing config property from one more more files:\n",
-        invalidSources,
-        f => f.path
+        invalidContent,
+        bundle => bundle.file.path
       ))
     }
 
@@ -88,13 +93,13 @@ import Compiler from "./components/Compiler.js"
      * So yea, enjoy the show. Have fun. Drive safe. Don't taunt Happy Fun
      * Ball.
      */
-    await compile(files)
+    await compile(bundles)
 
     if(options.watch !== true)
       return
 
     if(options.watch === true) {
-      const startWatching = getWatchedFiles(files)
+      const startWatching = getWatchedFiles(bundles)
       const watcher = chokidar.watch(startWatching)
 
       watcher.on("change", recompile.bind(null, watcher))
@@ -108,7 +113,17 @@ import Compiler from "./components/Compiler.js"
      */
     async function compile(files) {
       await Promise.all(files.map(Compiler.compile))
-      await Promise.all(files.map(writeTheme))
+
+      const destDir = options.o
+        ? new DirectoryObject(options.o)
+        : cwd
+
+      await File.assureDirectory(destDir)
+
+      if(!(await destDir.exists))
+        throw new Error("Problems determining destination directory.")
+
+      await Promise.all(files.map(theme => writeTheme(theme, destDir)))
     }
 
     /**
@@ -130,11 +145,11 @@ import Compiler from "./components/Compiler.js"
       }, [])
 
       watcher.unwatch(composed)
-      watcher.add(getWatchedFiles(files))
+      watcher.add(getWatchedFiles(bundles))
 
-      files.map(resetFileMap)
+      bundles.map(resetFileMap)
 
-      await compile(files)
+      await compile(bundles)
     }
 
     /**
@@ -142,21 +157,14 @@ import Compiler from "./components/Compiler.js"
      * Creates a VS Code color theme file with proper formatting.
      *
      * @param {object} theme - The compiled theme object containing result data
+     * @param {DirectoryObject} destDir - The destination directory
      * @returns {Promise<void>}
      */
-    async function writeTheme(theme) {
-      const destDir = options.o
-        ? fd.composeDirectory(options.o)
-        : cwd
-
-      if(!destDir?.absolutePath)
-        throw new Error("Problems determining destination directory.")
-
-      await fd.assureDirectory(destDir.absolutePath)
-      const fileName = `${theme.module}.color-theme.json`
-      const file = fd.composeFilename(fileName, destDir)
+    async function writeTheme(theme, destDir) {
+      const fileName = `${theme.file.module}.color-theme.json`
+      const file = new FileObject(fileName, destDir)
       const output = `${JSON.stringify(theme.result.output, null, 2)}\n`
-      await fd.writeFile(file, output)
+      await File.writeFile(file, output)
 
       console.info(`${file.path} written.`)
     }
@@ -182,7 +190,7 @@ import Compiler from "./components/Compiler.js"
     function getAllThemeFiles(fileMaps) {
       return fileMaps
         .flatMap(f => [
-          f.path,
+          f.file.path,
           ...f.result.importedFiles.map(imported => imported.path)
         ])
     }

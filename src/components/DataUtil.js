@@ -5,9 +5,9 @@
 
 import TypeSpec from "./Type.js"
 
-import * as ValidUtil from "./Valid.js"
+import * as Valid from "./Valid.js"
 
-const {validType} = ValidUtil
+const {validType} = Valid
 
 /**
  * Array of JavaScript primitive type names.
@@ -470,6 +470,19 @@ function mergeObject(...sources) {
   }, {})
 }
 
+/**
+ * Checks if all elements in an array are strings.
+ *
+ * @param {Array} arr - The array to check.
+ * @returns {boolean} Returns true if all elements are strings, false otherwise.
+ * @example
+ * uniformStringArray(['a', 'b', 'c']) // returns true
+ * uniformStringArray(['a', 1, 'c']) // returns false
+ */
+function uniformStringArray(arr) {
+  return Array.isArray(arr) && arr.every(item => typeof item === "string")
+}
+
 export {
   // Classes
   TypeSpec,
@@ -493,9 +506,10 @@ export {
   isType,
   isValidType,
   mapObject,
+  mergeObject,
   newTypeSpec,
   prependString,
   setNestedValue,
   typeOf,
-  mergeObject,
+  uniformStringArray,
 }
