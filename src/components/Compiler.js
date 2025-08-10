@@ -7,6 +7,7 @@
 import * as Data from "./DataUtil.js"
 import Evaluator from "./Evaluator.js"
 import * as File from "./File.js"
+import FileObject from "./FileObject.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -17,11 +18,11 @@ export default class Compiler {
    * Compiles a theme source file into a VS Code color theme.
    * Processes configuration, variables, imports, and theme definitions.
    *
-   * @param {object} file - The file object containing source data and metadata
+   * @param {object} bundle - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
-  static async compile(file) {
-    const {source} = file
+  static async compile(bundle) {
+    const {file,source} = bundle
     const {config: sourceConfig} = source ?? {}
     const {vars: sourceVars} = source
     const {theme: sourceTheme} = source
@@ -44,7 +45,9 @@ export default class Compiler {
 
     // Let's get all of the imports!
     const imports = recomposedConfig.import ?? {}
-    const {imported,importedFiles} = await Compiler.import(header, imports)
+    const {imported,importedFiles} =
+      await Compiler.import({file,header,imports})
+
     Object.assign(result, {importedFiles})
 
     const sourceObj = {}
@@ -73,7 +76,6 @@ export default class Compiler {
     }
 
     const colors = evaluatedColors.reduce(reducer, {})
-
     const decomposedtokenColors = Compiler.decomposeObject(
       merged.theme.tokenColors
     )
@@ -85,41 +87,43 @@ export default class Compiler {
     const theme = {colors,tokenColors}
 
     const output = Data.mergeObject({},header,sourceConfig.custom ?? {},theme)
+
     Object.assign(result, {output})
 
     // Now set it all inside, FRROOOP!
-    Object.assign(file, {result})
+    Object.assign(bundle, {result})
   }
 
   /**
    * Imports external theme files and merges their content.
    * Processes import specifications and loads referenced files.
    *
-   * @param {object} header - The header object containing metadata
-   * @param {object} imports - The imports specification object
+   * @param {object} params - Object containing parameters for the importation.
+   * @param {FileObject} params.file - The file being imported into
+   * @param {object} params.header - The header object containing metadata
+   * @param {object} params.imports - The imports specification object
    * @returns {Promise<object>} Object containing imported data and file references
    */
-  static async import(header, imports) {
+  static async import({file, header, imports}) {
     const imported = {}
     const importedFiles = []
 
     for(const [sectionName,section] of Object.entries(imports)) {
       let inner = {}
 
-      for(let [key,toImport] of Object.entries(section)) {
-        if(!toImport)
+      for(const [key,target] of Object.entries(section)) {
+        if(!target)
           continue
 
-        if(typeof toImport === "string")
-          toImport = [toImport]
+        const toImport = typeof target === "string" ? [target] : target
 
         if(!Data.isArrayUniform(toImport, "string"))
           throw new TypeError(
             `Import '${key}' must be a string or an array of strings.`
           )
 
-        const resolved = toImport.map(target => {
-          const subbing = Compiler.decomposeObject({path: target})
+        const resolved = toImport.map(path => {
+          const subbing = Compiler.decomposeObject({path})
           const subbingWith = Compiler.decomposeObject(header)
 
           return Evaluator.evaluate({
@@ -127,13 +131,11 @@ export default class Compiler {
           })[0]
         })
 
-        const files = await Promise.all(resolved.map(f =>
-          File.resolveFilename(f.value)
-        ))
+        const files = resolved.map(f => new FileObject(f.value, file.directory))
 
         importedFiles.push(...files)
 
-        const datas = await Promise.all(files.map(f => File.loadDataFile(f)))
+        const datas = await Promise.all(files.map(File.loadDataFile))
         const imported = Data.mergeObject({}, ...datas)
 
         inner = Data.mergeObject(inner, imported)
