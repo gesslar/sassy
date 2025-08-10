@@ -217,7 +217,7 @@ async function ls(directory) {
 async function readFile(fileObject) {
   const filePath = fileObject.path
 
-  if(!fileObject.exists)
+  if(!(await fileObject.exists))
     throw new Error(`No such file '${filePath}'`)
 
   if(!filePath)
