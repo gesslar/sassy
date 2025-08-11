@@ -1,6 +1,6 @@
 {
   "name": "@gesslar/aunty",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "displayName": "Aunty Rose",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
@@ -9,7 +9,8 @@
   "main": "src/build.js",
   "bin": "src/build.js",
   "files": [
-    "src/"
+    "src/",
+    "UNLICENSE.txt"
   ],
   "scripts": {
     "clean": "rm -rfv ./dist",
