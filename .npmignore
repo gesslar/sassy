@@ -18,3 +18,4 @@ eslint.config.js
 dist/
 media/
 CC0.md
+examples/output
