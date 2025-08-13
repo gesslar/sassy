@@ -22,6 +22,8 @@ export default class Compiler {
    * @returns {Promise<void>} Resolves when compilation is complete
    */
   static async compile(bundle) {
+    await Promise.resolve()  // yielding control in the event loop or something
+
     const {file,source} = bundle
     const {config: sourceConfig} = source ?? {}
     const {vars: sourceVars} = source
