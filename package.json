@@ -1,6 +1,6 @@
 {
   "name": "@gesslar/aunty",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "displayName": "Aunty Rose",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
@@ -47,7 +47,7 @@
     "yaml": "^2.8.1"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin-js": "^4.4.0",
+    "@stylistic/eslint-plugin": "^5.2.3",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "eslint": "^9.28.0",

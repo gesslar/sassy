@@ -21,7 +21,8 @@ const asColor = s => {
     throw new Error("asColor(): received null/undefined")
 
   const k = String(s).trim()
-  if(!k) throw new Error("asColor(): received empty string")
+  if(!k)
+    throw new Error("asColor(): received empty string")
 
   let v = _colorCache.get(k)
   if(!v) {
@@ -253,7 +254,8 @@ export default class Colour {
 
     // memoize by raw inputs (strings) + normalized ratio
     const key = mixKey(colorA, colorB, t)
-    if(_mixCache.has(key)) return _mixCache.get(key)
+    if(_mixCache.has(key))
+      return _mixCache.get(key)
 
     const c1 = asColor(colorA)
     const c2 = asColor(colorB)
