@@ -139,7 +139,8 @@ function arrayIntersection(arr1, arr2) {
  */
 function arrayPad(arr, length, value, position = 0) {
   const diff = length - arr.length
-  if(diff <= 0) return arr
+  if(diff <= 0)
+    return arr
 
   const padding = Array(diff).fill(value)
 
@@ -149,7 +150,8 @@ function arrayPad(arr, length, value, position = 0) {
   else if(position === -1)
     // append
     return arr.concat(padding) // somewhere in the middle - THAT IS ILLEGAL
-  else throw new SyntaxError("Invalid position")
+  else
+    throw new SyntaxError("Invalid position")
 }
 
 /**

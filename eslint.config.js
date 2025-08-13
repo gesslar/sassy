@@ -1,16 +1,14 @@
 import js from "@eslint/js"
-// https://www.npmjs.com/package/eslint-plugin-jsdoc
 import jsdoc from "eslint-plugin-jsdoc";
-import stylisticJs from "@stylistic/eslint-plugin-js"
-import plugin from "@stylistic/eslint-plugin-js";
+import stylistic from "@stylistic/eslint-plugin"
 
 export default [
   js.configs.recommended,
   jsdoc.configs['flat/recommended'], {
-    name: "gesslar/bedoc/ignores",
-    ignores: ["docs/", "_docs/", "TODO/", "examples/source/"],
+    name: "gesslar/aunty/ignores",
+    ignores: [],
   }, {
-    name: "gesslar/bedoc/languageOptions",
+    name: "gesslar/aunty/languageOptions",
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -21,19 +19,19 @@ export default [
     },
   },
   {
-    name: "gesslar/bedoc/lints",
-    files: ["src/**/*.{mjs,cjs,js}", "examples/**/*.js"],
+    name: "gesslar/aunty/lints-js",
+    files: ["src/**/*.{mjs,cjs,js}"],
     plugins: {
-      "@stylistic/js": stylisticJs,
-      jsdoc: jsdoc,
-      plugin,
+      "@stylistic": stylistic,
     },
     rules: {
-      "@stylistic/js/arrow-parens": ["error", "as-needed"],
-      "@stylistic/js/arrow-spacing": ["error", { before: true, after: true }],
+      "@stylistic/arrow-parens": ["error", "as-needed"],
+      "@stylistic/arrow-spacing": ["error", { before: true, after: true }],
       // Ensure control statements and their bodies are not on the same line
-      "@stylistic/js/brace-style": ["error", "1tbs", {allowSingleLine: false}],
-      "@stylistic/js/padding-line-between-statements": [
+      "@stylistic/brace-style": ["error", "1tbs", {allowSingleLine: false}],
+      // Same, but for non bracy ones.
+      "@stylistic/nonblock-statement-body-position": ["error", "below"],
+      "@stylistic/padding-line-between-statements": [
         "error",
         {blankLine: "always", prev: "if", next: "*"},
         {blankLine: "always", prev: "for", next: "*"},
@@ -41,12 +39,12 @@ export default [
         {blankLine: "always", prev: "do", next: "*"},
         {blankLine: "always", prev: "switch", next: "*"}
       ],
-      "@stylistic/js/eol-last": ["error", "always"],
-      "@stylistic/js/indent": ["error", 2, {
+      "@stylistic/eol-last": ["error", "always"],
+      "@stylistic/indent": ["error", 2, {
         SwitchCase: 1 // Indents `case` statements one level deeper than `switch`
       }],
-      "@stylistic/js/key-spacing": ["error", { beforeColon: false, afterColon: true }],
-      "@stylistic/js/keyword-spacing": ["error", {
+      "@stylistic/key-spacing": ["error", { beforeColon: false, afterColon: true }],
+      "@stylistic/keyword-spacing": ["error", {
         before: false,
         after: true,
         overrides: {
@@ -77,7 +75,7 @@ export default [
           finally: { before: true, after: true },
         }
       }],
-      "@stylistic/js/max-len": ["warn", {
+      "@stylistic/max-len": ["warn", {
         code: 80,
         ignoreComments: true,
         ignoreUrls: true,
@@ -86,19 +84,19 @@ export default [
         ignoreRegExpLiterals: true,
         tabWidth: 2
       }],
-      "@stylistic/js/no-tabs": "error",
-      "@stylistic/js/no-trailing-spaces": ["error"],
-      "@stylistic/js/object-curly-spacing": ["error", "never", {
+      "@stylistic/no-tabs": "error",
+      "@stylistic/no-trailing-spaces": ["error"],
+      "@stylistic/object-curly-spacing": ["error", "never", {
         objectsInObjects: false,
         arraysInObjects: false
       }],
-      "@stylistic/js/quotes": ["error", "double", {
+      "@stylistic/quotes": ["error", "double", {
         avoidEscape: true,
-        allowTemplateLiterals: true
+        allowTemplateLiterals: "always"
       }],
-      "@stylistic/js/semi": ["error", "never"],
-      "@stylistic/js/space-before-function-paren": ["error", "never"],
-      "@stylistic/js/yield-star-spacing": ["error", { before: true, after: false }],
+      "@stylistic/semi": ["error", "never"],
+      "@stylistic/space-before-function-paren": ["error", "never"],
+      "@stylistic/yield-star-spacing": ["error", { before: true, after: false }],
       "constructor-super": "error",
       "no-unexpected-multiline": "error",
       "no-unused-vars": ["error", {
@@ -109,8 +107,15 @@ export default [
         varsIgnorePattern: "^_+"
       }],
       "no-useless-assignment": "error",
-
-      // JSDoc
+    }
+  },
+  {
+    name: "gesslar/aunty/lints-jsdoc",
+    files: ["src/**/*.{mjs,cjs,js}"],
+    plugins: {
+      jsdoc,
+    },
+    rules: {
       "jsdoc/require-description": "error",
       "jsdoc/tag-lines": ["error", "any", {"startLines":1}]
     }

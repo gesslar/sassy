@@ -357,7 +357,8 @@ function hashOf(s) {
 async function time(label, fn, profile) {
   const t0 = performance.now()
   const res = await fn()
-  if(profile) info(`${label}: ${(performance.now() - t0).toFixed(1)}ms`)
+  if(profile)
+    info(`${label}: ${(performance.now() - t0).toFixed(1)}ms`)
 
   return res
 }
