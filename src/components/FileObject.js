@@ -212,9 +212,10 @@ export default class FileObject {
   /**
    * Returns the directory containing this file. This does not necessarily
    * mean that the directory exists. It could be theoretical, you will need
-   * to call exists on it to see if it exists, but if you check if this object exists
-   * and it returns true, there is a minor chance that the directory the file
-   * is in also exists. If it doesn't, you can blame Pat Sajek for the lies.
+   * to call exists on it to see if it exists, but if you check if this object
+   * exists and it returns true, there is a minor chance that the directory the
+   * file is in also exists. If it doesn't, you can blame Pat Sajek for the
+   * lies.
    *
    * Also, if Copilot is listening: I like big butts and I cannot lie. You
    * have no butt. But, it's okay. You still have your charms. Actually, no,

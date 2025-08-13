@@ -11,6 +11,9 @@ import console from "node:console"
 import process from "node:process"
 import {fileURLToPath,URL} from "node:url"
 import chokidar from "chokidar"
+import {FSWatcher} from "chokidar"
+import {createHash} from "node:crypto"
+import {performance} from "node:perf_hooks"
 
 import * as File from "./components/File.js"
 import Compiler from "./components/Compiler.js"
@@ -21,217 +24,379 @@ import DirectoryObject from "./components/DirectoryObject.js"
  * Main application entry point.
  * Sets up command line interface, validates input files, and handles compilation.
  * Supports watch mode for automatic recompilation when files change.
+ *
+ * @returns {Promise<void>} Resolves when build process completes or exits on error.
  */
 
-;(async() => {
+/* =========================
+   Main
+   ========================= */
+
+void (async function main() {
   try {
     const cr = new DirectoryObject(fileURLToPath(new URL("..", import.meta.url)))
     const cwd = new DirectoryObject(process.cwd())
     const packageJson = new FileObject("package.json", cr)
     const packageJsonData = await File.loadDataFile(packageJson)
 
-    /**
-     * Composes a filename with the current working directory.
-     * Used by commander.js to process file arguments.
-     *
-     * @param {string} file - The input filename
-     * @param {Array} acc - Accumulator array for collecting composed filenames
-     * @returns {Array} Array of composed filenames
-     */
-    program
-      .name(packageJsonData.name)
-      .description(packageJsonData.description)
-      .version(packageJsonData.version)
-      .option("-w, --watch", "watch for changes")
-      .option("-o <dir>, --output-dir <dir>", "specify an output directory")
-      .argument("<file...>", "one or more JSON5 or YAML files to compile (supports glob patterns)")
-      .parse()
+    // in-memory output hash cache (survives watch runs in this process)
+    const lastHash = new Map()
+
+    setupCLI(packageJsonData)
 
     const options = program.opts()
-    const processedArgs = program.processedArgs[0]
+    const inputArgs = program.processedArgs[0]
+    const files = inputArgs.map(f => new FileObject(f, cwd))
 
-    // Transform pipeline. A bit declarative, but it's all right because it
-    // makes it cleaner to read and visually process.
-    const files = processedArgs.map(f => new FileObject(f, cwd))
+    // Validate file existence & type
+    const invalid = (
+      await Promise.all(files.map(async file => ({
+        file,
+        exists: await file.exists
+      })))
+    )
+      .filter(r => !(r.exists && r.file.isFile))
+      .map(r => r.file.path)
 
-    const invalidFilenames = (await Promise.all(files
-      .map(async file => ({file, exists: await file.exists}))))
-      .filter(result => !(result.exists && result.file.isFile))
-      .map(result => result.file.path)
+    if(invalid.length) {
+      throw new Error(
+        composeMessage("One or more files could not be found:", invalid, f => f),
+      )
+    }
 
-    if(invalidFilenames.length > 0) {
-      throw new Error(composeMessage(
-        "One or more files could not be found:\n",
-        invalidFilenames,
-        f => f
+    // Load sources (parallel)
+    const bundles = await loadAll(files, options)
+
+    // Basic content validation
+    const missingConfig = bundles.filter(bundle => !("config" in bundle.source))
+    if(missingConfig.length) {
+      throw new Error(
+        composeMessage(
+          "Missing config property from one or more files:",
+          missingConfig,
+          b => b.file.path
+        )
+      )
+    }
+
+    // First compile
+    await compileAll(bundles, options)
+    // Output!
+    await writeAll(bundles, options, cwd, lastHash)
+
+    // Watch mode
+    if(options.watch) {
+      const watcher = chokidar.watch(getWatchedFiles(bundles))
+      watcher.on("change", changedPath => recompile(
+        watcher,
+        bundles,
+        cwd,
+        options,
+        lastHash,
+        changedPath
       ))
-    }
-
-    const bundles = await Promise.all(files.map(async file => {
-      return {file, source: await File.loadDataFile(file)}
-    }))
-
-    const invalidContent = bundles.filter(bundle => !("config" in bundle.source))
-
-    if(invalidContent.length > 0) {
-      throw new Error(composeMessage(
-        "Missing config property from one more more files:\n",
-        invalidContent,
-        bundle => bundle.file.path
-      ))
-    }
-
-    /* ************************************************************************
-     * If you are new here, this simple-looking call, all cute and just sitting
-     * here all minimal-looking and innocuous? It's the fucking engine that
-     * drives the entire process.
-     *
-     * You don't want to miss the show. If you ignore everything else, this
-     * is the meat. Unless you're a vegan. In which, I have nfi ... uhh this
-     * is... the uhm ... pulpy.. fibrous centre? (Nailed it!)
-     *
-     * So yea, enjoy the show. Have fun. Drive safe. Don't taunt Happy Fun
-     * Ball.
-     */
-    await compile(bundles)
-
-    if(options.watch !== true)
-      return
-
-    if(options.watch === true) {
-      const startWatching = getWatchedFiles(bundles)
-      const watcher = chokidar.watch(startWatching)
-
-      watcher.on("change", recompile.bind(null, watcher))
-    }
-
-    /**
-     * Compiles theme files and writes the resulting theme files to disk.
-     *
-     * @param {Array<object>} files - Array of file objects containing source data and metadata
-     * @returns {Promise<void>}
-     */
-    async function compile(files) {
-      await Promise.all(files.map(Compiler.compile))
-
-      const destDir = options.o
-        ? new DirectoryObject(options.o)
-        : cwd
-
-      await File.assureDirectory(destDir)
-
-      if(!(await destDir.exists))
-        throw new Error("Problems determining destination directory.")
-
-      await Promise.all(files.map(theme => writeTheme(theme, destDir)))
-    }
-
-    /**
-     * Recompiles theme files when changes are detected in watch mode.
-     * Updates file watchers to include any newly imported files.
-     *
-     * @param {object} watcher - The chokidar file system watcher instance
-     * @param {string} file - Path to the file that changed
-     * @returns {Promise<void>}
-     */
-    async function recompile(watcher, file) {
-      console.info(`\n==[ '${file} changed. Recompiling. ]==\n`)
-
-      const oldWatching = watcher.getWatched()
-      const composed = Object.keys(oldWatching).reduce((acc, curr) => {
-        const recomposed = oldWatching[curr].map(f => `${curr}/${f}`)
-
-        return [...acc, ...recomposed]
-      }, [])
-
-      watcher.unwatch(composed)
-      watcher.add(getWatchedFiles(bundles))
-
-      bundles.map(resetFileMap)
-
-      await compile(bundles)
-    }
-
-    /**
-     * Writes a compiled theme to a JSON file.
-     * Creates a VS Code color theme file with proper formatting.
-     *
-     * @param {object} theme - The compiled theme object containing result data
-     * @param {DirectoryObject} destDir - The destination directory
-     * @returns {Promise<void>}
-     */
-    async function writeTheme(theme, destDir) {
-      const fileName = `${theme.file.module}.color-theme.json`
-      const file = new FileObject(fileName, destDir)
-      const output = `${JSON.stringify(theme.result.output, null, 2)}\n`
-      await File.writeFile(file, output)
-
-      console.info(`${file.path} written.`)
-    }
-
-    /**
-     * Resets the compilation result data from a file map object.
-     * Removes cached compilation results to force recompilation.
-     *
-     * @param {object} fileMap - The file map object to reset
-     * @returns {void}
-     */
-    function resetFileMap(fileMap) {
-      delete fileMap.result
-    }
-
-    /**
-     * Collects all theme files including imported dependencies.
-     * Returns a flat array of all files that are part of the theme compilation.
-     *
-     * @param {Array<object>} fileMaps - Array of file map objects containing theme data
-     * @returns {Array<string>} Array of file paths
-     */
-    function getAllThemeFiles(fileMaps) {
-      return fileMaps
-        .flatMap(f => [
-          f.file.path,
-          ...f.result.importedFiles.map(imported => imported.path)
-        ])
-    }
-
-    /**
-     * Gets a unique list of files to watch for changes.
-     * Deduplicates file paths from all theme files and their dependencies.
-     *
-     * @param {Array<object>} fileMaps - Array of file map objects containing theme data
-     * @returns {Array<string>} Array of unique file paths to watch
-     */
-    function getWatchedFiles(fileMaps) {
-      return [...new Set(getAllThemeFiles(fileMaps))].flatMap(e => e)
-    }
-
-    /**
-     * Composes an error message with formatted file list.
-     * Combines a message prefix with a formatted list of files.
-     *
-     * @param {string} message - The message prefix to display
-     * @param {Array<object>} fileMaps - Array of file map objects to format
-     * @param {Function} trans - Transform function to extract display value from file objects
-     * @returns {string} The formatted error message
-     */
-    function composeMessage(message, fileMaps, trans) {
-      return `${message}\n${formatFiles(fileMaps,trans)}`
-    }
-
-    /**
-     * Formats an array of file objects into a readable list.
-     * Transforms each file object using the provided function and formats as a list.
-     *
-     * @param {Array<object>} fileMaps - Array of file map objects to format
-     * @param {Function} trans - Transform function to extract display value from file objects
-     * @returns {string} The formatted file list
-     */
-    function formatFiles(fileMaps, trans) {
-      return fileMaps.map(f => ` => ${trans(f)}`).join("\n")
     }
   } catch(err) {
-    console.error(`\n${err.stack}`)
+    warn(`\n${err.stack}`)
     process.exit(1)
   }
 })()
+
+/* =========================
+   CLI
+   ========================= */
+
+/**
+ * Sets up the CLI based on the information from the app's package.json.
+ * Configures command-line options and arguments using Commander.
+ *
+ * @param {object} pkg - The loaded package.json data.
+ */
+function setupCLI(pkg) {
+  program
+    .name(pkg.name)
+    .description(pkg.description)
+    .version(pkg.version)
+    .option("-w, --watch", "watch for changes")
+    .option("-o, --output-dir <dir>", "specify an output directory")
+    .option("-n, --dry-run", "print theme JSON to stdout; do not write files")
+    .option("-p, --profile", "print phase timing")
+    .argument("<file...>", "one or more JSON5 or YAML files to compile (supports globs)")
+    .parse()
+}
+
+/* =========================
+   Build phases
+   ========================= */
+
+
+/**
+ * Loads all theme source files in parallel and returns their bundles.
+ * Uses timing utility to measure load duration.
+ *
+ * @param {Array<FileObject>} files - Array of file objects to load.
+ * @param {object} options - CLI options for build process.
+ * @returns {Promise<Array<object>>} Array of loaded bundle objects.
+ */
+async function loadAll(files, options) {
+  return await time(
+    "Loaded source files",
+    () => Promise.all(files.map(loadThemeAsBundle)),
+    options.profile
+  )
+}
+
+/**
+ * Loads a single theme file and returns its bundle object.
+ *
+ * @param {FileObject} file - File object to load.
+ * @returns {Promise<object>} Bundle object with file and source data.
+ */
+async function loadThemeAsBundle(file) {
+  return {
+    file,
+    source: await File.loadDataFile(file)
+  }
+}
+
+/**
+ * Writes all theme bundles to disk in parallel.
+ * Uses timing utility to measure write duration.
+ *
+ * @async
+ * @param {Array<object>} bundles - Array of bundle objects to write.
+ * @param {object} opts - CLI options for build process.
+ * @param {DirectoryObject} cwd - Current working directory object.
+ * @param {Map<string, string>} lastHash - Output hash cache.
+ * @returns {Promise<void>} Resolves when all bundles are written.
+ */
+async function writeAll(bundles, opts, cwd, lastHash) {
+  // Destination
+  const dest = await assureDest(
+    opts.outputDir ? new DirectoryObject(opts.outputDir) : cwd,
+  )
+
+  // Write (parallel).
+  await time(
+    "Generated theme JSON files",
+    () => Promise.all(bundles.map(b => writeTheme(b, dest, opts, lastHash))),
+    opts.profile
+  )
+}
+
+/**
+ * Compiles all theme bundles and writes output files.
+ * Measures and logs timing for compile and write phases.
+ *
+ * @param {Array<object>} bundles - Array of bundle objects containing file and source data.
+ * @param {object} opts - CLI options for build process.
+ * @returns {Promise<void>} Resolves when all bundles are compiled and written.
+ */
+async function compileAll(bundles, opts) {
+  // Compile (parallel; each task logs its own duration)
+  await time("Compiled theme files",
+    () => Promise.all(bundles.map(b => Compiler.compile(b))),
+    opts.profile
+  )
+}
+
+/**
+ * Recompiles all theme bundles when a watched file changes.
+ * Refreshes the file watcher, resets bundle results, and triggers a full compile.
+ *
+ * @param {FSWatcher} watcher - Chokidar watcher instance monitoring file changes.
+ * @param {Array<object>} bundles - Array of bundle objects containing file and source data.
+ * @param {DirectoryObject} cwd - Current working directory object.
+ * @param {object} opts - CLI options for build process.
+ * @param {Map<string, string>} lastHash - Cache of previous output hashes for change detection.
+ * @param {string} changedPath - Path to the file that triggered recompilation.
+ * @returns {Promise<void>} Resolves when recompilation is complete.
+ */
+async function recompile(watcher, bundles, cwd, opts, lastHash, changedPath) {
+  info(`\n==[ '${changedPath}' changed. Recompiling. ]==\n`)
+
+  // Refresh watched files: flatten chokidar's map back to absolute paths
+  const watched = watcher.getWatched()
+  const current = Object.keys(watched).reduce((acc, dir) => {
+    const files = watched[dir].map(f => `${dir}/${f}`)
+    return acc.concat(files)
+  }, [])
+
+  watcher.unwatch(current)
+  watcher.add(getWatchedFiles(bundles))
+
+  // Drop previous compile results so we re-evaluate
+  bundles.forEach(resetBundle)
+
+  await compileAll(bundles, opts)
+}
+
+/* =========================
+   Write step
+   ========================= */
+
+/**
+ * Writes a compiled theme bundle to disk if output has changed.
+ * Skips writing if output is unchanged, supports dry-run mode.
+ *
+ * @param {object} bundle - Bundle object containing file and result data.
+ * @param {DirectoryObject} destDir - Destination directory object.
+ * @param {object} options - CLI options for build process.
+ * @param {Map<string, string>} lastHash - Output hash cache.
+ * @returns {Promise<string>} Path to written file or dry-run path.
+ */
+async function writeTheme(bundle, destDir, options, lastHash) {
+  const fileName = `${bundle.file.module}.color-theme.json`
+  const file = new FileObject(fileName, destDir)
+  const output = JSON.stringify(bundle.result.output, null, 2)
+
+  if(options.dryRun) {
+    // Print the JSON and return
+    console.log(output)
+    return file.path ?? "(dry-run)"
+  }
+
+  // Seed previous hash from memory or disk (once)
+  const nextHash = hashOf(output)
+  let prevHash = lastHash.get(file.path)
+
+  if(!prevHash) {
+    const exists = await file.exists
+    if(exists) {
+      const curr = await File.readFile(file)
+      prevHash = hashOf(curr)
+      lastHash.set(file.path, prevHash)
+    }
+  }
+
+  // Skip identical bytes
+  if(prevHash === nextHash) {
+    info(`${file.path} unchanged (compiled; skipped write)`)
+    return file.path
+  }
+
+  // Real write (timed)
+  await File.writeFile(file, output)
+  lastHash.set(file.path, nextHash)
+  info(`${file.path} written`)
+
+  return file.path
+}
+
+/* =========================
+   Helpers
+   ========================= */
+
+/**
+ * Removes the result property from a bundle object to force recompilation.
+ *
+ * @param {object} bundle - Bundle object to reset.
+ */
+function resetBundle(bundle) {
+  delete bundle.result
+}
+
+/**
+ * Returns all theme and imported file paths from file maps.
+ *
+ * @param {Array<object>} fileMaps - Array of file map objects.
+ * @returns {Array<string>} List of file paths.
+ */
+function getAllThemeFiles(fileMaps) {
+  return fileMaps.flatMap(f => [
+    f.file.path,
+    ...f.result.importedFiles.map(imp => imp.path),
+  ])
+}
+
+/**
+ * Returns a deduplicated list of all theme and imported files to watch.
+ *
+ * @param {Array<object>} fileMaps - Array of file map objects.
+ * @returns {Array<string>} List of watched file paths.
+ */
+function getWatchedFiles(fileMaps) {
+  return [...new Set(getAllThemeFiles(fileMaps))]
+}
+
+/**
+ * Logs informational messages to the console.
+ *
+ * @param {string} msg - Message to log.
+ */
+function info(msg) {
+  console.log(msg)
+}
+/**
+ * Logs warning or error messages to the console.
+ *
+ * @param {string} msg - Message to log.
+ */
+function warn(msg) {
+  console.warn(msg)
+}
+
+/**
+ * Generates a SHA-256 hash of the given string.
+ *
+ * @param {string} s - Input string to hash.
+ * @returns {string} Hexadecimal hash string.
+ */
+function hashOf(s) {
+  return createHash("sha256").update(s).digest("hex")
+}
+
+/**
+ * Measures and logs the execution time of an async function.
+ *
+ * @param {string} label - Label for timing output.
+ * @param {Function} fn - Async function to execute and time.
+ * @param {boolean} profile - Whether to log timing info.
+ * @returns {Promise<*>} Result of the async function.
+ */
+async function time(label, fn, profile) {
+  const t0 = performance.now()
+  const res = await fn()
+  if(profile) info(`${label}: ${(performance.now() - t0).toFixed(1)}ms`)
+
+  return res
+}
+
+/**
+ * Composes a formatted message with a prefix and a list of items.
+ *
+ * @param {string} prefix - Message prefix.
+ * @param {Array} items - List of items to format.
+ * @param {Function} transform - Function to transform each item for display.
+ * @returns {string} Formatted message string.
+ */
+function composeMessage(prefix, items, transform) {
+  return `${prefix}\n${formatFiles(items, transform)}`
+}
+
+/**
+ * Formats a list of items using a transform function for display.
+ *
+ * @param {Array} items - List of items to format.
+ * @param {Function} transform - Function to transform each item.
+ * @returns {string} Formatted string of items.
+ */
+function formatFiles(items, transform) {
+  return items.map(x => ` => ${transform(x)}`).join("\n")
+}
+
+/**
+ * Ensures the destination directory exists and is accessible.
+ * Throws an error if the directory cannot be determined.
+ *
+ * @param {DirectoryObject} dirLike - Directory object to assure.
+ * @returns {Promise<DirectoryObject>} The assured directory object.
+ */
+async function assureDest(dirLike) {
+  await File.assureDirectory(dirLike)
+  if(!(await dirLike.exists)) {
+    throw new Error("Problems determining destination directory.")
+  }
+
+  return dirLike
+}
