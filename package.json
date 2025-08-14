@@ -16,7 +16,7 @@
     "clean": "rm -rfv ./dist",
     "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
     "exec": "node ./src/build.js",
-    "publish": "npm publish --access public",
+    "submit": "npm publish --access public",
     "test": "Testing, testing; 1, 2, 3. Yep, we're here."
   },
   "engines": {
@@ -39,8 +39,10 @@
     "yaml"
   ],
   "dependencies": {
+    "ansi-colors": "^4.1.3",
     "chokidar": "^4.0.3",
     "color": "^5.0.0",
+    "color-support": "^1.1.3",
     "commander": "^14.0.0",
     "globby": "^14.1.0",
     "json5": "^2.2.3",
