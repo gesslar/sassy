@@ -27,6 +27,7 @@ vars:
     # imported.
     fg: $(main)
     bg: $(inverse)
-    accent: $(colors.blue)
-    accent.secondary: $(colors.teal)
+    accent: $(colors.green)
+    accent.secondary: $(colors.green)
     shadow: alpha($(std.accent), 0.25)
+    contrastActiveBorder: "#ff0000bb"

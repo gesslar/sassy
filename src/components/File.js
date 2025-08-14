@@ -87,6 +87,21 @@ async function fileExists(file) {
 }
 
 /**
+ * Determines the size of a file.
+ *
+ * @param {FileObject} file - The file object to test
+ * @returns {Promise<number?>} - The size of the file or null, if it doesn't exist.
+ */
+async function fileSize(file) {
+  try {
+    const stat = await fs.stat(file.path)
+    return stat.size
+  } catch(_) {
+    return null
+  }
+}
+
+/**
  * Check if a directory exists
  *
  * @param {DirectoryObject} dirObject - The directory map to check
@@ -279,7 +294,7 @@ async function assureDirectory(dirObject, options = {}) {
     throw new Error(`Unable to create directory '${dirObject.path}': ${e.message}`)
   }
 
-  return dirObject.exists
+  return await dirObject.exists
 }
 
 export {
@@ -290,10 +305,11 @@ export {
   deconstructFilenameToParts,
   directoryExists,
   fileExists,
+  fileSize,
   fixSlashes,
   getFiles,
-  ls,
   loadDataFile,
+  ls,
   pathToUri,
   readFile,
   uriToPath,
