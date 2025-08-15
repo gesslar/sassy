@@ -44,7 +44,6 @@ import {performance} from "node:perf_hooks"
 import ansiColors from "ansi-colors"
 import colorSupport from "color-support"
 
-
 import * as File from "./components/File.js"
 import Compiler from "./components/Compiler.js"
 import FileObject from "./components/FileObject.js"
@@ -60,7 +59,8 @@ ansiColors.alias("warn", ansiColors.yellow)
 ansiColors.alias("warn-bracket", ansiColors.yellow.dim)
 ansiColors.alias("error", ansiColors.redBright)
 ansiColors.alias("error-bracket", ansiColors.redBright.dim)
-ansiColors.alias("bracket", ansiColors.magenta)
+ansiColors.alias("modified", ansiColors.magentaBright)
+ansiColors.alias("modified-bracket", ansiColors.magenta)
 
 /**
  * Main application entry point.
@@ -174,7 +174,7 @@ async function processTheme({input, cwd, options}) {
     const loadedBytes = await File.fileSize(file)
 
     statusMessage([
-      ["success", rightAlignText(`${loadCost}ms`, 8)],
+      ["success", rightAlignText(`${loadCost}ms`, 9)],
       `${bundle.file.module} loaded`,
       ["info", `${loadedBytes} bytes`],
     ])
@@ -221,7 +221,7 @@ async function processTheme({input, cwd, options}) {
           await time(async() => Compiler.compile(bundle))
 
         statusMessage([
-          ["success", rightAlignText(`${compileCost}ms`, 8)],
+          ["success", rightAlignText(`${compileCost.toLocaleString()}ms`, 9)],
           `${bundle.file.module} compiled`
         ])
 
@@ -237,13 +237,12 @@ async function processTheme({input, cwd, options}) {
         const {cost: writeCost, result: writeResult} =
         await time(async() => writeTheme(bundle, outputDir, options))
 
-
-        const {state: writeState, bytes: writeBytes} = writeResult
+        const {state: writeState, bytes: writeBytes, fileName} = writeResult
 
         statusMessage([
-          ["success", rightAlignText(`${writeCost}ms`, 8)],
-          `${bundle.file.module} <${writeState}>`,
-          ["info", `${writeBytes} bytes`],
+          ["success", rightAlignText(`${writeCost.toLocaleString()}ms`, 9)],
+          `${fileName} <${writeState}>`,
+          ["info", `${writeBytes.toLocaleString()} bytes`],
         ])
 
         if(Array.isArray(bundle.perf.write))
@@ -255,9 +254,23 @@ async function processTheme({input, cwd, options}) {
         if(options.watch) {
           bundle.watcher = chokidar.watch(getWatchedFiles(bundle))
           bundle.watcher.on("change", async changed => {
+            statusMessage([
+              ["modified", rightAlignText("CHANGED", 9)],
+              changed,
+              ["modified", bundle.file.module]
+            ])
+
             if(changed === bundle.file.path) {
               const tempBundle = await loadThemeAsBundle(bundle.file)
               bundle.source = tempBundle.source
+
+              const reloadedBytes = await File.fileSize(file)
+
+              statusMessage([
+                ["success", rightAlignText(`${loadCost}ms`, 9)],
+                `${bundle.file.module} loaded`,
+                ["info", `${reloadedBytes} bytes`],
+              ])
             }
 
             doItUp()
@@ -315,7 +328,7 @@ async function writeTheme(bundle, destDir, options) {
 
   if(options.dryRun) {
     console.log(output)
-    return {state: "dry-run", bytes: output.length}
+    return {state: "dry-run", bytes: output.length, fileName}
   }
 
   const nextHash = bundle.hash
@@ -325,12 +338,12 @@ async function writeTheme(bundle, destDir, options) {
 
   // Skip identical bytes
   if(lastHash === nextHash)
-    return {state: "skipped", bytes: output.length}
+    return {state: "skipped", bytes: output.length, fileName}
 
   // Real write (timed)
   await File.writeFile(file, output)
 
-  return {state: "written", bytes: output.length}
+  return {state: "written", bytes: output.length, fileName}
 }
 
 /*  =========================
