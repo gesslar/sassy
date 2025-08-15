@@ -267,7 +267,13 @@ async function processTheme({input, cwd, options}) {
               const reloadedBytes = await File.fileSize(bundle.file.path)
 
               statusMessage([
-                ["success", rightAlignText(`${loadCost}ms`, 9)],
+              const {cost: reloadCost, result: tempBundle} = await time(async () => loadThemeAsBundle(bundle.file))
+              bundle.source = tempBundle.source
+
+              const reloadedBytes = await File.fileSize(file)
+
+              statusMessage([
+                ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 9)],
                 `${bundle.file.module} loaded`,
                 ["info", `${reloadedBytes} bytes`],
               ])
