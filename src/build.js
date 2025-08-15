@@ -261,16 +261,11 @@ async function processTheme({input, cwd, options}) {
             ])
 
             if(changed === bundle.file.path) {
-              const tempBundle = await loadThemeAsBundle(bundle.file)
+              const {cost: reloadCost, result: tempBundle} =
+                await time(async() => loadThemeAsBundle(bundle.file))
+              const reloadedBytes = await File.fileSize(bundle.file)
+
               bundle.source = tempBundle.source
-
-              const reloadedBytes = await File.fileSize(bundle.file.path)
-
-              statusMessage([
-              const {cost: reloadCost, result: tempBundle} = await time(async () => loadThemeAsBundle(bundle.file))
-              bundle.source = tempBundle.source
-
-              const reloadedBytes = await File.fileSize(file)
 
               statusMessage([
                 ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 9)],
