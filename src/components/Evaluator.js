@@ -1,15 +1,15 @@
 /**
  * @file Variable and token evaluation engine for theme compilation.
- * Handles recursive resolution of variable references and color function calls
+ * Handles recursive resolution of variable references and colour function calls
  * within theme configuration objects.
  */
 
 import Colour from "./Colour.js"
 
 /**
- * Evaluator class for resolving variables and color tokens in theme objects.
+ * Evaluator class for resolving variables and colour tokens in theme objects.
  * Handles recursive substitution of token references in arrays of objects
- * with support for color manipulation functions.
+ * with support for colour manipulation functions.
  */
 export default class Evaluator {
   /**
@@ -101,7 +101,7 @@ export default class Evaluator {
 
   /**
    * Processes tokens in a text string, resolving variables and function calls.
-   * Handles both variable substitution and color function application.
+   * Handles both variable substitution and colour function application.
    *
    * @param {string} text - The text containing tokens to process
    * @param {object} variables - Lookup object for variable resolution
@@ -126,8 +126,8 @@ export default class Evaluator {
   }
 
   /**
-   * Applies a color transformation function with the given arguments.
-   * Supports various color manipulation functions like lighten, darken, mix, etc.
+   * Applies a colour transformation function with the given arguments.
+   * Supports various colour manipulation functions like lighten, darken, mix, etc.
    *
    * @param {string} func - The function name to apply
    * @param {Array<string>} args - The function arguments

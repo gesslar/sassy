@@ -86,6 +86,12 @@ void (async function main() {
     const options = program.opts()
     const inputArgs = program.processedArgs[0]
 
+    statusMessage([
+      ["info", "WATCH MODE"],
+      "F5=recompile, q=quit"
+    ], options)
+    info("")
+
     await Promise.allSettled(
       inputArgs.map(input => processTheme({input, cwd, options}))
     )
@@ -119,7 +125,7 @@ function setupCLI(pkg) {
     .option("-w, --watch", "watch for changes")
     .option("-o, --output-dir <dir>", "specify an output directory")
     .option("-n, --dry-run", "print theme JSON to stdout; do not write files")
-    .option("-p, --profile", "print phase timing")
+    .option("-s, --silent", "silent mode. only print errors or dry-run")
     .argument("<file...>", "one or more JSON5 or YAML files to compile (supports globs)")
     .parse()
 }
@@ -174,10 +180,10 @@ async function processTheme({input, cwd, options}) {
     const loadedBytes = await File.fileSize(file)
 
     statusMessage([
-      ["success", rightAlignText(`${loadCost}ms`, 9)],
+      ["success", rightAlignText(`${loadCost}ms`, 10)],
       `${bundle.file.module} loaded`,
       ["info", `${loadedBytes} bytes`],
-    ])
+    ], options)
 
     const outputDir = options.outputDir
       ? new DirectoryObject(options.outputDir)
@@ -186,7 +192,8 @@ async function processTheme({input, cwd, options}) {
     if(!await outputDir.exists)
       await File.assureDirectory(outputDir, {recursive: true})
 
-    // Now, we do stuff!
+    // Store stdin handler reference to avoid multiple listeners
+    let stdinHandler = null
 
     /**
      * Execute a (re)compile cycle for the currently loaded bundle.
@@ -209,7 +216,6 @@ async function processTheme({input, cwd, options}) {
 
       try {
         // First, we pause because writing themes will trigger it again!
-        // Probably? idk, I think so. Anyway, it's safe!
         if(bundle.watcher) {
           await bundle.watcher.close()
           bundle.watcher = null
@@ -221,9 +227,9 @@ async function processTheme({input, cwd, options}) {
           await time(async() => Compiler.compile(bundle))
 
         statusMessage([
-          ["success", rightAlignText(`${compileCost.toLocaleString()}ms`, 9)],
+          ["success", rightAlignText(`${compileCost.toLocaleString()}ms`, 10)],
           `${bundle.file.module} compiled`
-        ])
+        ], options)
 
         if(Array.isArray(bundle.perf.compile))
           bundle.perf.compile.push(compileCost)
@@ -231,7 +237,6 @@ async function processTheme({input, cwd, options}) {
           bundle.perf.compile = [compileCost]
 
         bundle.result.json = JSON.stringify(bundle.result.output, null, 2)
-
         bundle.hash = hashOf(bundle.result.json)
 
         const {cost: writeCost, result: writeResult} =
@@ -240,10 +245,10 @@ async function processTheme({input, cwd, options}) {
         const {state: writeState, bytes: writeBytes, fileName} = writeResult
 
         statusMessage([
-          ["success", rightAlignText(`${writeCost.toLocaleString()}ms`, 9)],
+          ["success", rightAlignText(`${writeCost.toLocaleString()}ms`, 10)],
           `${fileName} <${writeState}>`,
           ["info", `${writeBytes.toLocaleString()} bytes`],
-        ])
+        ], options)
 
         if(Array.isArray(bundle.perf.write))
           bundle.perf.write.push(writeCost)
@@ -252,13 +257,24 @@ async function processTheme({input, cwd, options}) {
 
         // Watch mode
         if(options.watch) {
-          bundle.watcher = chokidar.watch(getWatchedFiles(bundle))
+          const watchedFiles = getWatchedFiles(bundle)
+
+          bundle.watcher = chokidar.watch(watchedFiles, {
+            // Prevent watching own output files
+            ignored: [fileName],
+            // Add some stability options
+            awaitWriteFinish: {
+              stabilityThreshold: 100,
+              pollInterval: 50
+            }
+          })
+
           bundle.watcher.on("change", async changed => {
             statusMessage([
-              ["modified", rightAlignText("CHANGED", 9)],
+              ["modified", rightAlignText("CHANGED", 10)],
               changed,
               ["modified", bundle.file.module]
-            ])
+            ], options)
 
             if(changed === bundle.file.path) {
               const {cost: reloadCost, result: tempBundle} =
@@ -268,14 +284,57 @@ async function processTheme({input, cwd, options}) {
               bundle.source = tempBundle.source
 
               statusMessage([
-                ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 9)],
+                ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 10)],
                 `${bundle.file.module} loaded`,
                 ["info", `${reloadedBytes} bytes`],
-              ])
+              ], options)
             }
 
             doItUp()
           })
+
+          // Only set up stdin handling once
+          if(!options.silent && !stdinHandler) {
+            process.stdin.setRawMode(true)
+            process.stdin.resume()
+            process.stdin.setEncoding("utf8")
+
+            stdinHandler = key => {
+              if(key === "q" || key === "\u0003") {
+                // 'q' or Ctrl+C to exit
+                info("")
+                info("Stopped watching.")
+                info("Exiting.")
+
+                // Clean up
+                if(bundle.watcher) {
+                  bundle.watcher.close()
+                }
+
+                if(stdinHandler) {
+                  process.stdin.removeListener("data", stdinHandler)
+                }
+
+                process.exit(0)
+              } else if(key === "r" || key === "\x1b[15~") {
+                // F5 key sends escape sequence: \x1b[15~
+
+                statusMessage([
+                  ["info", "REBUILDING"],
+                  bundle.file.path
+                ], options)
+
+                if(bundle.watcher) {
+                  bundle.watcher.close()
+                  bundle.watcher = null
+                }
+
+                doItUp()
+              }
+            }
+
+            process.stdin.on("data", stdinHandler)
+          }
         }
       } finally {
         doItUp.busy = false
@@ -403,15 +462,32 @@ function rightAlignText(text, width=80) {
 }
 
 /**
- * Emit a formatted status message.
- * Accepts either a simple string, or an array of segments where each segment is:
- *  - string (emitted as-is) OR
- *  - [level, text] where level corresponds to an ansiColors alias (e.g. success, info, warn, error).
+ * Emit a formatted status line (optionally suppressed).
  *
- * @param {string | Array<string | [string,string]>} args - Message spec.
+ * Input forms:
+ *  - string: printed as-is (subject to `silent`)
+ *  - array: each element is either:
+ *    - a plain string (emitted unchanged), or
+ *    - a tuple: [level, text] where `level` maps to an ansiColors alias
+ *        (e.g. success, info, warn, error, modified). These are rendered as
+ *        colourised bracketed segments: [TEXT].
+ *
+ * The function performs a shallow validation: tuple elements must both be
+ * strings; otherwise a TypeError is thrown. Nested arrays beyond depth 1 are
+ * not supported.
+ *
+ * Recursion: array input is normalised into a single string then re-dispatched
+ * through `statusMessage` to leverage the string branch (keeps logic DRY).
+ *
+ * @param {string | Array<string | [string, string]>} args - Message spec.
+ * @param {object} [options] - Behaviour flags.
+ * @param {boolean} options.silent - When true, suppress all output (default false).
  * @returns {void}
  */
-function statusMessage(args) {
+function statusMessage(args, {silent=false} = {}) {
+  if(silent)
+    return
+
   if(typeof args === "string")
     return info(args)
 
@@ -437,7 +513,7 @@ function statusMessage(args) {
       })
       .join(" ")
 
-    return statusMessage(message)
+    return statusMessage(message, {silent})
   }
 
   throw new TypeError("Invalid arguments passed to statusMessage")

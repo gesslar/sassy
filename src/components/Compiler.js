@@ -1,7 +1,7 @@
 /**
  * @file Theme compilation engine for processing theme configuration files.
  * Handles compilation of theme source files including variable resolution,
- * imports, and output generation for VS Code color themes.
+ * imports, and output generation for VS Code colour themes.
  */
 
 import * as Data from "./DataUtil.js"
@@ -15,7 +15,7 @@ import FileObject from "./FileObject.js"
  */
 export default class Compiler {
   /**
-   * Compiles a theme source file into a VS Code color theme.
+   * Compiles a theme source file into a VS Code colour theme.
    * Processes configuration, variables, imports, and theme definitions.
    *
    * @param {object} bundle - The file object containing source data and metadata
