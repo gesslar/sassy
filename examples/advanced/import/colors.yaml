@@ -1,6 +1,6 @@
 theme:
   colors:
-    contrastActiveBorder: $(std.contrastActiveBorder)
+    contrastActiveBorder: $(transparent)
     contrastBorder: $(transparent)
     # Let's get some of the singletons out of the way first
     focusBorder: $(control.outline.focus)
