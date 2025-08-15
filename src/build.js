@@ -86,11 +86,13 @@ void (async function main() {
     const options = program.opts()
     const inputArgs = program.processedArgs[0]
 
-    statusMessage([
-      ["info", "WATCH MODE"],
-      "F5=recompile, q=quit"
-    ], options)
-    info("")
+    if(options.watch) {
+      statusMessage([
+        ["info", "WATCH MODE"],
+        "F5=recompile, q=quit"
+      ], options)
+      info("")
+    }
 
     await Promise.allSettled(
       inputArgs.map(input => processTheme({input, cwd, options}))
