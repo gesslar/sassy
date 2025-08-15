@@ -237,7 +237,7 @@ async function processTheme({input, cwd, options}) {
         const {cost: writeCost, result: writeResult} =
         await time(async() => writeTheme(bundle, outputDir, options))
 
-        // debug(writeResult)
+
         const {state: writeState, bytes: writeBytes} = writeResult
 
         statusMessage([
