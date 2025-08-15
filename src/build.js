@@ -264,7 +264,7 @@ async function processTheme({input, cwd, options}) {
               const tempBundle = await loadThemeAsBundle(bundle.file)
               bundle.source = tempBundle.source
 
-              const reloadedBytes = await File.fileSize(file)
+              const reloadedBytes = await File.fileSize(bundle.file.path)
 
               statusMessage([
                 ["success", rightAlignText(`${loadCost}ms`, 9)],
