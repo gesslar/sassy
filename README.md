@@ -13,6 +13,17 @@ a few variables instead of hunting down 800 random hex codes.)*
 Express your themes hierarchically now, compile it into flat properties that
 VS Code understands (why... did... they... do... that????).
 
+## Features at a Glance
+
+- YAML / JSON5 source → VS Code theme
+- Semantic variable graph (`$(std.bg.panel.inner)`) instead of flat hex soup
+- Colour functions: lighten / darken / fade / solidify / mix / invert / alpha
+- Multi-document ( `---` ) theming for generating variants in a single file
+- Modular imports for vars & theme fragments
+- Change detection & watch mode with coloured status lines + timing
+- Skips redundant writes via output hashing
+- Extensible compiler phases (import → resolve → evaluate → emit)
+
 ## For example
 
 Before:
@@ -24,7 +35,7 @@ editor: {
   selectionBackground: "$(std.bg.accent)",
   lineHighlightBackground: "fade($(std.bg.accent), 30)"
 }
-```
+```text
 
 After:
 
@@ -35,7 +46,7 @@ After:
   "editor.selectionBackground": "#002e63",
   "editor.lineHighlightBackground": "#002e63b3",
 }
-```
+```text
 
 ## The Problem
 
@@ -92,6 +103,92 @@ const file = await loadDataFile('my-theme.yaml')
 await Compiler.compile(file)
 // Result available in file.result.output
 ```
+
+## CLI Usage
+
+```text
+Usage: aunty [options] <file...>
+
+Options:
+  -w, --watch              Recompile when any input / imported file changes
+  -o, --output-dir <dir>   Destination directory (defaults to cwd)
+  -n, --dry-run            Print compiled JSON to stdout, skip writing
+  -p, --profile            (Reserved) Phase timing flag (basic timings already shown)
+  -V, --version            Output version
+  -h, --help               Show help
+```
+
+Multiple input theme files are processed in parallel; failures are reported individually.
+
+### Status Line Format
+
+During compilation you will see lines like:
+
+```text
+[SUCCESS]   3.2ms my-theme loaded [INFO] 1423 bytes
+[SUCCESS]   1.1ms my-theme compiled
+[SUCCESS]   0.4ms my-theme <written> [INFO] 16892 bytes
+```
+
+Bracket colours reflect phase category (success/info/warn/error). Times are wall‑clock milliseconds rounded to one decimal.
+
+### Watch Mode
+
+`--watch` sets up file watchers for the entry file and any files imported during compilation. On change:
+
+1. The bundle for the changed entry file (if it was the root) is reloaded.
+2. Any existing watcher is paused while recompiling (prevents cascaded triggers).
+3. Only changed output is written (hash comparison) — unchanged themes are skipped silently except for a "&lt;skipped&gt;" state line.
+
+## Bundle Object Structure
+
+Internally each entry file becomes a mutable "bundle":
+
+```ts
+interface Bundle {
+  file: FileObject                  // entry file
+  source: any                       // parsed YAML / JSON5 (must contain config)
+  result?: {
+    output: Record<string, any>     // final theme JSON object
+    importedFiles: FileObject[]     // all secondary sources
+    json: string                    // cached JSON string of output
+  }
+  watcher?: FSWatcher               // active chokidar watcher in --watch
+  hash?: string                     // sha256 of result.json
+  perf?: {
+    load?: number[]
+    compile?: number[]
+    write?: number[]
+  }
+}
+```
+
+You won't usually touch this directly unless extending the compiler.
+
+## Multi-Document & Imports
+
+You can split logical sections with YAML document separators `---` to express variants or staged overrides in a single file. Each later document can add or override earlier `vars` / `theme` fragments.
+
+Imports live under `config.imports` (e.g. `config.imports.vars.<alias>: ./file.yaml`). Imported variable trees merge into your namespace; you can then reference them like `$(alias.palette.primary)`.
+
+## Skipped Writes & Dry Runs
+
+Outputs are hashed (sha256). If the hash matches the existing on-disk file, no write occurs and the state shows `<skipped>`. Use `--dry-run` to inspect the generated JSON without touching the filesystem.
+
+## Performance Timing
+
+Each phase timing (load / compile / write) is recorded (ms, one decimal) and displayed inline. Internally they are stored numerically in `bundle.perf.*` arrays for potential future aggregation or profiling output.
+
+## Extending
+
+Potential extension points (PRs / forks):
+
+- Additional colour manipulation functions
+- Custom phase injectors (e.g. contrast auto-tuning)
+- Output format plugins (JetBrains, Sublime, etc.)
+- Structured profiling / JSON stats emitter when `--profile` is set
+
+If you build something neat, consider opening a PR or sharing a gist.
 
 ## Theme Syntax
 
@@ -267,6 +364,8 @@ Aunty Rose processes themes in phases:
 5. **Recursive Resolution** - Handle variables that reference other variables
 6. **Theme Assembly** - Build final VS Code theme JSON
 
+Error handling is per-entry theme: a failure in one file doesn't halt others (thanks to `Promise.allSettled`).
+
 ## Philosophy
 
 Aunty Rose embraces **parametric design** principles:
@@ -279,11 +378,19 @@ Aunty Rose embraces **parametric design** principles:
 ## Development
 
 ```bash
-git clone https://github.com/your-username/aunty
+git clone https://github.com/gesslar/aunty
 cd aunty
 npm install
 npm test
 ```
+
+Local CLI development:
+
+```bash
+node ./src/build.js examples/simple/midnight-ocean.yaml -o ./examples/output --watch
+```
+
+Publish (maintainer): ensure README & package version sync, then `npm run submit` (as configured in your scripts) or standard `npm publish` if appropriate.
 
 ## License
 
@@ -312,3 +419,5 @@ directory and applies specifically to:
 
 I don't write tests. If that bothers you, you can fork the repo and write your
 own.
+
+> (You are *very* welcome to contribute tests. Snapshot tests for deterministic theme outputs would be an easy win.)
