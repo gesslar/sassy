@@ -294,7 +294,7 @@ async function assureDirectory(dirObject, options = {}) {
     throw new Error(`Unable to create directory '${dirObject.path}': ${e.message}`)
   }
 
-  return await dirObject.exists
+  return dirObject.exists
 }
 
 export {
