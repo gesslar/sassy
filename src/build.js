@@ -403,7 +403,7 @@ async function writeTheme(bundle, destDir, options) {
     return {state: "skipped", bytes: output.length, fileName}
 
   // Real write (timed)
-  await File.writeFile(file, output)
+  await File.writeFile(file, `${output}\n`)
 
   return {state: "written", bytes: output.length, fileName}
 }

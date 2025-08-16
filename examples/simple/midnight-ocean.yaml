@@ -16,14 +16,14 @@ vars:
     yellow: "#ffd93d"
 
   # Semantic foundation
-  main: $(colors.white)
-  accent: $(colors.cyan)
+  main: ${colors.white}would
+  accent: ${colors.cyan}
 
   # Build the design system
   std:
     fg: $(main)
     fg.accent: $(accent)
-    fg.inactive: fade($(std.fg), 60)
+    fg.inactive: fade($std.fg, 60)
 
     bg: "#1a1a1a"
     bg.accent: darken($(accent), 70)
@@ -34,7 +34,7 @@ vars:
 
   # Status colors
   status:
-    error: $(colors.red)
+    error: $colors.red
     warning: $(colors.yellow)
     success: $(colors.green)
     info: $(colors.cyan)
