@@ -83,6 +83,7 @@
         "run-script",
         "exec",
         "--",
+        "--nerd",
         "--watch",
         "--output-dir",
         "./examples/output",

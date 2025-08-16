@@ -35,33 +35,18 @@
  */
 
 import {program} from "commander"
-import console from "node:console"
 import process from "node:process"
 import {fileURLToPath,URL} from "node:url"
 import chokidar from "chokidar"
 import {createHash} from "node:crypto"
 import {performance} from "node:perf_hooks"
-import ansiColors from "ansi-colors"
-import colorSupport from "color-support"
 
 import * as File from "./components/File.js"
 import Compiler from "./components/Compiler.js"
 import FileObject from "./components/FileObject.js"
 import DirectoryObject from "./components/DirectoryObject.js"
 import AuntyError from "./components/AuntyError.js"
-
-// Required everywhere. Will modularise this kind of thing later.
-ansiColors.enabled = colorSupport.hasBasic
-ansiColors.alias("success", ansiColors.green)
-ansiColors.alias("success-bracket", ansiColors.greenBright)
-ansiColors.alias("info", ansiColors.cyan)
-ansiColors.alias("info-bracket", ansiColors.cyanBright)
-ansiColors.alias("warn", ansiColors.yellow)
-ansiColors.alias("warn-bracket", ansiColors.yellow.dim)
-ansiColors.alias("error", ansiColors.redBright)
-ansiColors.alias("error-bracket", ansiColors.redBright.dim)
-ansiColors.alias("modified", ansiColors.magentaBright)
-ansiColors.alias("modified-bracket", ansiColors.magenta)
+import Term from "./components/Term.js"
 
 /**
  * Main application entry point.
@@ -76,34 +61,36 @@ ansiColors.alias("modified-bracket", ansiColors.magenta)
     ========================= */
 
 void (async function main() {
+  // we need nerd mode info here so that it's available in 'catch'
+  let nerdMode
+
   try {
     const cr = new DirectoryObject(fileURLToPath(new URL("..", import.meta.url)))
     const cwd = new DirectoryObject(process.cwd())
     const packageJson = new FileObject("package.json", cr)
     const packageJsonData = await File.loadDataFile(packageJson)
-
     setupCLI(packageJsonData)
 
     const options = program.opts()
     const inputArgs = program.processedArgs[0]
 
+    nerdMode = options.nerd
+
     if(options.watch) {
-      statusMessage([
+      Term.status([
         ["info", "WATCH MODE"],
         "F5=recompile, q=quit"
       ], options)
-      info("")
+      Term.info()
     }
 
     await Promise.allSettled(
       inputArgs.map(input => processTheme({input, cwd, options}))
     )
   } catch(e) {
-    if(e instanceof AuntyError)
-      error(e.trace.join("\n"))
-
-    else
-      error(`\n${e.stack}`)
+    e instanceof AuntyError
+      ? e.report(nerdMode)
+      : Term.error(`\n${e.stack}`)
 
     process.exit(1)
   }
@@ -134,6 +121,7 @@ function setupCLI(pkg) {
     .option("-o, --output-dir <dir>", "specify an output directory")
     .option("-n, --dry-run", "print theme JSON to stdout; do not write files")
     .option("-s, --silent", "silent mode. only print errors or dry-run")
+    .option("--nerd", "enable stack tracing for debug purposes when errors are thrown")
     .argument("<file...>", "one or more JSON5 or YAML files to compile (supports globs)")
     .parse()
 }
@@ -171,7 +159,6 @@ async function processTheme({input, cwd, options}) {
     // Initial setup
     const file = new FileObject(input, cwd)
     const fname = file.path
-
     if(!await file.exists)
       throw new AuntyError(`No such file 🤷: ${fname}`)
 
@@ -186,8 +173,7 @@ async function processTheme({input, cwd, options}) {
     }
 
     const loadedBytes = await File.fileSize(file)
-
-    statusMessage([
+    Term.status([
       ["success", rightAlignText(`${loadCost}ms`, 10)],
       `${bundle.file.module} loaded`,
       ["info", `${loadedBytes} bytes`],
@@ -232,9 +218,9 @@ async function processTheme({input, cwd, options}) {
         resetBundle(bundle)
 
         const {cost: compileCost} =
-          await time(async() => Compiler.compile(bundle))
+          await time(async() => new Compiler().compile(bundle))
 
-        statusMessage([
+        Term.status([
           ["success", rightAlignText(`${compileCost.toLocaleString()}ms`, 10)],
           `${bundle.file.module} compiled`
         ], options)
@@ -244,7 +230,7 @@ async function processTheme({input, cwd, options}) {
         else
           bundle.perf.compile = [compileCost]
 
-        bundle.result.json = JSON.stringify(bundle.result.output, null, 2)
+        bundle.result.json = `${JSON.stringify(bundle.result.output, null, 2)}\n`
         bundle.hash = hashOf(bundle.result.json)
 
         const {cost: writeCost, result: writeResult} =
@@ -252,7 +238,7 @@ async function processTheme({input, cwd, options}) {
 
         const {state: writeState, bytes: writeBytes, fileName} = writeResult
 
-        statusMessage([
+        Term.status([
           ["success", rightAlignText(`${writeCost.toLocaleString()}ms`, 10)],
           `${fileName} <${writeState}>`,
           ["info", `${writeBytes.toLocaleString()} bytes`],
@@ -278,7 +264,7 @@ async function processTheme({input, cwd, options}) {
           })
 
           bundle.watcher.on("change", async changed => {
-            statusMessage([
+            Term.status([
               ["modified", rightAlignText("CHANGED", 10)],
               changed,
               ["modified", bundle.file.module]
@@ -291,7 +277,7 @@ async function processTheme({input, cwd, options}) {
 
               bundle.source = tempBundle.source
 
-              statusMessage([
+              Term.status([
                 ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 10)],
                 `${bundle.file.module} loaded`,
                 ["info", `${reloadedBytes} bytes`],
@@ -310,9 +296,9 @@ async function processTheme({input, cwd, options}) {
             stdinHandler = key => {
               if(key === "q" || key === "\u0003") {
                 // 'q' or Ctrl+C to exit
-                info("")
-                info("Stopped watching.")
-                info("Exiting.")
+                Term.info("")
+                Term.info("Stopped watching.")
+                Term.info("Exiting.")
 
                 // Clean up
                 if(bundle.watcher) {
@@ -327,7 +313,7 @@ async function processTheme({input, cwd, options}) {
               } else if(key === "r" || key === "\x1b[15~") {
                 // F5 key sends escape sequence: \x1b[15~
 
-                statusMessage([
+                Term.status([
                   ["info", "REBUILDING"],
                   bundle.file.path
                 ], options)
@@ -359,12 +345,9 @@ async function processTheme({input, cwd, options}) {
     await doItUp()
 
   } catch(e) {
-    if(e instanceof AuntyError)
-      error(e.trace.join("\n"))
-
-    else
-      error(`\n${e.stack}`)
-
+    e instanceof AuntyError
+      ? e.report(options.nerd)
+      : Term.error(`\n${e.stack}`)
   }
 }
 
@@ -405,7 +388,7 @@ async function writeTheme(bundle, destDir, options) {
   const output = bundle.result.json
 
   if(options.dryRun) {
-    console.log(output)
+    Term.log(output)
     return {state: "dry-run", bytes: output.length, fileName}
   }
 
@@ -419,7 +402,7 @@ async function writeTheme(bundle, destDir, options) {
     return {state: "skipped", bytes: output.length, fileName}
 
   // Real write (timed)
-  await File.writeFile(file, `${output}\n`)
+  await File.writeFile(file, `${output}`)
 
   return {state: "written", bytes: output.length, fileName}
 }
@@ -477,99 +460,6 @@ function rightAlignText(text, width=80) {
   const diff = width-work.length
 
   return `${" ".repeat(diff)}${work}`
-}
-
-/**
- * Emit a formatted status line (optionally suppressed).
- *
- * Input forms:
- *  - string: printed as-is (subject to `silent`)
- *  - array: each element is either:
- *    - a plain string (emitted unchanged), or
- *    - a tuple: [level, text] where `level` maps to an ansiColors alias
- *        (e.g. success, info, warn, error, modified). These are rendered as
- *        colourised bracketed segments: [TEXT].
- *
- * The function performs a shallow validation: tuple elements must both be
- * strings; otherwise a TypeError is thrown. Nested arrays beyond depth 1 are
- * not supported.
- *
- * Recursion: array input is normalised into a single string then re-dispatched
- * through `statusMessage` to leverage the string branch (keeps logic DRY).
- *
- * @param {string | Array<string | [string, string]>} args - Message spec.
- * @param {object} [options] - Behaviour flags.
- * @param {boolean} options.silent - When true, suppress all output (default false).
- * @returns {void}
- */
-function statusMessage(args, {silent=false} = {}) {
-  if(silent)
-    return
-
-  if(typeof args === "string")
-    return info(args)
-
-  if(Array.isArray(args)) {
-    const message = args
-      .map(curr => {
-        // Bracketed
-        if(Array.isArray(curr)) {
-          if(!curr.every(e => typeof e === "string"))
-            throw new AuntyError("Each element of a message array must be a string.")
-
-          // Ok, now build it; 0 = the level, 1 = the string
-          const [level, text] = curr
-          return "" +
-              ansiColors[`${level}-bracket`]("[")
-            + ansiColors[level](text)
-            + ansiColors[`${level}-bracket`]("]")
-        }
-
-        // Plain string, no decoration
-        if(typeof curr === "string")
-          return curr
-      })
-      .join(" ")
-
-    return statusMessage(message, {silent})
-  }
-
-  throw new AuntyError("Invalid arguments passed to statusMessage")
-}
-
-/**
- * Log an informational message.
- *
- * @param {...any} arg - Values to log.
- */
-function info(...arg) {
-  console.info(...arg)
-}
-
-/**
- * Log a warning message.
- *
- * @param {any} msg - Warning text / object.
- */
-function _warn(msg) {
-  console.warn(msg)
-}
-
-/**
- * Log an error message (plus optional details).
- *
- * @param {...any} arg - Values to log.
- */
-function error(...arg) {
-  console.error(...arg)
-}
-/**
- * Log a debug message (no-op unless console.debug provided/visible by env).
- *
- * @param {...any} arg - Values to log.
- */
-function _debug(...arg) {
-  console.debug(...arg)
 }
 
 /**
