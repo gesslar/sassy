@@ -23,7 +23,7 @@ export default class AuntyError extends Error {
 
   static from(error, message) {
     if(!(error instanceof Error))
-      throw new AuntyError("EvaluationError.from must take an error object.")
+      throw new AuntyError("AuntyError.from must take an error object.")
 
     const oldMessage = error.message
     const newError = new AuntyError(oldMessage)
