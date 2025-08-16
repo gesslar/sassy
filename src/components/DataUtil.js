@@ -4,7 +4,7 @@
  */
 
 import TypeSpec from "./Type.js"
-
+import AuntyError from "./AuntyError.js"
 import * as Valid from "./Valid.js"
 
 const {validType} = Valid
@@ -151,7 +151,7 @@ function arrayPad(arr, length, value, position = 0) {
     // append
     return arr.concat(padding) // somewhere in the middle - THAT IS ILLEGAL
   else
-    throw new SyntaxError("Invalid position")
+    throw new AuntyError("Invalid position")
 }
 
 /**
@@ -188,7 +188,7 @@ async function allocateObject(source, spec) {
     result = {}
 
   if(!isType(source, "array", {allowEmpty: false}))
-    throw new Error("Source must be an array.")
+    throw new AuntyError("Source must be an array.")
 
   workSource.push(...source)
 
@@ -196,13 +196,13 @@ async function allocateObject(source, spec) {
     !isType(spec, "array", {allowEmpty: false}) &&
     !isType(spec, "function")
   )
-    throw new Error("Spec must be an array or a function.")
+    throw new AuntyError("Spec must be an array or a function.")
 
   if(isType(spec, "function")) {
     const specResult = await spec(workSource)
 
     if(!isType(specResult, "array"))
-      throw new Error("Spec resulting from function must be an array.")
+      throw new AuntyError("Spec resulting from function must be an array.")
 
     workSpec.push(...specResult)
   } else if(isType(spec, "array", {allowEmpty: false})) {
@@ -210,14 +210,14 @@ async function allocateObject(source, spec) {
   }
 
   if(workSource.length !== workSpec.length)
-    throw new Error("Source and spec must have the same number of elements.")
+    throw new AuntyError("Source and spec must have the same number of elements.")
 
   // Objects must always be indexed by strings.
   workSource.map((element, index, arr) => (arr[index] = String(element)))
 
   // Check that all keys are strings
   if(!isArrayUniform(workSource, "string"))
-    throw new Error("Indices of an Object must be of type string.")
+    throw new AuntyError("Indices of an Object must be of type string.")
 
   workSource.forEach((element, index) => (result[element] = workSpec[index]))
 

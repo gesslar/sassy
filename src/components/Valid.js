@@ -1,6 +1,7 @@
 import _assert from "node:assert/strict"
 
 import * as DataUtil from "./DataUtil.js"
+import AuntyError from "./AuntyError.js"
 
 const {isType} = DataUtil
 
@@ -44,7 +45,7 @@ function assert(condition, message, arg = null) {
   )
 
   if(!condition)
-    throw new Error(`${message}${arg ? `: ${arg}` : ""}`)
+    throw new AuntyError(`${message}${arg ? `: ${arg}` : ""}`)
 }
 
 export {assert, validType}

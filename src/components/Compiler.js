@@ -8,6 +8,7 @@ import * as Data from "./DataUtil.js"
 import Evaluator from "./Evaluator.js"
 import * as File from "./File.js"
 import FileObject from "./FileObject.js"
+import AuntyError from "./AuntyError.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -121,7 +122,7 @@ export default class Compiler {
         const toImport = typeof target === "string" ? [target] : target
 
         if(!Data.isArrayUniform(toImport, "string"))
-          throw new TypeError(
+          throw new AuntyError(
             `Import '${key}' must be a string or an array of strings.`
           )
 

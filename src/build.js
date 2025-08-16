@@ -48,6 +48,7 @@ import * as File from "./components/File.js"
 import Compiler from "./components/Compiler.js"
 import FileObject from "./components/FileObject.js"
 import DirectoryObject from "./components/DirectoryObject.js"
+import AuntyError from "./components/AuntyError.js"
 
 // Required everywhere. Will modularise this kind of thing later.
 ansiColors.enabled = colorSupport.hasBasic
@@ -97,8 +98,13 @@ void (async function main() {
     await Promise.allSettled(
       inputArgs.map(input => processTheme({input, cwd, options}))
     )
-  } catch(err) {
-    warn(`\n${err.stack}`)
+  } catch(e) {
+    if(e instanceof AuntyError)
+      error(e.trace.join("\n"))
+
+    else
+      error(`\n${e.stack}`)
+
     process.exit(1)
   }
 })()
@@ -167,13 +173,13 @@ async function processTheme({input, cwd, options}) {
     const fname = file.path
 
     if(!await file.exists)
-      throw new Error(`No such file: ${fname}`)
+      throw new AuntyError(`No such file 🤷: ${fname}`)
 
     const {result: bundle, cost: loadCost} =
       await time(async() => loadThemeAsBundle(file))
 
     if(!bundle.source.config)
-      throw new Error(`Source file does not contain 'config' property: ${fname}`)
+      throw new AuntyError(`Source file does not contain 'config' property: ${fname}`)
 
     bundle.perf = {
       load: [loadCost]
@@ -338,6 +344,12 @@ async function processTheme({input, cwd, options}) {
             process.stdin.on("data", stdinHandler)
           }
         }
+      } catch(e) {
+        const err = `Process theme: ${bundle.file.path}`
+        throw e instanceof AuntyError
+          ? e.addTrace(err)
+          : AuntyError.from(e, err)
+
       } finally {
         doItUp.busy = false
       }
@@ -347,8 +359,12 @@ async function processTheme({input, cwd, options}) {
     await doItUp()
 
   } catch(e) {
-    error(e.message, e.stack)
-    throw e
+    if(e instanceof AuntyError)
+      error(e.trace.join("\n"))
+
+    else
+      error(`\n${e.stack}`)
+
   }
 }
 
@@ -499,7 +515,7 @@ function statusMessage(args, {silent=false} = {}) {
         // Bracketed
         if(Array.isArray(curr)) {
           if(!curr.every(e => typeof e === "string"))
-            throw new TypeError("Each element of a message array must be a string.")
+            throw new AuntyError("Each element of a message array must be a string.")
 
           // Ok, now build it; 0 = the level, 1 = the string
           const [level, text] = curr
@@ -518,7 +534,7 @@ function statusMessage(args, {silent=false} = {}) {
     return statusMessage(message, {silent})
   }
 
-  throw new TypeError("Invalid arguments passed to statusMessage")
+  throw new AuntyError("Invalid arguments passed to statusMessage")
 }
 
 /**
@@ -535,7 +551,7 @@ function info(...arg) {
  *
  * @param {any} msg - Warning text / object.
  */
-function warn(msg) {
+function _warn(msg) {
   console.warn(msg)
 }
 
@@ -552,7 +568,7 @@ function error(...arg) {
  *
  * @param {...any} arg - Values to log.
  */
-function _debug(...arg) { // prefixed underscore to satisfy unused var lint rule
+function _debug(...arg) {
   console.debug(...arg)
 }
 

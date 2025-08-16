@@ -5,6 +5,7 @@
  */
 
 import * as DataUtil from "./DataUtil.js"
+import AuntyError from "./AuntyError.js"
 
 const {isEmpty, typeOf, isArrayUniform, isValidType} = DataUtil
 
@@ -193,10 +194,10 @@ export default class TypeSpec {
     this.#specs = parts.map(part => {
       const typeMatches = /(\w+)(\[\])?/.exec(part)
       if(!typeMatches || typeMatches.length !== 3)
-        throw new TypeError(`Invalid type: ${part}`)
+        throw new AuntyError(`Invalid type: ${part}`)
 
       if(!isValidType(typeMatches[1]))
-        throw new TypeError(`Invalid type: ${typeMatches[1]}`)
+        throw new AuntyError(`Invalid type: ${typeMatches[1]}`)
 
       return {
         typeName: typeMatches[1],

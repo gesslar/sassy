@@ -52,7 +52,6 @@ export default class DirectoryObject {
    * Constructs a DirectoryObject instance.
    *
    * @param {string} directory - The directory path
-   * @throws {TypeError} If parent is not a string or DirectoryObject
    */
   constructor(directory) {
     const fixedDir = File.fixSlashes(directory)
