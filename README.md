@@ -35,6 +35,8 @@ editor: {
   selectionBackground: "$(std.bg.accent)",
   lineHighlightBackground: "fade($(std.bg.accent), 30)"
 }
+```
+
 ```text
 
 After:
@@ -46,7 +48,7 @@ After:
   "editor.selectionBackground": "#002e63",
   "editor.lineHighlightBackground": "#002e63b3",
 }
-```text
+```
 
 ## The Problem
 
@@ -281,6 +283,47 @@ theme:
 
 ## Advanced Features
 
+### Variable / Token Reference Syntax
+
+You can reference previously defined variables (and nested properties) using
+any of three interchangeable syntaxes:
+
+| Form | Example | Notes |
+|------|---------|-------|
+| `$path.to.var` | `$std.bg.panel.inner` | Short / legacy form. Stops at first non word / `.` character. |
+| `$(path.to.var)` | `$(std.bg.panel.inner)` | Recommended. Explicit terminator allows adjacent punctuation: `fade($(std.bg.accent), 30)` |
+| `${path.to.var}` | `${std.bg.panel.inner}` | Braced form; behaves the same as `$(...)`. |
+
+All three resolve identically. You can even mix them freely (the evaluator
+doesn't mind); the parenthesised form is simply the most robust inside longer
+strings or when followed immediately by characters that could extend a bare
+token.
+
+Examples:
+
+```yaml
+vars:
+  std:
+    bg: "#191919"
+    bg.panel.inner: lighten($(std.bg), 6)
+    fg: invert($std.bg)
+    accent: mix(${std.fg}, "#ff6b9d", 25)
+
+theme:
+  colors:
+    "editor.background": $(std.bg)
+    "editor.foreground": $std.fg
+    "statusBar.background": ${std.bg.panel.inner}
+```
+
+Resolution order reminder:
+
+1. All `vars` entries are fully resolved first (only against the variable set).
+2. Theme entries are then resolved against the union of resolved vars + theme.
+
+This guarantees variables never see partially-resolved theme state and lets
+theme keys layer atop a stable semantic base.
+
 ### Semantic Colour Hierarchies
 
 Build visual depth with mathematical relationships:
@@ -419,5 +462,3 @@ directory and applies specifically to:
 
 I don't write tests. If that bothers you, you can fork the repo and write your
 own.
-
-> (You are *very* welcome to contribute tests. Snapshot tests for deterministic theme outputs would be an easy win.)

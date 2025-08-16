@@ -13,127 +13,159 @@ import Colour from "./Colour.js"
  */
 export default class Evaluator {
   /**
-   * Maximum number of iterations for token resolution to prevent infinite loops.
+   * Maximum number of passes allowed while resolving tokens within a scope.
+   * Prevents infinite recursion in the event of cyclical or self-referential
+   * variable definitions.
    *
+   * @private
    * @type {number}
    */
-  static maxIterations = 10
+  #maxIterations = 10
 
   /**
-   * Regular expression for matching variable substitution tokens.
-   * Matches patterns like $(variable.name)
+   * Regular expression used to locate variable substitution tokens. Supports:
+   *  - POSIX-ish:    $(variable.path)
+   *  - Legacy:       $variable.path
+   *  - Braced:       ${variable.path}
    *
+   * Capturing groups allow extraction of the inner path variant irrespective
+   * of wrapping style. The pattern captures (entireMatch, posix, legacy, braced).
+   *
+   * @private
    * @type {RegExp}
    */
-  static sub = /\$\(([^()]+)\)/g
+  #sub = /(\$\(([^()]+)\)|\$([\w]+(?:\.[\w]+)*)|\$\{([^()]+)\})/g
 
   /**
-   * Regular expression for matching function calls in token values.
-   * Matches patterns like functionName(argument)
+   * Regular expression for matching colour / transformation function calls
+   * within token strings, e.g. `darken($(std.accent), 10)`.
    *
+   * @private
    * @type {RegExp}
    */
-  static func = /(\w+)\(([^()]+)\)/g
+  #func = /(\w+)\(([^()]+)\)/g
 
   /**
-   * Main evaluation method that processes variables and theme objects.
-   * Performs two-phase evaluation: variables first, then theme with full context.
+   * Lookup cache mapping flat variable paths (e.g. "std.bg.panel.inner") to
+   * their resolved string values. Populated incrementally via `createLookup()`.
    *
-   * @param {object} params - The evaluation parameters
-   * @param {Array<object>} params.vars - Array of variable objects to resolve
-   * @param {Array<object>} params.theme - Array of theme objects to evaluate
-   * @returns {Array<object>} The resolved theme objects
+   * @private
+   * @type {Map<string,string>}
    */
-  static evaluate({vars: against, theme: evaluating}) {
-    // Phase 1: Resolve variables in their own scope
-    Evaluator.processScope(
-      against,
-      Evaluator.createLookup(against)
-    )
+  #lookup = new Map()
 
-    // Phase 2: Resolve theme with access to both scopes
-    Evaluator.processScope(
-      evaluating,
-      Evaluator.createLookup(
-        [...against, ...evaluating]
-      )
-    )
+  /**
+   * Resolve variables and theme token entries in two distinct passes to ensure
+   * deterministic scoping and to prevent partially-resolved values from
+   * leaking between stages:
+   *  1. Variable pass: each variable is resolved only with access to the
+   *     variable set itself (no theme values yet). This ensures variables are
+   *     self-contained building blocks.
+   *  2. Theme pass: theme entries are then resolved against the union of the
+   *     fully-resolved variables plus (progressively) the theme entries. This
+   *     allows theme keys to reference variables and other theme keys.
+   *
+   * Implementation details:
+   *  - The internal lookup map persists for the lifetime of this instance; new
+   *    entries overwrite prior values (last write wins) so previously resolved
+   *    data can seed later evaluations without a rebuild.
+   *  - Both input arrays are mutated in-place (their `value` fields change).
+   *  - Returned value is the (now resolved) theme entries array for chaining.
+   *
+   * @param {object} params - Parameter bag.
+   * @param {Array<{flatPath:string,value:any}>} params.vars - Variable entries to resolve.
+   * @param {Array<{flatPath:string,value:any}>} params.theme - Theme entries to resolve.
+   * @returns {Array<object>} The mutated & fully resolved theme entry array.
+   */
+  evaluate({vars: against, theme: evaluating}) {
+    // 1. Index and resolve variables against only their own scope.
+    this.createLookup(against)
+    this.#processScope(against)
+    // 2. Add theme entries and resolve them against (vars + theme) scope.
+    this.createLookup(evaluating)
+    this.#processScope(evaluating)
 
     return evaluating
   }
 
   /**
-   * Processes a scope of variables, resolving tokens iteratively.
-   * Continues processing until all tokens are resolved or max iterations reached.
+   * Iteratively resolves tokens within a single scope until either no
+   * unresolved tokens remain or the iteration cap is reached.
    *
-   * @param {Array<object>} target - Array of objects with values to process
-   * @param {object} variables - Lookup object for variable resolution
+   * @private
+   * @param {Array<object>} target - Objects whose `value` properties are processed.
    */
-  static processScope(target, variables) {
+  #processScope(target) {
     let it = 0
 
     do {
       target.forEach(item => {
         if(typeof item.value === "string") {
-          item.value = Evaluator.processTokens(item.value, variables)
+          item.value = this.#processTokens(item.value)
+          // Keep lookup in sync with latest resolved value for chained deps.
+          this.#lookup.set(item.flatPath, item.value)
         }
       })
-    } while(++it < Evaluator.maxIterations &&
-            Evaluator.hasUnresolvedTokens(target))
+    } while(++it < this.#maxIterations &&
+            this.#hasUnresolvedTokens(target))
   }
 
   /**
-   * Creates a lookup object from an array of variable objects.
-   * Maps flat paths to their corresponding values for quick resolution.
+   * Merge an array of entries into the path→value lookup cache. Last write wins.
    *
-   * @param {Array<object>} variables - Array of variable objects with flatPath and value properties
-   * @returns {object} Lookup object mapping paths to values
+   * @param {Array<{flatPath:string,value:any}>} variables - Entries to index.
    */
-  static createLookup(variables) {
-    const result =
-      variables.reduce((lookup, item) => {
-        lookup[item.flatPath] = item.value
-        return lookup
-      }, {})
-
-    return result
+  createLookup(variables) {
+    variables.forEach(item => this.#lookup.set(item.flatPath, item.value))
   }
 
   /**
-   * Processes tokens in a text string, resolving variables and function calls.
-   * Handles both variable substitution and colour function application.
+   * Resolve every variable / function token inside a string value recursively
+   * until a fixed point is reached.
    *
-   * @param {string} text - The text containing tokens to process
-   * @param {object} variables - Lookup object for variable resolution
-   * @returns {string} The text with tokens resolved
+   * @private
+   * @param {string} text - Raw tokenised string.
+   * @returns {string} Fully resolved string.
    */
-  static processTokens(text, variables) {
-    const next = text
-      .replace(Evaluator.sub, (...arg) => {
-        const [match,varName] = arg
-        const result = variables[varName.trim()] || match
+  #processTokens(text) {
+    const lookup = this.#lookup
 
-        return result
+    const sub = this.#sub
+    const processedVars = (function replaceVars(varText) {
+      return varText.replace(sub, (...arg) => {
+        const [_, match,oldStyle,newStyle,braceStyle] = arg
+        const lookupKey = oldStyle ?? newStyle ?? braceStyle
+        const result = lookup.has(lookupKey)
+          ? lookup.get(lookupKey)
+          : match
+
+        return result === varText ? result : replaceVars(result)
       })
-      .replace(Evaluator.func, (_, func, args) => {
+    })(text)
+
+    const func = this.#func
+    const transformer = this.#applyTransform
+    const processed = (function replaceFuncs(funcText) {
+      return funcText.replace(func, (_, transformFunc, args) => {
         const argList = args.split(",").map(s => s.trim())
-        const result = Evaluator.applyTransform(func, argList)
+        const result = transformer(transformFunc, argList)
 
-        return result
+        return result === processedVars ? processedVars : replaceFuncs(result)
       })
+    })(processedVars)
 
-    return next === text ? text : Evaluator.processTokens(next, variables)
+    return processed
   }
 
   /**
-   * Applies a colour transformation function with the given arguments.
-   * Supports various colour manipulation functions like lighten, darken, mix, etc.
+   * Execute a supported colour transformation helper.
    *
-   * @param {string} func - The function name to apply
-   * @param {Array<string>} args - The function arguments
-   * @returns {string} The result of the transformation
+   * @private
+   * @param {string} func - Function name (lighten|darken|fade|alpha|mix|...)
+   * @param {Array<string>} args - Raw argument strings (numbers still as text).
+   * @returns {string} Hex (or transformed string) result.
    */
-  static applyTransform(func, args) {
+  #applyTransform(func, args) {
     const result = (() => {
       switch(func) {
         case "lighten":
@@ -167,17 +199,27 @@ export default class Evaluator {
   }
 
   /**
-   * Checks if any items in the array have unresolved tokens.
-   * Used to determine if further processing iterations are needed.
+   * Determine whether further resolution passes are required for a scope.
    *
-   * @param {Array<object>} arr - Array of objects to check for unresolved tokens
-   * @returns {boolean} True if any unresolved tokens are found
+   * @private
+   * @param {Array<object>} arr - Scope entries to inspect.
+   * @returns {boolean} True if any unresolved tokens remain.
    */
-  static hasUnresolvedTokens(arr) {
-    const tokenCheck = item =>
-      typeof item?.value === "string" &&
-      (item?.value?.match(Evaluator.sub) || item?.value?.match(Evaluator.func))
+  #hasUnresolvedTokens(arr) {
+    return arr.some(item => this.#tokenCheck(item))
+  }
 
-    return arr.some(item => tokenCheck(item))
+  /**
+   * Predicate: does this item's value still contain variable or function tokens?
+   *
+   * @private
+   * @param {{value:any}} item - Entry to test.
+   * @returns {boolean} True if token patterns present.
+   */
+  #tokenCheck(item) {
+    if(typeof item.value !== "string")
+      return false
+
+    return item.value.match(this.#sub) || item.value.match(this.#func)
   }
 }

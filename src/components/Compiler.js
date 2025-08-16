@@ -30,7 +30,8 @@ export default class Compiler {
     const {theme: sourceTheme} = source
     const result = {}
 
-    const evaluate = (...arg) => Evaluator.evaluate(...arg)
+    const evaluator = new Evaluator()
+    const evaluate = (...arg) => evaluator.evaluate(...arg)
 
     const decomposedConfig = Compiler.decomposeObject(sourceConfig)
     const resolvedConfig = evaluate({
@@ -124,11 +125,12 @@ export default class Compiler {
             `Import '${key}' must be a string or an array of strings.`
           )
 
+        const evaluator = new Evaluator()
         const resolved = toImport.map(path => {
           const subbing = Compiler.decomposeObject({path})
           const subbingWith = Compiler.decomposeObject(header)
 
-          return Evaluator.evaluate({
+          return evaluator.evaluate({
             theme: subbing, vars: subbingWith
           })[0]
         })

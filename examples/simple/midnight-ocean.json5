@@ -19,29 +19,29 @@
     },
 
     // Semantic foundation
-    main: "$(colors.white)",
-    accent: "$(colors.cyan)",
+    main: "$colors.white",
+    accent: "$colors.cyan",
 
     // Build the design system
     std: {
-      fg: "$(main)",
-      "fg.accent": "$(accent)",
-      "fg.inactive": "fade($(std.fg), 60)",
+      fg: "$main",
+      "fg.accent": "$accent",
+      "fg.inactive": "fade($std.fg, 60)",
 
       bg: "#1a1a1a",
-      "bg.accent": "darken($(accent), 70)",
-      "bg.panel": "lighten($(std.bg), 15)",
+      "bg.accent": "darken($accent, 70)",
+      "bg.panel": "lighten($std.bg, 15)",
 
-      outline: "fade($(accent), 30)",
-      shadow: "fade($(std.bg), 80)"
+      outline: "fade($accent, 30)",
+      shadow: "fade($std.bg, 80)"
     },
 
     // Status colors
     status: {
-      error: "$(colors.red)",
-      warning: "$(colors.yellow)",
-      success: "$(colors.green)",
-      info: "$(colors.cyan)"
+      error: "$colors.red",
+      warning: "$colors.yellow",
+      success: "$colors.green",
+      info: "$colors.cyan"
     }
   },
 
@@ -49,51 +49,51 @@
     colors: {
       // Editor
       editor: {
-        background: "$(std.bg.panel)",
-        foreground: "$(std.fg)",
-        selectionBackground: "$(std.bg.accent)",
-        lineHighlightBackground: "fade($(std.bg.accent), 30)"
+        background: "$std.bg.panel",
+        foreground: "$std.fg",
+        selectionBackground: "$std.bg.accent",
+        lineHighlightBackground: "fade($std.bg.accent, 30)"
       },
 
       // UI Chrome
       activityBar: {
-        background: "$(std.bg)",
-        foreground: "$(std.fg.accent)"
+        background: "$std.bg",
+        foreground: "$std.fg.accent"
       },
       sideBar: {
-        background: "$(std.bg.panel)",
-        foreground: "$(std.fg)"
+        background: "$std.bg.panel",
+        foreground: "$std.fg"
       },
 
       // Status Bar
       statusBar: {
-        background: "$(std.bg.accent)",
-        foreground: "$(std.fg)"
+        background: "$std.bg.accent",
+        foreground: "$std.fg"
       },
 
       // Focus & Borders
-      focusBorder: "$(std.outline)",
-      "panel.border": "$(std.outline)",
+      focusBorder: "$std.outline",
+      "panel.border": "$std.outline",
 
       // Status Colors
-      errorForeground: "$(status.error)",
+      errorForeground: "$status.error",
       list: {
-        errorForeground: "$(status.error)",
-        warningForeground: "$(status.warning)"
+        errorForeground: "$status.error",
+        warningForeground: "$status.warning"
       },
 
       // Input Controls
       input: {
-        background: "$(std.bg)",
-        foreground: "$(std.fg)",
-        border: "$(std.outline)"
+        background: "$std.bg",
+        foreground: "$std.fg",
+        border: "$std.outline"
       },
 
       // Buttons
       button: {
-        background: "$(std.bg.accent)",
-        foreground: "$(std.fg)",
-        hoverBackground: "lighten($(button.background), 20)"
+        background: "$std.bg.accent",
+        foreground: "$std.fg",
+        hoverBackground: "lighten($button.background, 20)"
       }
     },
 
@@ -102,7 +102,7 @@
         name: "Comments",
         scope: "comment",
         settings: {
-          foreground: "$(std.fg.inactive)",
+          foreground: "$std.fg.inactive",
           fontStyle: "italic"
         }
       },
@@ -110,35 +110,35 @@
         name: "Keywords",
         scope: "keyword, storage.type",
         settings: {
-          foreground: "$(accent)"
+          foreground: "$accent"
         }
       },
       {
         name: "Strings",
         scope: "string",
         settings: {
-          foreground: "$(colors.green)"
+          foreground: "$colors.green"
         }
       },
       {
         name: "Numbers",
         scope: "constant.numeric",
         settings: {
-          foreground: "$(colors.yellow)"
+          foreground: "$colors.yellow"
         }
       },
       {
         name: "Functions",
         scope: "entity.name.function",
         settings: {
-          foreground: "$(colors.cyan)"
+          foreground: "$colors.cyan"
         }
       },
       {
         name: "Classes",
         scope: "entity.name.class, entity.name.type",
         settings: {
-          foreground: "$(colors.blue)",
+          foreground: "$colors.blue",
           fontStyle: "bold"
         }
       }
