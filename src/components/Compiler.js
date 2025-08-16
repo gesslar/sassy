@@ -22,7 +22,7 @@ export default class Compiler {
    * @param {object} bundle - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
-  static async compile(bundle) {
+  async compile(bundle) {
     await Promise.resolve()  // yielding control in the event loop or something
 
     const {file,source} = bundle
@@ -34,12 +34,12 @@ export default class Compiler {
     const evaluator = new Evaluator()
     const evaluate = (...arg) => evaluator.evaluate(...arg)
 
-    const decomposedConfig = Compiler.decomposeObject(sourceConfig)
+    const decomposedConfig = this.#decomposeObject(sourceConfig)
     const resolvedConfig = evaluate({
       vars: decomposedConfig,
       theme: decomposedConfig
     })
-    const recomposedConfig = Compiler.composeObject(resolvedConfig)
+    const recomposedConfig = this.#composeObject(resolvedConfig)
 
     const header = {
       $schema: recomposedConfig.schema,
@@ -50,7 +50,7 @@ export default class Compiler {
     // Let's get all of the imports!
     const imports = recomposedConfig.import ?? {}
     const {imported,importedFiles} =
-      await Compiler.import({file,header,imports})
+      await this.#import({file,header,imports})
 
     Object.assign(result, {importedFiles})
 
@@ -68,8 +68,8 @@ export default class Compiler {
       sourceObj
     )
 
-    const decomposedVars = Compiler.decomposeObject(merged.vars)
-    const decomposedColors = Compiler.decomposeObject(merged.theme.colors)
+    const decomposedVars = this.#decomposeObject(merged.vars)
+    const decomposedColors = this.#decomposeObject(merged.theme.colors)
     const evaluatedColors = evaluate({
       vars: decomposedVars, theme: decomposedColors
     })
@@ -80,14 +80,14 @@ export default class Compiler {
     }
 
     const colors = evaluatedColors.reduce(reducer, {})
-    const decomposedtokenColors = Compiler.decomposeObject(
+    const decomposedtokenColors = this.#decomposeObject(
       merged.theme.tokenColors
     )
 
     const evaluatedTokenColors = evaluate({
       vars: decomposedVars, theme: decomposedtokenColors
     })
-    const tokenColors = Compiler.composeArray(evaluatedTokenColors)
+    const tokenColors = this.#composeArray(evaluatedTokenColors)
     const theme = {colors,tokenColors}
 
     const output = Data.mergeObject({},header,sourceConfig.custom ?? {},theme)
@@ -108,7 +108,7 @@ export default class Compiler {
    * @param {object} params.imports - The imports specification object
    * @returns {Promise<object>} Object containing imported data and file references
    */
-  static async import({file, header, imports}) {
+  async #import({file, header, imports}) {
     const imported = {}
     const importedFiles = []
 
@@ -128,8 +128,8 @@ export default class Compiler {
 
         const evaluator = new Evaluator()
         const resolved = toImport.map(path => {
-          const subbing = Compiler.decomposeObject({path})
-          const subbingWith = Compiler.decomposeObject(header)
+          const subbing = this.#decomposeObject({path})
+          const subbingWith = this.#decomposeObject(header)
 
           return evaluator.evaluate({
             theme: subbing, vars: subbingWith
@@ -160,8 +160,8 @@ export default class Compiler {
    * @param {Array<string>} path - The current path in the object hierarchy
    * @returns {Array<object>} Array of decomposed object entries with path information
    */
-  static decomposeObject(work, path = []) {
-    const isObject = Compiler.isObject
+  #decomposeObject(work, path = []) {
+    const isObject = this.#isObject
 
     const result = []
 
@@ -170,7 +170,7 @@ export default class Compiler {
       const item = work[key]
 
       if(isObject(item)) {
-        result.push(...Compiler.decomposeObject(work[key], currPath))
+        result.push(...this.#decomposeObject(work[key], currPath))
       } else if(Array.isArray(work[key])) {
         item.forEach((item, index) => {
           const path = [...currPath, String(index+1)]
@@ -201,7 +201,7 @@ export default class Compiler {
    * @param {Array<object>} decomposed - Array of decomposed object entries
    * @returns {object} The recomposed hierarchical object
    */
-  static composeObject(decomposed) {
+  #composeObject(decomposed) {
     const done = []
 
     return decomposed.reduce((acc, curr, _, arr) => {
@@ -241,7 +241,7 @@ export default class Compiler {
    * @param {Array<object>} decomposed - Array of decomposed object entries
    * @returns {Array} The composed array structure
    */
-  static composeArray(decomposed) {
+  #composeArray(decomposed) {
     const sections = decomposed.reduce((acc,curr) => {
       if(!acc.includes(curr.path[0]))
         acc.push(curr.path[0])
@@ -263,7 +263,7 @@ export default class Compiler {
           })
         })
 
-      return Compiler.composeObject(section)
+      return this.#composeObject(section)
     })
   }
 
@@ -274,7 +274,7 @@ export default class Compiler {
    * @param {*} value - The value to check
    * @returns {boolean} True if the value is a plain object
    */
-  static isObject(value) {
+  #isObject(value) {
     return typeof value === "object" &&
            value !== null &&
            !Array.isArray(value)

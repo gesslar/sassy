@@ -115,12 +115,46 @@ Options:
   -w, --watch              Recompile when any input / imported file changes
   -o, --output-dir <dir>   Destination directory (defaults to cwd)
   -n, --dry-run            Print compiled JSON to stdout, skip writing
+  -s, --silent             Suppress non-error output (errors still shown; dry-run still prints)
+  --nerd                   Verbose error mode: full chained stack traces
   -p, --profile            (Reserved) Phase timing flag (basic timings already shown)
   -V, --version            Output version
   -h, --help               Show help
 ```
 
 Multiple input theme files are processed in parallel; failures are reported individually.
+
+### Nerd Mode (Verbose Errors)
+
+`AuntyError` already collects a friendly causal chain (each nested context you see in the code adds a trace line). By default you get that whole multi‑line chain — clear, readable, no raw engine noise. Passing `--nerd` does not change the friendly portion; it *appends* a pruned underlying JS stack (function frames) after the trace so you can dive into call sites.
+
+In short:
+
+| Mode | Output |
+|------|--------|
+| default | Friendly multi‑line trace (domain context chain) |
+| `--nerd` | Friendly trace + pruned JS stack frames (prefixed with `*`) |
+
+Good reasons to add `--nerd`:
+
+- Debugging a stubborn variable cycle
+- Locating which imported file introduced a malformed colour
+- Surfacing the original YAML path that produced a bad token/function call
+
+Examples:
+
+```bash
+# Normal (concise) output
+npx @gesslar/aunty bad-theme.yaml
+
+# Verbose diagnostic output
+npx @gesslar/aunty bad-theme.yaml --nerd
+
+# Only verbose errors, suppressing status lines
+npx @gesslar/aunty bad-theme.yaml --nerd --silent
+```
+
+When `--silent` is combined with `--nerd`, only the friendly trace + appended stack (or dry‑run JSON) is emitted.
 
 ### Status Line Format
 
