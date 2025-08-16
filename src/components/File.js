@@ -15,6 +15,7 @@ import {assert} from "./Valid.js"
 import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
 import {uniformStringArray} from "./DataUtil.js"
+import AuntyError from "./AuntyError.js"
 
 /**
  * Fix slashes in a path
@@ -143,7 +144,6 @@ function uriToPath(pathName) {
  *
  * @param {string} fileName - The filename to deconstruct
  * @returns {FileParts} The filename parts
- * @throws {TypeError} If fileName is not a string.
  */
 function deconstructFilenameToParts(fileName) {
   assert(typeof fileName === "string" && fileName.length > 0,
@@ -157,8 +157,8 @@ function deconstructFilenameToParts(fileName) {
  *
  * @param {string|string[]} glob - The glob pattern(s) to search.
  * @returns {Promise<Array<FileObject>>} A promise that resolves to an array of file objects
- * @throws {TypeError} If the input is not a string or array of strings.
- * @throws {Error} If the glob pattern array is empty or for other search failures.
+ * @throws {AuntyError} If the input is not a string or array of strings.
+ * @throws {AuntyError} If the glob pattern array is empty or for other search failures.
  */
 async function getFiles(glob) {
   assert(
@@ -182,7 +182,7 @@ async function getFiles(glob) {
     uniformStringArray(globbyArray) &&
     !globbyArray.length
   )
-    throw new Error(
+    throw new AuntyError(
       `Invalid glob pattern: Array must contain only strings. Got ${JSON.stringify(glob)}`,
     )
 
@@ -233,10 +233,10 @@ async function readFile(fileObject) {
   const filePath = fileObject.path
 
   if(!(await fileObject.exists))
-    throw new Error(`No such file '${filePath}'`)
+    throw new AuntyError(`No such file '${filePath}'`)
 
   if(!filePath)
-    throw new Error("No absolute path in file map")
+    throw new AuntyError("No absolute path in file map")
 
   return await fs.readFile(filePath, "utf8")
 }
@@ -249,7 +249,7 @@ async function readFile(fileObject) {
  */
 async function writeFile(fileObject, content) {
   if(!fileObject.path)
-    throw new Error("No absolute path in file")
+    throw new AuntyError("No absolute path in file")
 
   await fs.writeFile(fileObject.path, content, "utf8")
 }
@@ -270,7 +270,7 @@ async function loadDataFile(fileObject) {
     try {
       return YAML.parse(content)
     } catch{
-      throw new Error(`'${fileObject.path}' Content is neither valid JSON nor valid YAML`)
+      throw new AuntyError(`'${fileObject.path}' Content is neither valid JSON nor valid YAML`)
     }
   }
 }
@@ -282,7 +282,7 @@ async function loadDataFile(fileObject) {
  * @param {DirectoryObject} dirObject - The path or DirMap of the directory to assure exists
  * @param {object} [options] - Any options to pass to mkdir
  * @returns {Promise<boolean>} True if directory exists, false otherwise
- * @throws {Error} If directory creation fails
+ * @throws {AuntyError} If directory creation fails
  */
 async function assureDirectory(dirObject, options = {}) {
   if(await dirObject.exists)
@@ -291,7 +291,7 @@ async function assureDirectory(dirObject, options = {}) {
   try {
     await fs.mkdir(dirObject.path, options)
   } catch(e) {
-    throw new Error(`Unable to create directory '${dirObject.path}': ${e.message}`)
+    throw new AuntyError(`Unable to create directory '${dirObject.path}': ${e.message}`)
   }
 
   return dirObject.exists

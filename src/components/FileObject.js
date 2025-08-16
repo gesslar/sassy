@@ -57,7 +57,6 @@ export default class FileObject {
    *
    * @param {string} fileName - The file path
    * @param {DirectoryObject|string|null} [directory] - The parent directory (object or string)
-   * @throws {TypeError} If directory is not a string or DirectoryObject
    */
   constructor(fileName, directory=null) {
     const fixedFile = File.fixSlashes(fileName)

@@ -5,6 +5,7 @@
  */
 
 import Color from "color"
+import AuntyError from "./AuntyError.js"
 
 // ADD near top (after imports)
 const _colorCache = new Map()
@@ -18,11 +19,11 @@ const asColor = s => {
   // Maybe they need Udemy, or a refund from Udemy. Something. I'm not a
   // coding BABYSITTER.
   if(s == null)
-    throw new Error("asColor(): received null/undefined")
+    throw new AuntyError("asColor(): received null/undefined")
 
   const k = String(s).trim()
   if(!k)
-    throw new Error("asColor(): received empty string")
+    throw new AuntyError("asColor(): received empty string")
 
   let v = _colorCache.get(k)
   if(!v) {
@@ -153,7 +154,7 @@ export default class Colour {
     const matches = code.match(shortHex)
 
     if(!matches)
-      throw new Error(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
+      throw new AuntyError(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
 
     const [_,hex] = matches
 
@@ -166,7 +167,7 @@ export default class Colour {
    *
    * @param {string} hex - The hex color string to parse
    * @returns {object} Object containing color and optional alpha information
-   * @throws {Error} If the hex value is invalid or missing
+   * @throws {AuntyError} If the hex value is invalid or missing
    */
   static parseHexColour(hex) {
     const parsed =
@@ -175,7 +176,7 @@ export default class Colour {
       null
 
     if(!parsed)
-      throw new Error("Invalid or missing hex value.")
+      throw new AuntyError(`Missing or invalid hex colour: ${hex}`)
 
     const result = {}
 
@@ -280,7 +281,7 @@ export default class Colour {
    * @param {number} alpha - The alpha value (0-1) for non-alpha modes
    * @param {...number} args - The color component values (depends on mode)
    * @returns {string} The resulting hex color
-   * @throws {Error} If the wrong number of values is provided
+   * @throws {AuntyError} If the wrong number of values is provided
    */
   static toHex(mode, alpha, ...args) {
     const values = args
@@ -296,7 +297,7 @@ export default class Colour {
       })
 
     if(values.length !== 3)
-      throw new Error(`${mode}() requires three number values.`)
+      throw new AuntyError(`${mode}() requires three number values.`)
 
     if(alpha != null)
       alpha = clamp(Number(alpha), 0, 1)

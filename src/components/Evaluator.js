@@ -5,6 +5,7 @@
  */
 
 import Colour from "./Colour.js"
+import AuntyError from "./AuntyError.js"
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.
@@ -128,33 +129,48 @@ export default class Evaluator {
    * @returns {string} Fully resolved string.
    */
   #processTokens(text) {
-    const lookup = this.#lookup
+    const tokenTransformation = [text]
 
-    const sub = this.#sub
-    const processedVars = (function replaceVars(varText) {
-      return varText.replace(sub, (...arg) => {
-        const [_, match,oldStyle,newStyle,braceStyle] = arg
-        const lookupKey = oldStyle ?? newStyle ?? braceStyle
-        const result = lookup.has(lookupKey)
-          ? lookup.get(lookupKey)
-          : match
+    try {
+      const lookup = this.#lookup
 
-        return result === varText ? result : replaceVars(result)
-      })
-    })(text)
+      const sub = this.#sub
+      const processedVars = (function replaceVars(varText) {
+        return varText.replace(sub, (...arg) => {
+          const [_, match,oldStyle,newStyle,braceStyle] = arg
+          const lookupKey = oldStyle ?? newStyle ?? braceStyle
+          const result = lookup.has(lookupKey)
+            ? lookup.get(lookupKey)
+            : match
 
-    const func = this.#func
-    const transformer = this.#applyTransform
-    const processed = (function replaceFuncs(funcText) {
-      return funcText.replace(func, (_, transformFunc, args) => {
-        const argList = args.split(",").map(s => s.trim())
-        const result = transformer(transformFunc, argList)
+          tokenTransformation.push(match)
 
-        return result === processedVars ? processedVars : replaceFuncs(result)
-      })
-    })(processedVars)
+          return result === varText ? result : replaceVars(result)
+        })
+      })(text)
 
-    return processed
+      const func = this.#func
+      const transformer = this.#applyTransform
+      const processed = (function replaceFuncs(funcText) {
+        return funcText.replace(func, (_, transformFunc, args) => {
+          const argList = args.split(",").map(s => s.trim())
+          const result = transformer(transformFunc, argList)
+
+          tokenTransformation.push(funcText)
+
+          return result === processedVars ? processedVars : replaceFuncs(result)
+        })
+      })(processedVars)
+
+      return processed
+    } catch(e) {
+      const hist = tokenTransformation.reduce((acc,curr) => acc ? `${acc} => ${curr}` : curr, "")
+      const err = `Processing token: ${hist}`
+
+      throw e instanceof AuntyError
+        ? e.addTrace(err)
+        : AuntyError.from(e, err)
+    }
   }
 
   /**
@@ -167,31 +183,39 @@ export default class Evaluator {
    */
   #applyTransform(func, args) {
     const result = (() => {
-      switch(func) {
-        case "lighten":
-          return Colour.lightenOrDarken(args[0], Number(args[1]))
-        case "darken":
-          return Colour.lightenOrDarken(args[0], -Number(args[1]))
-        case "fade":
-          return Colour.addAlpha(args[0], -Number(args[1]))
-        case "solidify":
-          return Colour.addAlpha(args[0], Number(args[1]))
-        case "alpha":
-          return Colour.setAlpha(args[0], Number(args[1]))
-        case "invert":
-          return Colour.invert(args[0])
-        case "mix":
-          return Colour.mix(
-            args[0],
-            args[1],
-            args[2] ? Number(args[2]) : undefined
-          )
-        case "rgb": case "rgba":
-        case "hsl": case "hsla":
-        case "hsv": case "hsva":
-          return Colour.toHex(func, args[3], ...args.slice(0, 3))
-        default:
-          return `+(${func}, ${args.join(", ")})`
+      const def = `${func}(${args.join(", ")})`
+      try {
+        switch(func) {
+          case "lighten":
+            return Colour.lightenOrDarken(args[0], Number(args[1]))
+          case "darken":
+            return Colour.lightenOrDarken(args[0], -Number(args[1]))
+          case "fade":
+            return Colour.addAlpha(args[0], -Number(args[1]))
+          case "solidify":
+            return Colour.addAlpha(args[0], Number(args[1]))
+          case "alpha":
+            return Colour.setAlpha(args[0], Number(args[1]))
+          case "invert":
+            return Colour.invert(args[0])
+          case "mix":
+            return Colour.mix(
+              args[0],
+              args[1],
+              args[2] ? Number(args[2]) : undefined
+            )
+          case "rgb": case "rgba":
+          case "hsl": case "hsla":
+          case "hsv": case "hsva":
+            return Colour.toHex(func, args[3], ...args.slice(0, 3))
+          default:
+            return def
+        }
+      } catch(e) {
+        const err = `Applying transform ${def}`
+        throw e instanceof AuntyError
+          ? e.addTrace(err)
+          : AuntyError.from(e, err)
       }
     })()
 
