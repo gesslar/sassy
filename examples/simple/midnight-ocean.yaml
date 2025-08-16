@@ -16,7 +16,7 @@ vars:
     yellow: "#ffd93d"
 
   # Semantic foundation
-  main: ${colors.white}would
+  main: ${colors.white}
   accent: ${colors.cyan}
 
   # Build the design system
