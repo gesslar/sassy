@@ -40,6 +40,7 @@ import {fileURLToPath,URL} from "node:url"
 import chokidar from "chokidar"
 import {createHash} from "node:crypto"
 import {performance} from "node:perf_hooks"
+import path from "node:path"
 
 import * as File from "./components/File.js"
 import Compiler from "./components/Compiler.js"
@@ -264,9 +265,14 @@ async function processTheme({input, cwd, options}) {
           })
 
           bundle.watcher.on("change", async changed => {
+            const relative = path.relative(process.cwd(), bundle.file.path)
+            const changedPath = relative.startsWith("..")
+              ? bundle.file.path
+              : relative
+
             Term.status([
               ["modified", rightAlignText("CHANGED", 10)],
-              changed,
+              changedPath,
               ["modified", bundle.file.module]
             ], options)
 

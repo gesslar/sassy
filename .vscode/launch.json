@@ -6,27 +6,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Extension",
-      "type": "extensionHost",
-      "request": "launch",
-      "runtimeExecutable": "${execPath}",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}"
-      ]
-    },
-    {
-      "name": "Build",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "build"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
-    },
-    {
       "name": "Simple (JSON5)",
       "type": "node",
       "request": "launch",
@@ -88,6 +67,26 @@
         "--output-dir",
         "./examples/output",
         "./examples/advanced/src/blackboard.yaml"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Advanced (all YAML) (watch)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "--nerd",
+        "--watch",
+        "--output-dir",
+        "./examples/output",
+        "./examples/advanced/src/blackboard.yaml",
+        "./examples/advanced/src/bubblegum-goth.yaml",
+        "./examples/advanced/src/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
