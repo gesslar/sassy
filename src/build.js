@@ -265,9 +265,9 @@ async function processTheme({input, cwd, options}) {
           })
 
           bundle.watcher.on("change", async changed => {
-            const relative = path.relative(process.cwd(), bundle.file.path)
+            const relative = path.relative(process.cwd(), changed)
             const changedPath = relative.startsWith("..")
-              ? bundle.file.path
+              ? changed
               : relative
 
             Term.status([
