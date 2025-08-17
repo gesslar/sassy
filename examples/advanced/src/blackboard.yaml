@@ -18,7 +18,7 @@ config:
 
 vars:
   main: $(colors.white)
-  inverse: invert($(main))
+  inverse: invert($main)
 
   std:
     # The following define primary basics that can be relied upon by the
