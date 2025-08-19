@@ -6,6 +6,18 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Test All",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "test",
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Simple (JSON5)",
       "type": "node",
       "request": "launch",
@@ -14,6 +26,7 @@
         "run-script",
         "exec",
         "--",
+        "build",
         "--output-dir",
         "./examples/output",
         "./examples/simple/midnight-ocean.json5"
@@ -30,6 +43,7 @@
         "run-script",
         "exec",
         "--",
+        "build",
         "--output-dir",
         "./examples/output",
         "./examples/simple/midnight-ocean.yaml"
@@ -45,6 +59,7 @@
       "runtimeArgs": [
         "run-script",
         "exec",
+        "build",
         "--",
         "--output-dir",
         "./examples/output",
@@ -80,6 +95,7 @@
         "run-script",
         "exec",
         "--",
+        "build",
         "--nerd",
         "--watch",
         "--output-dir",
@@ -87,6 +103,24 @@
         "./examples/advanced/src/blackboard.yaml",
         "./examples/advanced/src/bubblegum-goth.yaml",
         "./examples/advanced/src/corporate.yaml",
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Advanced (Blackboard) (resolve)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "resolve",
+        "--nerd",
+        "--token",
+        "editor.inactiveSelectionBackground",
+        "./examples/advanced/src/blackboard.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"

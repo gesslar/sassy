@@ -182,7 +182,7 @@ async function getFiles(glob) {
     uniformStringArray(globbyArray) &&
     !globbyArray.length
   )
-    throw new AuntyError(
+    throw AuntyError.new(
       `Invalid glob pattern: Array must contain only strings. Got ${JSON.stringify(glob)}`,
     )
 
@@ -233,10 +233,10 @@ async function readFile(fileObject) {
   const filePath = fileObject.path
 
   if(!(await fileObject.exists))
-    throw new AuntyError(`No such file '${filePath}'`)
+    throw AuntyError.new(`No such file '${filePath}'`)
 
   if(!filePath)
-    throw new AuntyError("No absolute path in file map")
+    throw AuntyError.new("No absolute path in file map")
 
   return await fs.readFile(filePath, "utf8")
 }
@@ -249,7 +249,7 @@ async function readFile(fileObject) {
  */
 async function writeFile(fileObject, content) {
   if(!fileObject.path)
-    throw new AuntyError("No absolute path in file")
+    throw AuntyError.new("No absolute path in file")
 
   await fs.writeFile(fileObject.path, content, "utf8")
 }
@@ -270,7 +270,7 @@ async function loadDataFile(fileObject) {
     try {
       return YAML.parse(content)
     } catch{
-      throw new AuntyError(`'${fileObject.path}' Content is neither valid JSON nor valid YAML`)
+      throw AuntyError.new(`'${fileObject.path}' Content is neither valid JSON nor valid YAML`)
     }
   }
 }
@@ -291,7 +291,7 @@ async function assureDirectory(dirObject, options = {}) {
   try {
     await fs.mkdir(dirObject.path, options)
   } catch(e) {
-    throw new AuntyError(`Unable to create directory '${dirObject.path}': ${e.message}`)
+    throw AuntyError.new(`Unable to create directory '${dirObject.path}': ${e.message}`)
   }
 
   return dirObject.exists

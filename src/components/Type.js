@@ -194,10 +194,10 @@ export default class TypeSpec {
     this.#specs = parts.map(part => {
       const typeMatches = /(\w+)(\[\])?/.exec(part)
       if(!typeMatches || typeMatches.length !== 3)
-        throw new AuntyError(`Invalid type: ${part}`)
+        throw AuntyError.new(`Invalid type: ${part}`)
 
       if(!isValidType(typeMatches[1]))
-        throw new AuntyError(`Invalid type: ${typeMatches[1]}`)
+        throw AuntyError.new(`Invalid type: ${typeMatches[1]}`)
 
       return {
         typeName: typeMatches[1],

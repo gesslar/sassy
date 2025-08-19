@@ -124,7 +124,30 @@ function isArrayUnique(arr) {
  * @returns {Array} The intersection of the two arrays.
  */
 function arrayIntersection(arr1, arr2) {
-  return arr1.filter(value => arr2.includes(value))
+  const [short,long] = [arr1,arr2].sort((a,b) => a.length - b.length)
+
+  return short.filter(value => long.includes(value))
+}
+
+/**
+ * Checks whether two arrays have any elements in common.
+ *
+ * This function returns `true` if at least one element from `arr1` exists in
+ * `arr2`, and `false` otherwise. It optimizes by iterating over the shorter
+ * array for efficiency.
+ *
+ * Example:
+ *   arrayIntersects([1, 2, 3], [3, 4, 5]) // returns true
+ *   arrayIntersects(["a", "b"], ["c", "d"]) // returns false
+ *
+ * @param {Array} arr1 - The first array to check for intersection.
+ * @param {Array} arr2 - The second array to check for intersection.
+ * @returns {boolean} True if any element is shared between the arrays, false otherwise.
+ */
+function arrayIntersects(arr1, arr2) {
+  const [short,long] = [arr1,arr2].sort((a,b) => a.length - b.length)
+
+  return !!short.find(value => long.includes(value))
 }
 
 /**
@@ -151,7 +174,7 @@ function arrayPad(arr, length, value, position = 0) {
     // append
     return arr.concat(padding) // somewhere in the middle - THAT IS ILLEGAL
   else
-    throw new AuntyError("Invalid position")
+    throw AuntyError.new("Invalid position")
 }
 
 /**
@@ -188,7 +211,7 @@ async function allocateObject(source, spec) {
     result = {}
 
   if(!isType(source, "array", {allowEmpty: false}))
-    throw new AuntyError("Source must be an array.")
+    throw AuntyError.new("Source must be an array.")
 
   workSource.push(...source)
 
@@ -196,13 +219,13 @@ async function allocateObject(source, spec) {
     !isType(spec, "array", {allowEmpty: false}) &&
     !isType(spec, "function")
   )
-    throw new AuntyError("Spec must be an array or a function.")
+    throw AuntyError.new("Spec must be an array or a function.")
 
   if(isType(spec, "function")) {
     const specResult = await spec(workSource)
 
     if(!isType(specResult, "array"))
-      throw new AuntyError("Spec resulting from function must be an array.")
+      throw AuntyError.new("Spec resulting from function must be an array.")
 
     workSpec.push(...specResult)
   } else if(isType(spec, "array", {allowEmpty: false})) {
@@ -210,14 +233,14 @@ async function allocateObject(source, spec) {
   }
 
   if(workSource.length !== workSpec.length)
-    throw new AuntyError("Source and spec must have the same number of elements.")
+    throw AuntyError.new("Source and spec must have the same number of elements.")
 
   // Objects must always be indexed by strings.
   workSource.map((element, index, arr) => (arr[index] = String(element)))
 
   // Check that all keys are strings
   if(!isArrayUniform(workSource, "string"))
-    throw new AuntyError("Indices of an Object must be of type string.")
+    throw AuntyError.new("Indices of an Object must be of type string.")
 
   workSource.forEach((element, index) => (result[element] = workSpec[index]))
 
@@ -485,6 +508,16 @@ function uniformStringArray(arr) {
   return Array.isArray(arr) && arr.every(item => typeof item === "string")
 }
 
+/**
+ *
+ * @param arr
+ * @param predicate
+ */
+async function asyncFilter(arr, predicate) {
+  const results = await Promise.all(arr.map(predicate))
+  return arr.filter((_, index) => results[index])
+}
+
 export {
   // Classes
   TypeSpec,
@@ -495,8 +528,10 @@ export {
   allocateObject,
   appendString,
   arrayIntersection,
+  arrayIntersects,
   arrayPad,
   assureObjectPath,
+  asyncFilter,
   cloneObject,
   deepFreezeObject,
   isArrayUniform,

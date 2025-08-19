@@ -9,6 +9,7 @@ import Evaluator from "./Evaluator.js"
 import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
+import Term from "./Term.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -19,40 +20,36 @@ export default class Compiler {
    * Compiles a theme source file into a VS Code colour theme.
    * Processes configuration, variables, imports, and theme definitions.
    *
-   * @param {object} bundle - The file object containing source data and metadata
+   * @param {object} theme - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
-  async compile(bundle) {
+  async compile(theme) {
     await Promise.resolve()  // yielding control in the event loop or something
 
-    const {file,source} = bundle
+    const source = theme.source
+    const file = theme.sourceFile
     const {config: sourceConfig} = source ?? {}
     const {vars: sourceVars} = source
     const {theme: sourceTheme} = source
-    const result = {}
 
     const evaluator = new Evaluator()
     const evaluate = (...arg) => evaluator.evaluate(...arg)
-
-    const decomposedConfig = this.#decomposeObject(sourceConfig)
-    const resolvedConfig = evaluate({
-      vars: decomposedConfig,
-      theme: decomposedConfig
-    })
-    const recomposedConfig = this.#composeObject(resolvedConfig)
+    const decompConfig = this.#decomposeObject(sourceConfig)
+    const resolvedConfig = evaluate(decompConfig)
+    const recompConfig = this.#composeObject(resolvedConfig)
 
     const header = {
-      $schema: recomposedConfig.schema,
-      name: recomposedConfig.name,
-      type: recomposedConfig.type
+      $schema: recompConfig.schema,
+      name: recompConfig.name,
+      type: recompConfig.type
     }
 
     // Let's get all of the imports!
-    const imports = recomposedConfig.import ?? {}
+    const imports = recompConfig.import ?? {}
     const {imported,importedFiles} =
-      await this.#import({file,header,imports})
+      await this.#import({file,imports})
 
-    Object.assign(result, {importedFiles})
+    theme.dependencies = importedFiles
 
     const sourceObj = {}
     if(sourceVars && Object.keys(sourceVars).length > 0)
@@ -68,34 +65,36 @@ export default class Compiler {
       sourceObj
     )
 
-    const decomposedVars = this.#decomposeObject(merged.vars)
-    const decomposedColors = this.#decomposeObject(merged.theme.colors)
-    const evaluatedColors = evaluate({
-      vars: decomposedVars, theme: decomposedColors
-    })
+    // Shred them up! Kinda.
+    const decompVars = this.#decomposeObject(merged.vars)
+    const decompColors = this.#decomposeObject(merged.theme.colors)
+    const decompTokenColors = this.#decomposeObject(merged.theme.tokenColors)
 
+    // First let's evaluate the variables
+    evaluate(decompVars) // but we don't need the return value, only the lookup
+    theme.lookup = evaluator.lookup
+    const evalColors = evaluate(decompColors, theme.lookup)
+    const evalTokenColors = evaluate(decompTokenColors, theme.lookup)
+
+    // Now let's do some reducing... into a form that works for VS Code
     const reducer = (acc,curr) => {
       acc[curr.flatPath] = curr.value
       return acc
     }
-
-    const colors = evaluatedColors.reduce(reducer, {})
-    const decomposedtokenColors = this.#decomposeObject(
-      merged.theme.tokenColors
+    // Assemble into one object with the proper keys
+    const colors = evalColors.reduce(reducer, {})
+    const tokenColors = this.#composeArray(evalTokenColors)
+    const themeColours = {colors,tokenColors}
+    // Mix and maaatch all jumbly wumbly...
+    const output = Data.mergeObject(
+      {},
+      header,
+      sourceConfig.custom ?? {},
+      themeColours
     )
-
-    const evaluatedTokenColors = evaluate({
-      vars: decomposedVars, theme: decomposedtokenColors
-    })
-    const tokenColors = this.#composeArray(evaluatedTokenColors)
-    const theme = {colors,tokenColors}
-
-    const output = Data.mergeObject({},header,sourceConfig.custom ?? {},theme)
-
-    Object.assign(result, {output})
-
-    // Now set it all inside, FRROOOP!
-    Object.assign(bundle, {result})
+    // Voilà!
+    theme.output = output
+    theme.breadcrumbs = evaluator.breadcrumbs
   }
 
   /**
@@ -104,47 +103,47 @@ export default class Compiler {
    *
    * @param {object} params - Object containing parameters for the importation.
    * @param {FileObject} params.file - The file being imported into
-   * @param {object} params.header - The header object containing metadata
    * @param {object} params.imports - The imports specification object
    * @returns {Promise<object>} Object containing imported data and file references
    */
-  async #import({file, header, imports}) {
+  async #import({file, imports}) {
     const imported = {}
     const importedFiles = []
 
-    for(const [sectionName,section] of Object.entries(imports)) {
-      let inner = {}
+    for(const [sectionName,target] of Object.entries(imports)) {
+      if(!target)
+        continue
 
-      for(const [key,target] of Object.entries(section)) {
-        if(!target)
-          continue
+      const toImport = typeof target === "string" ? [target] : target
 
-        const toImport = typeof target === "string" ? [target] : target
+      if(!Data.isArrayUniform(toImport, "string"))
+        throw new AuntyError(
+          `Import '${sectionName}' must be a string or an array of strings.`
+        )
 
-        if(!Data.isArrayUniform(toImport, "string"))
-          throw new AuntyError(
-            `Import '${key}' must be a string or an array of strings.`
-          )
 
-        const evaluator = new Evaluator()
-        const resolved = toImport.map(path => {
-          const subbing = this.#decomposeObject({path})
-          const subbingWith = this.#decomposeObject(header)
+      // things should already be resolved at this point as far as
+      // the header is concerned
 
-          return evaluator.evaluate({
-            theme: subbing, vars: subbingWith
-          })[0]
-        })
+      // const evaluator = new Evaluator()
+      // const resolved = toImport.map(path => {
+      //   const subbing = this.#decomposeObject({path})
+      //   const subbingWith = this.#decomposeObject(header)
 
-        const files = resolved.map(f => new FileObject(f.value, file.directory))
+      //   return evaluator.evaluate({
+      //     theme: subbing, vars: subbingWith
+      //   })[0]
+      // })
 
-        importedFiles.push(...files)
+      const files = toImport.map(f => new FileObject(f, file.directory))
 
-        const datas = await Promise.all(files.map(File.loadDataFile))
-        const imported = Data.mergeObject({}, ...datas)
+      importedFiles.push(...files)
 
-        inner = Data.mergeObject(inner, imported)
-      }
+      const importedData = await Promise.all(files.map(File.loadDataFile))
+      const mergedData = Data.mergeObject({}, ...importedData)
+      const inner = Data.mergeObject(
+        {}, imported[sectionName ?? {}], mergedData
+      )
 
       imported[sectionName] = inner
     }
@@ -204,7 +203,7 @@ export default class Compiler {
   #composeObject(decomposed) {
     const done = []
 
-    return decomposed.reduce((acc, curr, _, arr) => {
+    return decomposed.reduce((acc, curr, index, arr) => {
       // Test for an array
       if("array" in curr) {
         const array = curr.array

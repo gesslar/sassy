@@ -1,13 +1,13 @@
 {
   "name": "@gesslar/aunty",
-  "version": "0.0.18",
+  "version": "0.1.0",
   "displayName": "Aunty Rose",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
   "license": "Unlicense",
   "type": "module",
-  "main": "src/build.js",
-  "bin": "src/build.js",
+  "main": "src/cli.js",
+  "bin": "src/cli.js",
   "files": [
     "src/",
     "UNLICENSE.txt"
@@ -15,9 +15,9 @@
   "scripts": {
     "clean": "rm -rfv ./dist",
     "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
-    "exec": "node ./src/build.js",
+    "exec": "node ./src/cli.js",
     "submit": "npm publish --access public",
-    "test": "Testing, testing; 1, 2, 3. Yep, we're here."
+    "test": "./test.bash"
   },
   "engines": {
     "node": ">=20.0.0"

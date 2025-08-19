@@ -125,7 +125,7 @@ export default class Term {
       return Term.terminalMessage(message)
     }
 
-    throw new AuntyError("Invalid arguments passed to terminalMessage")
+    throw AuntyError.new("Invalid arguments passed to terminalMessage")
   }
 
   /**
@@ -154,7 +154,7 @@ export default class Term {
    */
   static terminalBracket([level, text]) {
     if(!(typeof level === "string" && typeof text === "string"))
-      throw new AuntyError("Each element must be a string.")
+      throw AuntyError.new("Each element must be a string.")
 
     return "" +
         ansiColors[`${level}-bracket`]("[")

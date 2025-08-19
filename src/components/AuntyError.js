@@ -66,4 +66,14 @@ export default class AuntyError extends Error {
 
     return newError
   }
+
+  static new(message, error) {
+    if(error) {
+      return error instanceof AuntyError
+        ? error.addTrace(message)
+        : AuntyError.from(error, message)
+    } else {
+      return new AuntyError(message)
+    }
+  }
 }
