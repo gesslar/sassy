@@ -1,6 +1,6 @@
 # Theme Config
 config:
-  schema: vscode://schemas/color-theme
+  $schema: vscode://schemas/color-theme
   name: corporate
   type: dark
 

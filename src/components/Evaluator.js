@@ -6,6 +6,8 @@
 
 import Colour from "./Colour.js"
 import AuntyError from "./AuntyError.js"
+import Term from "./Term.js"
+import * as Data from "./DataUtil.js"
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.
@@ -35,7 +37,7 @@ export default class Evaluator {
    * @private
    * @type {RegExp}
    */
-  #sub = /(\$\(([^()]+)\)|\$([\w]+(?:\.[\w]+)*)|\$\{([^()]+)\})/g
+  #sub = /(?<captured>\$\((?<parens>[^()]+)\)|\$(?<none>[\w]+(?:\.[\w]+)*)|\$\{(?<braces>[^()]+)\})/
 
   /**
    * Regular expression for matching colour / transformation function calls
@@ -44,7 +46,7 @@ export default class Evaluator {
    * @private
    * @type {RegExp}
    */
-  #func = /(\w+)\(([^()]+)\)/g
+  #func = /(?<func>\w+)\((?<args>[^()]+)\)/
 
   /**
    * Lookup cache mapping flat variable paths (e.g. "std.bg.panel.inner") to
@@ -54,6 +56,30 @@ export default class Evaluator {
    * @type {Map<string,string>}
    */
   #lookup = new Map()
+  get lookup() {
+    return this.#lookup
+  }
+
+  set lookup(lookup) {
+    this.#lookup = lookup
+  }
+
+  clearLookup() {
+    const lookup = this.#lookup
+
+    this.#lookup = new Map()
+
+    return lookup
+  }
+
+  #breadcrumbs = new Map()
+  get breadcrumbs() {
+    return this.#breadcrumbs
+  }
+
+  set breadcrumbs(breadcrumbs) {
+    this.#breadcrumbs = breadcrumbs
+  }
 
   /**
    * Resolve variables and theme token entries in two distinct passes to ensure
@@ -73,20 +99,19 @@ export default class Evaluator {
    *  - Both input arrays are mutated in-place (their `value` fields change).
    *  - Returned value is the (now resolved) theme entries array for chaining.
    *
-   * @param {object} params - Parameter bag.
-   * @param {Array<{flatPath:string,value:any}>} params.vars - Variable entries to resolve.
-   * @param {Array<{flatPath:string,value:any}>} params.theme - Theme entries to resolve.
+   * @param {Array<{flatPath:string,value:any}>} decomposed - Variable entries to resolve.
+   * @param {Map} [lookup] - Variables to act as the lookup. If not provided, will be generated.
    * @returns {Array<object>} The mutated & fully resolved theme entry array.
    */
-  evaluate({vars: against, theme: evaluating}) {
-    // 1. Index and resolve variables against only their own scope.
-    this.createLookup(against)
-    this.#processScope(against)
-    // 2. Add theme entries and resolve them against (vars + theme) scope.
-    this.createLookup(evaluating)
-    this.#processScope(evaluating)
+  evaluate(decomposed, lookup) {
+    if(lookup)
+      this.#lookup = lookup
+    else
+      this.#createLookup(decomposed)
 
-    return evaluating
+    this.#processScope(decomposed)
+
+    return decomposed
   }
 
   /**
@@ -102,7 +127,7 @@ export default class Evaluator {
     do {
       target.forEach(item => {
         if(typeof item.value === "string") {
-          item.value = this.#processTokens(item.value)
+          item.value = this.processToken(item.flatPath, item.value)
           // Keep lookup in sync with latest resolved value for chained deps.
           this.#lookup.set(item.flatPath, item.value)
         }
@@ -116,60 +141,77 @@ export default class Evaluator {
    *
    * @param {Array<{flatPath:string,value:any}>} variables - Entries to index.
    */
-  createLookup(variables) {
-    variables.forEach(item => this.#lookup.set(item.flatPath, item.value))
+  #createLookup(variables) {
+    this.clearLookup()
+
+    Object.entries(variables)
+      .forEach(([_,item]) => {
+        if(item.value != null)
+          this.#lookup.set(item.flatPath, item.value)
+      })
   }
 
   /**
-   * Resolve every variable / function token inside a string value recursively
-   * until a fixed point is reached.
+   * Resolve a variable or function token inside a string value; else return
+   * the passed value.
    *
    * @private
+   * @param token
    * @param {string} text - Raw tokenised string.
    * @returns {string} Fully resolved string.
    */
-  #processTokens(text) {
-    const tokenTransformation = [text]
+  processToken(token, text) {
+    const checker = () =>
+      token === "editor.inactiveSelectionBackground" ||
+      token === "editor.selectionBackground"
 
-    try {
-      const lookup = this.#lookup
+    while(true) {
+      if(this.#sub.test(text)) {
+        const testResult = this.#sub.exec(text)
+        const {captured,none,parens,braces} = testResult
+          ? testResult.groups
+          : {}
 
-      const sub = this.#sub
-      const processedVars = (function replaceVars(varText) {
-        return varText.replace(sub, (...arg) => {
-          const [_, match,oldStyle,newStyle,braceStyle] = arg
-          const lookupKey = oldStyle ?? newStyle ?? braceStyle
-          const result = lookup.has(lookupKey)
-            ? lookup.get(lookupKey)
-            : match
+        const lookupKey = none ?? parens ?? braces
+        const lookupValue = this.#lookup.get(lookupKey)
 
-          tokenTransformation.push(match)
+        const resolved = lookupValue
+          ? text.replace(captured, lookupValue)
+          : text
 
-          return result === varText ? result : replaceVars(result)
-        })
-      })(text)
+        if(resolved !== text) {
+          // Now let's see if we have a pre-existing breadcrumb resolution!
+          if(lookupValue && lookupKey !== token) {
+            // Woot! Okay, let's add a reference for later use when resolving
+            this.#recordBreadcrumb(token, [text,`{{${lookupKey}}}`,resolved])
+          } else {
+            this.#recordBreadcrumb(token, [text, resolved])
+          }
 
-      const func = this.#func
-      const transformer = this.#applyTransform
-      const processed = (function replaceFuncs(funcText) {
-        return funcText.replace(func, (_, transformFunc, args) => {
-          const argList = args.split(",").map(s => s.trim())
-          const result = transformer(transformFunc, argList)
+          text = resolved
+        }
+      } else if(this.#func.test(text)) {
+        const testResult = this.#func.exec(text)
+        const {func,args} = testResult
+          ? testResult.groups
+          : {}
 
-          tokenTransformation.push(funcText)
+        if(func && args) {
+          const argList = args.split(",").map(a => a.trim()).filter(Boolean)
+          const transformed = this.#applyTransform(func, argList)
+          const resolved = text.replace(testResult.input, transformed)
+          const existing = this.#breadcrumbs.get(text)
 
-          return result === processedVars ? processedVars : replaceFuncs(result)
-        })
-      })(processedVars)
+          if(!existing || existing.at(-1) !== resolved)
+            this.#recordBreadcrumb(token, [text, resolved])
 
-      return processed
-    } catch(e) {
-      const hist = tokenTransformation.reduce((acc,curr) => acc ? `${acc} => ${curr}` : curr, "")
-      const err = `Processing token: ${hist}`
-
-      throw e instanceof AuntyError
-        ? e.addTrace(err)
-        : AuntyError.from(e, err)
+          text = resolved
+        } else {
+          return text
+        }
+      } else {
+        return text
+      }
     }
   }
 
@@ -244,6 +286,24 @@ export default class Evaluator {
     if(typeof item.value !== "string")
       return false
 
-    return item.value.match(this.#sub) || item.value.match(this.#func)
+    return this.#sub.test(item.value) || this.#func.test(item.value)
+  }
+
+  #recordBreadcrumb(token, crumbs) {
+    const checker = () =>
+      token === "editor.inactiveSelectionBackground" ||
+      token === "editor.selectionBackground"
+
+    const breadcrumbs = this.#breadcrumbs.get(token) ?? []
+    const insert = breadcrumbs.at(-1) === crumbs.at(0)
+      ? crumbs.slice(1)
+      : crumbs
+
+    if(!insert.length)
+      return
+
+    breadcrumbs.push(...insert)
+
+    this.#breadcrumbs.set(token, breadcrumbs)
   }
 }

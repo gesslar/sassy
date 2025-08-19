@@ -45,7 +45,7 @@ function assert(condition, message, arg = null) {
   )
 
   if(!condition)
-    throw new AuntyError(`${message}${arg ? `: ${arg}` : ""}`)
+    throw AuntyError.new(`${message}${arg ? `: ${arg}` : ""}`)
 }
 
 export {assert, validType}

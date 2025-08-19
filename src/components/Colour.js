@@ -19,11 +19,11 @@ const asColor = s => {
   // Maybe they need Udemy, or a refund from Udemy. Something. I'm not a
   // coding BABYSITTER.
   if(s == null)
-    throw new AuntyError("asColor(): received null/undefined")
+    throw AuntyError.new("asColor(): received null/undefined")
 
   const k = String(s).trim()
   if(!k)
-    throw new AuntyError("asColor(): received empty string")
+    throw AuntyError.new("asColor(): received empty string")
 
   let v = _colorCache.get(k)
   if(!v) {
@@ -154,7 +154,7 @@ export default class Colour {
     const matches = code.match(shortHex)
 
     if(!matches)
-      throw new AuntyError(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
+      throw AuntyError.new(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
 
     const [_,hex] = matches
 
@@ -176,7 +176,7 @@ export default class Colour {
       null
 
     if(!parsed)
-      throw new AuntyError(`Missing or invalid hex colour: ${hex}`)
+      throw AuntyError.new(`Missing or invalid hex colour: ${hex}`)
 
     const result = {}
 
@@ -297,7 +297,7 @@ export default class Colour {
       })
 
     if(values.length !== 3)
-      throw new AuntyError(`${mode}() requires three number values.`)
+      throw AuntyError.new(`${mode}() requires three number values.`)
 
     if(alpha != null)
       alpha = clamp(Number(alpha), 0, 1)
