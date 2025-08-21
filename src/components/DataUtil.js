@@ -509,9 +509,12 @@ function uniformStringArray(arr) {
 }
 
 /**
+ * Filters an array asynchronously using a predicate function.
+ * Applies the predicate to all items in parallel and returns filtered results.
  *
- * @param arr
- * @param predicate
+ * @param {Array} arr - The array to filter
+ * @param {Function} predicate - Async predicate function that returns a promise resolving to boolean
+ * @returns {Promise<Array>} Promise resolving to the filtered array
  */
 async function asyncFilter(arr, predicate) {
   const results = await Promise.all(arr.map(predicate))

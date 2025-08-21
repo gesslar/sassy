@@ -5,7 +5,16 @@ import Util from "./Util.js"
 import Theme from "./components/Theme.js"
 import Term from "./components/Term.js"
 
+/**
+ * Command handler for resolving theme tokens and variables to their final values.
+ * Provides introspection into the theme resolution process and variable dependencies.
+ */
 export default class ResolveCommand extends AuntyCommand {
+  /**
+   * Creates a new ResolveCommand instance.
+   *
+   * @param {object} base - Base configuration containing cwd and packageJson
+   */
   constructor(base) {
     super(base)
 
@@ -15,6 +24,14 @@ export default class ResolveCommand extends AuntyCommand {
     }
   }
 
+  /**
+   * Executes the resolve command for a given theme file and option.
+   * Validates mutual exclusivity of options and delegates to appropriate resolver.
+   *
+   * @param {string} inputArg - Path to the theme file to resolve
+   * @param {object} options - Resolution options (token, etc.)
+   * @returns {Promise<void>} Resolves when resolution is complete
+   */
   async execute(inputArg, options) {
     const intersection =
       DataUtil.arrayIntersection(this.cliOptionNames, Object.keys(options))
@@ -44,6 +61,14 @@ export default class ResolveCommand extends AuntyCommand {
     resolverFunction.call(this, theme, optionValue)
   }
 
+  /**
+   * Resolves a specific token to its final value and displays the resolution trail.
+   * Shows the complete dependency chain for the requested token.
+   *
+   * @param {object} theme - The compiled theme object with breadcrumbs
+   * @param {string} token - The token key to resolve
+   * @returns {void}
+   */
   async resolveToken(theme, token) {
     const breadcrumbs = theme.breadcrumbs
 
@@ -57,6 +82,15 @@ export default class ResolveCommand extends AuntyCommand {
     Term.info(output)
   }
 
+  /**
+   * Recursively builds the full resolution trail for a token.
+   * Follows reference chains to build complete dependency tree.
+   *
+   * @param {string} token - The token being resolved
+   * @param {Array} trail - Current resolution trail
+   * @param {Map} breadcrumbs - Map of all token breadcrumbs
+   * @returns {Array} Complete resolution trail with nested dependencies
+   */
   #getFulltrail(token, trail, breadcrumbs) {
     return trail.reduce((acc, curr) => {
       const [_, reference] = curr.match(/\{\{(.*)\}\}/) || []
@@ -79,6 +113,14 @@ export default class ResolveCommand extends AuntyCommand {
     }, [])
   }
 
+  /**
+   * Formats a resolution trail array into a tree-like visual output.
+   * Creates indented tree structure showing dependency relationships.
+   *
+   * @param {Array} arr - The resolution trail array (may contain nested arrays)
+   * @param {string} prefix - Current indentation prefix for tree formatting
+   * @returns {string} Formatted tree structure as string
+   */
   #formatOutput(arr, prefix = "") {
     let result = ""
 
