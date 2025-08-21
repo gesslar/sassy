@@ -16,8 +16,7 @@
     "clean": "rm -rfv ./dist",
     "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
     "exec": "node ./src/cli.js",
-    "submit": "npm publish --access public",
-    "test": "./test.bash"
+    "submit": "npm publish --access public"
   },
   "engines": {
     "node": ">=20.0.0"
