@@ -13,7 +13,7 @@ export default class Util {
    * @param {() => Promise<T>} fn - Thunk returning a promise.
    * @returns {Promise<{result: T, cost: number}>} Object containing result and elapsed ms (number, 1 decimal).
    */
-  async time(fn) {
+  static async time(fn) {
     const t0 = performance.now()
     const result = await fn()
     const cost = Math.round((performance.now() - t0) * 10) / 10
