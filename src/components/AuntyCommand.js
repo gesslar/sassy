@@ -78,10 +78,8 @@ export default class AuntyCommand {
 
   async resolveThemeFileName(fileName, cwd) {
     const fileObject = new FileObject(fileName, cwd)
-    const file = new FileObject(fileName, cwd)
-    const fname = file.path
-    if(!await file.exists)
-      throw AuntyError.new(`No such file 🤷: ${fname}`)
+    if(!await fileObject.exists)
+      throw AuntyError.new(`No such file 🤷: ${fileObject.path}`)
 
     return fileObject
   }
