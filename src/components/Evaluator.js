@@ -164,7 +164,6 @@ export default class Evaluator {
     const checker = () =>
       token === "editor.inactiveSelectionBackground" ||
       token === "editor.selectionBackground"
-
     while(true) {
       if(this.#sub.test(text)) {
         const testResult = this.#sub.exec(text)
