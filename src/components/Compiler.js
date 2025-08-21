@@ -142,7 +142,7 @@ export default class Compiler {
       const importedData = await Promise.all(files.map(File.loadDataFile))
       const mergedData = Data.mergeObject({}, ...importedData)
       const inner = Data.mergeObject(
-        {}, imported[sectionName ?? {}], mergedData
+        {}, imported[sectionName] ?? {}, mergedData
       )
 
       imported[sectionName] = inner
