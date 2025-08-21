@@ -293,7 +293,6 @@ export default class Evaluator {
     const checker = () =>
       token === "editor.inactiveSelectionBackground" ||
       token === "editor.selectionBackground"
-
     const breadcrumbs = this.#breadcrumbs.get(token) ?? []
     const insert = breadcrumbs.at(-1) === crumbs.at(0)
       ? crumbs.slice(1)
