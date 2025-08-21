@@ -6,8 +6,8 @@
 
 import Colour from "./Colour.js"
 import AuntyError from "./AuntyError.js"
-import Term from "./Term.js"
-import * as Data from "./DataUtil.js"
+import _Term from "./Term.js"
+import * as _Data from "./DataUtil.js"
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.
@@ -64,6 +64,11 @@ export default class Evaluator {
     this.#lookup = lookup
   }
 
+  /**
+   * Clears the current lookup data and returns the previous lookup.
+   *
+   * @returns {Map} The previous lookup map
+   */
   clearLookup() {
     const lookup = this.#lookup
 
@@ -156,12 +161,12 @@ export default class Evaluator {
    * the passed value.
    *
    * @private
-   * @param token
+   * @param {string} token - The token being processed
    * @param {string} text - Raw tokenised string.
    * @returns {string} Fully resolved string.
    */
   processToken(token, text) {
-    const checker = () =>
+    const _checker = () =>
       token === "editor.inactiveSelectionBackground" ||
       token === "editor.selectionBackground"
     while(true) {
@@ -289,7 +294,7 @@ export default class Evaluator {
   }
 
   #recordBreadcrumb(token, crumbs) {
-    const checker = () =>
+    const _checker = () =>
       token === "editor.inactiveSelectionBackground" ||
       token === "editor.selectionBackground"
     const breadcrumbs = this.#breadcrumbs.get(token) ?? []

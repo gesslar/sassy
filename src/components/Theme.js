@@ -10,6 +10,11 @@ import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
 import process from "node:process"
 
+/**
+ * Represents a theme compilation unit with source file, compilation state,
+ * and output management. Handles the complete lifecycle from source loading
+ * to compilation, writing, and optional file watching.
+ */
 export default class Theme {
   #sourceFile = null
   #source = null
@@ -31,6 +36,13 @@ export default class Theme {
   // Watch-related properties
   #watcher = null
 
+  /**
+   * Creates a new Theme instance.
+   *
+   * @param {FileObject} themeFile - The source theme file object
+   * @param {DirectoryObject} cwd - Current working directory object
+   * @param {object} options - Compilation options
+   */
   constructor(themeFile, cwd, options) {
     this.#sourceFile = themeFile
     this.#outputFileName = `${themeFile.module}.color-theme.json`
@@ -38,6 +50,10 @@ export default class Theme {
     this.#options = options
   }
 
+  /**
+   * Resets the theme's compilation state, clearing output and lookup data.
+   * Used when recompiling in watch mode or clearing previous state.
+   */
   reset() {
     this.#output = null
     this.#outputJson = null
@@ -46,48 +62,105 @@ export default class Theme {
     this.#breadcrumbs = null
   }
 
+  /**
+   * Gets the source file object.
+   *
+   * @returns {FileObject} The source theme file
+   */
   get sourceFile() {
     return this.#sourceFile
   }
 
+  /**
+   * Gets the compiled theme output object.
+   *
+   * @returns {object|null} The compiled theme output
+   */
   get output() {
     return this.#output
   }
 
+  /**
+   * Sets the compiled theme output object and updates derived JSON and hash.
+   *
+   * @param {object} data - The compiled theme output object
+   */
   set output(data) {
     this.#output = data
     this.#outputJson = JSON.stringify(data, null, 2) + "\n"
     this.#outputHash = Util.hashOf(this.#outputJson)
   }
 
+  /**
+   * Gets the array of file dependencies.
+   *
+   * @returns {FileObject[]} Array of dependency files
+   */
   get dependencies() {
     return this.#dependencies
   }
 
+  /**
+   * Sets the array of file dependencies.
+   *
+   * @param {FileObject[]} data - Array of dependency files
+   */
   set dependencies(data) {
     this.#dependencies = data
   }
 
+  /**
+   * Gets the parsed source data from the theme file.
+   *
+   * @returns {object|null} The parsed source data
+   */
   get source() {
     return this.#source
   }
 
+  /**
+   * Gets the variable lookup data for theme compilation.
+   *
+   * @returns {object|null} The lookup data object
+   */
   get lookup() {
     return this.#lookup
   }
 
+  /**
+   * Sets the variable lookup data for theme compilation.
+   *
+   * @param {object} data - The lookup data object
+   */
   set lookup(data) {
     this.#lookup = data
   }
 
+  /**
+   * Gets the breadcrumbs data for variable resolution tracking.
+   *
+   * @returns {Map|null} The breadcrumbs map for tracking variable resolution
+   */
   get breadcrumbs() {
     return this.#breadcrumbs
   }
 
+  /**
+   * Sets the breadcrumbs data for variable resolution tracking.
+   *
+   * @param {Map} data - The breadcrumbs map for tracking variable resolution
+   */
   set breadcrumbs(data) {
     this.#breadcrumbs = data
   }
 
+  /**
+   * Loads and parses the theme source file.
+   * Validates that the source contains required configuration.
+   *
+   * @returns {Promise<this>} Returns this instance for method chaining
+   * @throws {AuntyError} If source file lacks required 'config' property
+   */
   async load() {
     const source = await File.loadDataFile(this.#sourceFile)
 
@@ -101,6 +174,13 @@ export default class Theme {
     return this
   }
 
+  /**
+   * Adds a file dependency to the theme.
+   *
+   * @param {FileObject} file - The file to add as a dependency
+   * @returns {this} Returns this instance for method chaining
+   * @throws {AuntyError} If the file parameter is not a valid file
+   */
   addDependency(file) {
     if(!file.isFile)
       throw AuntyError.new("File must be a dependency.")
@@ -110,17 +190,13 @@ export default class Theme {
     return this
   }
 
-  loadDependencyPaths(bundle) {
-    return [
-      bundle.file.path,
-      ...bundle.result.importedFiles.map(imported => imported.path),
-    ]
-  }
-
-  // getDependencies(fileMap) {
-  //   return [...new Set(getAllThemeFiles(fileMap))]
-  // }
-
+  /**
+   * Builds the theme by compiling source data into final output.
+   * Main entry point for theme compilation process.
+   *
+   * @param {object} [buildOptions] - Optional build configuration options
+   * @returns {Promise<void>} Resolves when build is complete
+   */
   async build(buildOptions) {
     // Store stdin handler reference to avoid multiple listeners
     // let stdinHandler = null
@@ -131,6 +207,16 @@ export default class Theme {
     return this
   }
 
+  /**
+   * Internal method to compile the theme with the given options.
+   * Handles the compilation process including dependency management,
+   * compiler instantiation, and watch mode setup.
+   *
+   * @param {object} options - Compilation options
+   * @param {object} [buildOptions] - Optional build configuration
+   * @returns {Promise<void>} Resolves when compilation is complete
+   * @private
+   */
   async #compileTheme(options, buildOptions) {
     if(this.#busy)
       return
@@ -152,6 +238,7 @@ export default class Theme {
       const compiler = new Compiler()
       await compiler.compile(this, buildOptions)
 
+      // TODO: bundle stuff here - commented code references old bundle structure
       // Term.status([
       //   ["success", rightAlignText(`${compileCost.toLocaleString()}ms`, 10)],
       //   `${bundle.file.module} compiled`
@@ -175,6 +262,7 @@ export default class Theme {
       //   ["info", `${writeBytes.toLocaleString()} bytes`],
       // ], options)
 
+      // TODO: bundle stuff here - more commented bundle references
       // if(Array.isArray(bundle.perf.write))
       //   bundle.perf.write.push(writeCost)
       // else
@@ -196,7 +284,7 @@ export default class Theme {
 
         this.#watcher.on("change", async changed => {
           const relative = path.relative(this.#cwd, changed)
-          const changedPath = relative.startsWith("..")
+          const _changedPath = relative.startsWith("..")
             ? changed
             : relative
 
@@ -209,6 +297,7 @@ export default class Theme {
           //   ["modified", bundle.file.module]
           // ], options)
 
+          // TODO: bundle stuff here - commented bundle reload logic
           // if(changed === this.#sourceFile.path) {
           //   const {cost: reloadCost, result: tempBundle} =
           //       await time(async() => loadThemeAsBundle(bundle.file))
@@ -237,6 +326,7 @@ export default class Theme {
         //       Term.info("Stopped watching.")
         //       Term.info("Exiting.")
 
+        //       // TODO: bundle stuff here - stdin handler references old bundle
         //       // Clean up
         //       if(bundle.watcher) {
         //         bundle.watcher.close()
@@ -272,6 +362,12 @@ export default class Theme {
     }
   }
 
+  /**
+   * Writes the compiled theme output to a file or stdout.
+   * Handles dry-run mode, output directory creation, and duplicate write prevention.
+   *
+   * @returns {Promise<void>} Resolves when write operation is complete
+   */
   async write() {
     const output = this.#outputJson
 

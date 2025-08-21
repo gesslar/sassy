@@ -9,7 +9,7 @@ import Evaluator from "./Evaluator.js"
 import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
-import Term from "./Term.js"
+import _Term from "./Term.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -152,11 +152,11 @@ export default class Compiler {
   }
 
   /**
-   * Decomposes a nested object into a flat array structure.
-   * Converts hierarchical objects into a linear representation for processing.
+   * Decomposes a nested object into flat entries with path information.
+   * Recursively processes objects and arrays to create a flat structure for evaluation.
    *
    * @param {object} work - The object to decompose
-   * @param {Array<string>} path - The current path in the object hierarchy
+   * @param {string[]} path - Current path array for nested properties
    * @returns {Array<object>} Array of decomposed object entries with path information
    */
   #decomposeObject(work, path = []) {

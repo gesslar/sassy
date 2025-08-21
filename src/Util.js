@@ -1,7 +1,17 @@
 import {performance} from "node:perf_hooks"
 import {createHash} from "node:crypto"
 
+/**
+ * Utility class providing common helper functions for string manipulation,
+ * timing, hashing, and option parsing.
+ */
 export default class Util {
+  /**
+   * Capitalizes the first letter of a string.
+   *
+   * @param {string} text - The text to capitalize
+   * @returns {string} Text with first letter capitalized
+   */
   static capitalize(text) {
     return `${text.slice(0,1).toUpperCase()}${text.slice(1)}`
   }
@@ -87,14 +97,35 @@ export default class Util {
       .filter(Boolean)
   }
 
+  /**
+   * Asynchronously awaits all promises in parallel.
+   * Wrapper around Promise.all for consistency with other utility methods.
+   *
+   * @param {Promise[]} promises - Array of promises to await
+   * @returns {Promise<any[]>} Results of all promises
+   */
   static async awaitAll(promises) {
     return await Promise.all(promises)
   }
 
+  /**
+   * Settles all promises (both fulfilled and rejected) in parallel.
+   * Wrapper around Promise.allSettled for consistency with other utility methods.
+   *
+   * @param {Promise[]} promises - Array of promises to settle
+   * @returns {Promise<Array>} Results of all settled promises with status and value/reason
+   */
   static async settleAll(promises) {
     return await Promise.allSettled(promises)
   }
 
+  /**
+   * Returns the first promise to resolve or reject from an array of promises.
+   * Wrapper around Promise.race for consistency with other utility methods.
+   *
+   * @param {Promise[]} promises - Array of promises to race
+   * @returns {Promise<any>} Result of the first settled promise
+   */
   static async race(promises) {
     return await Promise.race(promises)
   }

@@ -2,292 +2,234 @@
 
 ![Aunty Rose](media/drawing2.png)
 
-**Aunty Rose** brings sanity to VS Code theme development with
-SCSS-inspired preprocessing, semantic colour relationships, and parametric design
-systems.
+**Transform VS Code theme development from tedious to delightful.**
 
-*(Translation: It's like SCSS but for themes - your colours have names that
-make sense, they talk to each other, and you can change everything by tweaking
-a few variables instead of hunting down 800 random hex codes.)*
+Stop wrestling with 800+ disconnected hex codes. Create beautiful,
+maintainable themes with semantic variables, color functions, and design
+systems that actually make sense.
 
-Express your themes hierarchically now, compile it into flat properties that
-VS Code understands (why... did... they... do... that????).
+## The Problem
 
-## Features at a Glance
+VS Code theme development is a nightmare:
 
-- YAML / JSON5 source → VS Code theme
-- Semantic variable graph (`$(std.bg.panel.inner)`) instead of flat hex soup
-- Colour functions: lighten / darken / fade / solidify / mix / invert / alpha
-- Multi-document ( `---` ) theming for generating variants in a single file
-- Modular imports for vars & theme fragments
-- Change detection & watch mode with coloured status lines + timing
-- Skips redundant writes via output hashing
-- Extensible compiler phases (import → resolve → evaluate → emit)
+- 800+ flat color properties with zero relationships
+- Want to adjust contrast? Hunt through dozens of files for related
+  colors
+- Copy-paste hex codes everywhere and pray nothing breaks
+- No way to express design intent or maintain consistency
 
-## For example
+## The Solution
 
-Before:
+Write themes like a human, compile for VS Code:
 
-```json5
-editor: {
-  background: "$(std.bg.panel)",
-  foreground: "$(std.fg)",
-  selectionBackground: "$(std.bg.accent)",
-  lineHighlightBackground: "fade($(std.bg.accent), 30)"
-}
-```
-
-```text
-
-After:
+**Before (traditional):**
 
 ```json
 {
   "editor.background": "#1e1e1e",
   "editor.foreground": "#e6e6e6",
-  "editor.selectionBackground": "#002e63",
-  "editor.lineHighlightBackground": "#002e63b3",
+  "statusBar.background": "#002e63",
+  "panel.background": "#1a1a1a"
 }
 ```
 
-## The Problem
+**After (Aunty Rose):**
 
-Developing VS Code themes is a mess:
+```yaml
+vars:
+  accent: "#4b8ebd"
+  std:
+    fg: "#e6e6e6"
+    bg: "#1a1a1a"
+    bg.panel: lighten($(std.bg), 15)
+    bg.accent: darken($(accent), 15)
 
-- 800+ flat colour properties with no relationships
-- Want to adjust contrast? Good luck finding all 47 error-related colours
-- Copy-paste hex codes everywhere and pray nothing breaks
-- No semantic meaning, no design system, no composability
+theme:
+  colors:
+    "editor.background": $(std.bg.panel)
+    "editor.foreground": $(std.fg)
+    "statusBar.background": $(std.bg.accent)
+    "panel.background": $(std.bg)
+```
 
-## The Solution
-
-Aunty Rose serves:
-
-- **Semantic variables** - `$(std.accent)` instead of `#4b8ebd`
-- **Colour functions** - `lighten()`, `darken()`, `fade()`, `mix()`, ...
-- **Hierarchical relationships** - panels that automatically maintain proper depth
-- **Modular architecture** - import base systems, override specifics
-- **Instant compilation** - YAML/JSON5 source → complete VS Code theme
+Now when you want to adjust contrast, change one variable and watch it
+cascade through your entire theme.
 
 ## Quick Start
 
-Use with npx - no installation required:
+No installation needed - use with npx:
 
 ```bash
+# Create your first theme
 npx @gesslar/aunty my-theme.yaml
-# Compiles to my-theme.color-theme.json
-```
 
-With watch mode for development:
-
-```bash
+# Watch mode for development
 npx @gesslar/aunty my-theme.yaml --watch
-# Auto-recompiles when files change
-```
 
-Specify an output directory:
-
-```bash
+# Custom output location
 npx @gesslar/aunty -o ./themes my-theme.yaml
-# Compiles to ./themes/my-theme.color-theme.json
-```
-
-For programmatic use as an NPM module:
-
-```bash
-npm i @gesslar/aunty
-```
-
-```javascript
-import Compiler from '@gesslar/aunty'
-
-const file = await loadDataFile('my-theme.yaml')
-await Compiler.compile(file)
-// Result available in file.result.output
 ```
 
 ## CLI Usage
 
-```text
-Usage: aunty [options] <file...>
+```bash
+# Basic compilation
+npx @gesslar/aunty <theme-file>
 
-Options:
-  -w, --watch              Recompile when any input / imported file changes
-  -o, --output-dir <dir>   Destination directory (defaults to cwd)
-  -n, --dry-run            Print compiled JSON to stdout, skip writing
-  -s, --silent             Suppress non-error output (errors still shown; dry-run still prints)
-  --nerd                   Verbose error mode: full chained stack traces
-  -p, --profile            (Reserved) Phase timing flag (basic timings already shown)
-  -V, --version            Output version
-  -h, --help               Show help
+# Multiple files at once
+npx @gesslar/aunty theme1.yaml theme2.yaml theme3.yaml
+
+# Watch for changes (rebuilds automatically)
+npx @gesslar/aunty --watch my-theme.yaml
+
+# Custom output directory
+npx @gesslar/aunty --output-dir ./my-themes my-theme.yaml
+
+# See the compiled JSON without writing files
+npx @gesslar/aunty --dry-run my-theme.yaml
+
+# Silent mode (only show errors)
+npx @gesslar/aunty --silent my-theme.yaml
+
+# Debug mode (detailed error traces)
+npx @gesslar/aunty --nerd my-theme.yaml
 ```
 
-Multiple input theme files are processed in parallel; failures are reported individually.
+### CLI Options
 
-### Nerd Mode (Verbose Errors)
+| Option | Description |
+|--------|-------------|
+| `-w, --watch` | Watch files and rebuild on changes |
+| `-o, --output-dir <dir>` | Specify output directory |
+| `-n, --dry-run` | Print JSON to stdout instead of writing files |
+| `-s, --silent` | Only show errors (useful for scripts) |
+| `--nerd` | Verbose error mode with stack traces |
 
-`AuntyError` already collects a friendly causal chain (each nested context you see in the code adds a trace line). By default you get that whole multi‑line chain — clear, readable, no raw engine noise. Passing `--nerd` does not change the friendly portion; it *appends* a pruned underlying JS stack (function frames) after the trace so you can dive into call sites.
+### Debugging Your Themes
 
-In short:
-
-| Mode | Output |
-|------|--------|
-| default | Friendly multi‑line trace (domain context chain) |
-| `--nerd` | Friendly trace + pruned JS stack frames (prefixed with `*`) |
-
-Good reasons to add `--nerd`:
-
-- Debugging a stubborn variable cycle
-- Locating which imported file introduced a malformed colour
-- Surfacing the original YAML path that produced a bad token/function call
-
-Examples:
+**See what a variable resolves to:**
 
 ```bash
-# Normal (concise) output
-npx @gesslar/aunty bad-theme.yaml
-
-# Verbose diagnostic output
-npx @gesslar/aunty bad-theme.yaml --nerd
-
-# Only verbose errors, suppressing status lines
-npx @gesslar/aunty bad-theme.yaml --nerd --silent
+npx @gesslar/aunty resolve --token editor.background my-theme.yaml
 ```
 
-When `--silent` is combined with `--nerd`, only the friendly trace + appended stack (or dry‑run JSON) is emitted.
+This shows you the complete resolution chain for any theme property.
 
-### Status Line Format
-
-During compilation you will see lines like:
-
-```text
-[SUCCESS]   3.2ms my-theme loaded [INFO] 1423 bytes
-[SUCCESS]   1.1ms my-theme compiled
-[SUCCESS]   0.4ms my-theme <written> [INFO] 16892 bytes
-```
-
-Bracket colours reflect phase category (success/info/warn/error). Times are wall‑clock milliseconds rounded to one decimal.
-
-### Watch Mode
-
-`--watch` sets up file watchers for the entry file and any files imported during compilation. On change:
-
-1. The bundle for the changed entry file (if it was the root) is reloaded.
-2. Any existing watcher is paused while recompiling (prevents cascaded triggers).
-3. Only changed output is written (hash comparison) — unchanged themes are skipped silently except for a "&lt;skipped&gt;" state line.
-
-## Bundle Object Structure
-
-Internally each entry file becomes a mutable "bundle":
-
-```ts
-interface Bundle {
-  file: FileObject                  // entry file
-  source: any                       // parsed YAML / JSON5 (must contain config)
-  result?: {
-    output: Record<string, any>     // final theme JSON object
-    importedFiles: FileObject[]     // all secondary sources
-    json: string                    // cached JSON string of output
-  }
-  watcher?: FSWatcher               // active chokidar watcher in --watch
-  hash?: string                     // sha256 of result.json
-  perf?: {
-    load?: number[]
-    compile?: number[]
-    write?: number[]
-  }
-}
-```
-
-You won't usually touch this directly unless extending the compiler.
-
-## Multi-Document & Imports
-
-You can split logical sections with YAML document separators `---` to express variants or staged overrides in a single file. Each later document can add or override earlier `vars` / `theme` fragments.
-
-Imports live under `config.imports` (e.g. `config.imports.vars.<alias>: ./file.yaml`). Imported variable trees merge into your namespace; you can then reference them like `$(alias.palette.primary)`.
-
-## Skipped Writes & Dry Runs
-
-Outputs are hashed (sha256). If the hash matches the existing on-disk file, no write occurs and the state shows `<skipped>`. Use `--dry-run` to inspect the generated JSON without touching the filesystem.
-
-## Performance Timing
-
-Each phase timing (load / compile / write) is recorded (ms, one decimal) and displayed inline. Internally they are stored numerically in `bundle.perf.*` arrays for potential future aggregation or profiling output.
-
-## Extending
-
-Potential extension points (PRs / forks):
-
-- Additional colour manipulation functions
-- Custom phase injectors (e.g. contrast auto-tuning)
-- Output format plugins (JetBrains, Sublime, etc.)
-- Structured profiling / JSON stats emitter when `--profile` is set
-
-If you build something neat, consider opening a PR or sharing a gist.
-
-## Theme Syntax
-
-### Basic Theme Structure
+## Basic Theme Structure
 
 ```yaml
-# my-theme.yaml
+# my-awesome-theme.yaml
 config:
   name: "My Awesome Theme"
   type: dark
 
 vars:
-  # Define your base palette
-  main: "#e6e6e6"         # Primary foreground
-  accent: "#4b8ebd"       # Brand colour
+  # Your color palette
+  primary: "#4b8ebd"
+  success: "#4ab792"
+  error: "#b74a4a"
 
   # Build semantic relationships
   std:
-    fg: $(main)
-    fg.accent: lighten($(accent), 50)
-    bg: invert($(main))
+    fg: "#e6e6e6"
+    bg: "#1a1a1a"
+    accent: $(primary)
     bg.accent: darken($(accent), 15)
 
 theme:
   colors:
-    # Use semantic names, not hex codes
+    # Editor
     "editor.foreground": $(std.fg)
     "editor.background": $(std.bg)
+    "editor.selectionBackground": $(std.bg.accent)
+
+    # UI
     "statusBar.background": $(std.bg.accent)
+    "activityBar.background": $(std.bg)
+    "sideBar.background": $(std.bg)
 ```
 
-### Colour Functions
+## Color Functions
 
-| Function | Example | Result | Description |
-|----------|---------|--------|-------------|
-| `lighten(colour, amount)` | `lighten($(accent), 25)` | Lighter version of accent | Increase lightness by 25% |
-| `darken(colour, amount)` | `darken($(primary), 30)` | Darker version of primary | Decrease lightness by 30% |
-| `fade(colour, amount)` | `fade("#4b8ebd", 50)` | 50% more transparent | Reduce opacity by 50% |
-| `solidify(colour, amount)` | `solidify($(bg.translucent), 20)` | 20% more opaque | Increase opacity by 20% |
-| `alpha(colour, value)` | `alpha($(brand), 0.5)` | 50% transparent brand | Set opacity to exact value (0-1) |
-| `invert(colour)` | `invert($(foreground))` | Opposite of foreground | Invert RGB channels |
-| `mix(colour1, colour2, ratio)` | `mix($(accent), $(error), 30)` | Purple blend | Mix 30% error colour with accent |
+Make colors that work together:
 
-### Colour Spaces
+| Function | Example | Result |
+|----------|---------|--------|
+| `lighten(color, %)` | `lighten($(bg), 25)` | 25% lighter background |
+| `darken(color, %)` | `darken($(accent), 30)` | 30% darker accent |
+| `fade(color, %)` | `fade($(accent), 50)` | 50% transparent |
+| `alpha(color, value)` | `alpha($(brand), 0.5)` | Set exact transparency |
+| `mix(color1, color2, %)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
+| `invert(color)` | `invert($(fg))` | Perfect opposite |
 
-| Format | Example | Usage | Description |
-|--------|---------|-------|-------------|
-| `rgb(r, g, b)` | `rgb(75, 142, 189)` | Direct RGB values | Red, Green, Blue (0-255) |
-| `rgba(r, g, b, a)` | `rgba(75, 142, 189, 0.8)` | RGB with transparency | Alpha channel (0-1) |
-| `hsl(h, s, l)` | `hsl(210, 50%, 52%)` | Hue, Saturation, Lightness | More intuitive colour picking |
-| `hsla(h, s, l, a)` | `hsla(210, 50%, 52%, 0.8)` | HSL with transparency | Alpha channel (0-1) |
-| `hsv(h, s, v)` | `hsv(210, 60, 74)` | Hue, Saturation, Value | Alternative colour model |
-| `hsva(h, s, v, a)` | `hsva(210, 60, 74, 0.8)` | HSV with transparency | Alpha channel (0-1) |
+## Variable Reference
 
-### Modular Design
+Use any of these syntaxes (they're identical):
 
 ```yaml
-# base-colours.yaml
+vars:
+  accent: "#4b8ebd"
+
+  # All equivalent:
+  variant1: $(accent)          # Recommended
+  variant2: $accent            # Short form
+  variant3: ${accent}          # Braced form
+```
+
+## Theme Development Workflow
+
+### 1. Create Your Theme File
+
+```bash
+# Create a new theme file
+touch ocean-theme.yaml
+```
+
+### 2. Set Up Watch Mode
+
+```bash
+# Start watching for changes
+npx @gesslar/aunty --watch ocean-theme.yaml
+```
+
+### 3. Install Your Theme
+
+After compilation, you'll get a `.color-theme.json` file:
+
+1. **Copy to VS Code**: Place in `~/.vscode/extensions/my-themes/themes/`
+2. **Or package as extension**: Use `yo code` to create a theme extension
+3. **Test immediately**: Press `Ctrl+K Ctrl+T` in VS Code to switch themes
+
+### 4. Iterate and Refine
+
+With watch mode, every save triggers recompilation. VS Code will
+automatically reload your theme changes.
+
+### Output Files
+
+Aunty Rose generates standard VS Code theme files:
+
+```bash
+my-theme.yaml  →  my-theme.color-theme.json
+```
+
+The output file name is based on your input file, with `.color-theme.json`
+extension.
+
+## Advanced Features
+
+### Modular Theme Design
+
+Break your themes into reusable components:
+
+```yaml
+# colors.yaml
 vars:
   palette:
     primary: "#4b8ebd"
     success: "#4ab792"
     error: "#b74a4a"
+    warning: "#b36b47"
 
 ---
 
@@ -297,202 +239,127 @@ config:
   type: dark
   imports:
     vars:
-      colors: "./base-colours.yaml"
+      colors: "./colors.yaml"
 
 vars:
-  # Access imported variables
-  accent: $(colours.palette.primary)
+  # Use imported colors
+  accent: $(colors.palette.primary)
 
-  # Override or extend as needed
+  # Build your design system
   std:
     fg: "#e6e6e6"
     bg: "#1a1a1a"
     accent: $(accent)
+    bg.accent: darken($(accent), 15)
 
 theme:
   colors:
     "editor.foreground": $(std.fg)
     "editor.background": $(std.bg)
+    "statusBar.background": $(std.bg.accent)
 ```
 
-## Advanced Features
+This creates three themes with the same structure but different accent
+colors.
 
-### Variable / Token Reference Syntax
+### Watch Mode for Development
 
-You can reference previously defined variables (and nested properties) using
-any of three interchangeable syntaxes:
+Perfect for theme development - see changes instantly:
 
-| Form | Example | Notes |
-|------|---------|-------|
-| `$path.to.var` | `$std.bg.panel.inner` | Short / legacy form. Stops at first non word / `.` character. |
-| `$(path.to.var)` | `$(std.bg.panel.inner)` | Recommended. Explicit terminator allows adjacent punctuation: `fade($(std.bg.accent), 30)` |
-| `${path.to.var}` | `${std.bg.panel.inner}` | Braced form; behaves the same as `$(...)`. |
+```bash
+npx @gesslar/aunty my-theme.yaml --watch
+```
 
-All three resolve identically. You can even mix them freely (the evaluator
-doesn't mind); the parenthesised form is simply the most robust inside longer
-strings or when followed immediately by characters that could extend a bare
-token.
+Now edit your YAML file and watch VS Code update automatically!
 
-Examples:
+## Tips for Great Themes
+
+### Start with Meaning, Not Colors
 
 ```yaml
+# ❌ Don't start with random colors
 vars:
-  std:
-    bg: "#191919"
-    bg.panel.inner: lighten($(std.bg), 6)
-    fg: invert($std.bg)
-    accent: mix(${std.fg}, "#ff6b9d", 25)
+  red: "#ff0000"
+  blue: "#0000ff"
 
-theme:
-  colors:
-    "editor.background": $(std.bg)
-    "editor.foreground": $std.fg
-    "statusBar.background": ${std.bg.panel.inner}
-```
-
-Resolution order reminder:
-
-1. All `vars` entries are fully resolved first (only against the variable set).
-2. Theme entries are then resolved against the union of resolved vars + theme.
-
-This guarantees variables never see partially-resolved theme state and lets
-theme keys layer atop a stable semantic base.
-
-### Semantic Colour Hierarchies
-
-Build visual depth with mathematical relationships:
-
-```yaml
-vars:
-  std:
-    bg: "#191919"
-    bg.panel:
-      outer: $(std.bg)                           # Darkest (status bars)
-      inner: lighten($(std.bg.panel.outer), 10)  # Medium (sidebars)
-      innermost: lighten($(std.bg.panel.inner), 10)  # Lightest (editor)
-```
-
-### Status-Driven Colour Systems
-
-Semantic meaning that cascades automatically:
-
-```yaml
+# ✅ Start with semantic meaning
 vars:
   status:
     error: "#b74a4a"
-    warning: "#b36b47"
     success: "#4ab792"
 
-  # All error states inherit the same base colour
-  std:
-    fg.error: lighten($(status.error), 70)
-    bg.error: $(status.error)
-    outline.error: fade($(status.error), 40)
+  ui:
+    background: "#1a1a1a"
+    surface: lighten($(ui.background), 15)
 ```
 
-### Theme Variants
-
-Generate multiple themes from one design system:
+### Use Mathematical Relationships
 
 ```yaml
-# Shared base system
+# Colors that harmonize automatically
 vars:
-  relationships: # ... your design system
+  base: "#4b8ebd"
 
-# Theme 1: Blue accent
-vars:
-  accent: "#4b8ebd"
-
----
-# Theme 2: Pink accent
-vars:
-  accent: "#ff6b9d"
-
----
-# Theme 3: Green accent
-vars:
-  accent: "#4ab792"
+  harmonies:
+    lighter: lighten($(base), 20)
+    darker: darken($(base), 20)
+    complement: mix($(base), invert($(base)), 50)
+    muted: mix($(base), "#808080", 30)
 ```
 
-## API Reference
+### Test with Real Code
 
-### Compiler
+Always test your themes with actual code files to see how syntax
+highlighting looks with your color choices.
+
+## More Examples
+
+Check out the `/examples` folder for complete theme files showing
+different approaches and techniques.
+
+## Troubleshooting
+
+### Common Issues
+
+**Theme not appearing in VS Code:**
+
+- Check that the output file ends with `.color-theme.json`
+- Verify the file is in your extensions themes folder
+- Try reloading VS Code (`Ctrl+Shift+P` → "Developer: Reload Window")
+
+**Compilation errors:**
 
 ```bash
-npm install @gesslar/aunty
+# See detailed error information
+npx @gesslar/aunty --nerd my-theme.yaml
+
+# Check what a specific variable resolves to
+npx @gesslar/aunty resolve --token problematic.variable my-theme.yaml
 ```
 
-```javascript
-import Compiler from '@gesslar/aunty'
+**Variables not resolving:**
 
-const file = await loadDataFile('my-theme.yaml')
-await Compiler.compile(file)
-// Result available in my-theme.color-theme.json
-```
+- Check variable names for typos
+- Use the resolve command to trace dependency chains
+- Look for circular references (variables referencing themselves)
 
-## Architecture
+**Watch mode not updating:**
 
-Aunty Rose processes themes in phases:
+- Check that files aren't being saved outside the watched directory
+- Try restarting watch mode
+- Verify file permissions
 
-1. **Import Resolution** - Merge modular theme files
-2. **Variable Decomposition** - Flatten nested structures
-3. **Token Evaluation** - Resolve `$(variable)` references
-4. **Function Application** - Execute colour manipulation functions
-5. **Recursive Resolution** - Handle variables that reference other variables
-6. **Theme Assembly** - Build final VS Code theme JSON
+## Getting Help
 
-Error handling is per-entry theme: a failure in one file doesn't halt others (thanks to `Promise.allSettled`).
-
-## Philosophy
-
-Aunty Rose embraces **parametric design** principles:
-
-- **Semantic over literal** - `$(std.accent)` tells you *what* it is
-- **Relationships over isolation** - Colours that belong together, stay together
-- **Composition over inheritance** - Mix and match modular systems
-- **Intention over implementation** - Express design intent, not hex codes
-
-## Development
-
-```bash
-git clone https://github.com/gesslar/aunty
-cd aunty
-npm install
-npm test
-```
-
-Local CLI development:
-
-```bash
-node ./src/build.js examples/simple/midnight-ocean.yaml -o ./examples/output --watch
-```
-
-Publish (maintainer): ensure README & package version sync, then `npm run submit` (as configured in your scripts) or standard `npm publish` if appropriate.
+- **Examples**: Complete theme files in the `/examples` directory
+- **Issues**: Report bugs or request features on GitHub
+- **Community**: Share your themes and get feedback
 
 ## License
 
-**The Unlicense** - Because the idea of copyrighting colour arrangements is absurd.
+**The Unlicense** - Use this however you want! The idea of copyrighting
+color arrangements is absurd.
 
-If you think otherwise, gg `¯\_(ツ)_/¯`.
+---
 
-### Kary Pro Colors
-
-To demonstrate the flexibility of incorporating multiple sources, included
-in this repo are two syntax highlighting files from [Kary Pro Colors](https://marketplace.visualstudio.com/items?itemName=karyfoundation.theme-karyfoundation-themes)
-by Pouya Kary. These files *are not* released under the Unlicense, but rather
-bear the own licensing terms. Using those files, you are bound by Pouya's very
-generous licensing.
-
-These files differ from the original source in that they have been modified to
-correspond to the DSL of this theming engine.
-
-A copy of the GPL3 license is included in the `examples/advance/import`
-directory and applies specifically to:
-
-- `examples/advanced/import/karyprocolors-dark.tmLanguage.yaml`
-- `examples/advanced/import/karyprocolors-light.tmLanguage.yaml`
-
-## *Fin*
-
-I don't write tests. If that bothers you, you can fork the repo and write your
-own.
+*Aunty Rose: Because your themes deserve better than hex codes.*

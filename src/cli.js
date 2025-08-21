@@ -5,33 +5,30 @@
  *
  * Responsibilities:
  *  - Parse CLI arguments (supports JSON5 / YAML theme entries, globs resolved externally by the shell)
- *  - Load a theme source file into an in‑memory "bundle" structure
- *  - Delegate compilation to `Compiler.compile(bundle)` (populates bundle.result)
+ *  - Create Theme instances for compilation units
+ *  - Delegate compilation to Theme.build() which internally uses Compiler.compile()
  *  - Write (or print with --dry-run) the resulting VS Code color theme JSON
  *  - Prevent unnecessary writes by hashing previous output
  *  - (Optional) Watch all participating source + imported files and recompile on change
  *
  * Key Concepts:
- *  bundle: {
- *    file: FileObject                // entry theme file
+ *  Theme: {
+ *    sourceFile: FileObject          // entry theme file
  *    source: object                  // raw parsed data (must contain `config`)
- *    result?: {
- *       output: object               // final theme JSON object
- *       importedFiles: FileObject[]  // secondary sources discovered during compile
- *       json: string                 // cached stringified theme (added post-compile)
- *    }
- *    watcher?: FSWatcher             // chokidar watcher in --watch mode
- *    hash?: string                   // sha256 of bundle.result.json (after compile)
- *    perf?: {                        // simple per-phase timing samples (numbers, ms, 1 decimal)
- *       load?: number[]
- *       compile?: number[]
- *       write?: number[]
- *    }
- * }
+ *    output: object                  // final theme JSON object
+ *    dependencies: FileObject[]      // secondary sources discovered during compile
+ *    lookup: object                  // variable lookup data for compilation
+ *    breadcrumbs: Map                // variable resolution tracking
+ *  }
  *
- * NOTE: The --profile flag is currently parsed but not yet producing timing output
- * beyond the load phase stored in bundle.perf. Future enhancement could surface
- * per-phase timings (compile, write, etc.).
+ * The Theme class manages its complete lifecycle:
+ *  - load() - loads and parses the source file
+ *  - build() - compiles the theme via Compiler
+ *  - write() - outputs the compiled theme to file or stdout
+ *  - Internal watch mode support with chokidar integration
+ *
+ * NOTE: The --profile flag is currently parsed but not yet producing timing output.
+ * Future enhancement could surface per-phase timings (load, compile, write, etc.).
  */
 
 import {program} from "commander"
