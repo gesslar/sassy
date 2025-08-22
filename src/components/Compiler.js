@@ -10,6 +10,7 @@ import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
 import _Term from "./Term.js"
+import Term from "./Term.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -120,7 +121,6 @@ export default class Compiler {
         throw new AuntyError(
           `Import '${sectionName}' must be a string or an array of strings.`
         )
-
 
       // things should already be resolved at this point as far as
       // the header is concerned

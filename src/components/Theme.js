@@ -1,4 +1,3 @@
-import chokidar from "chokidar"
 import path from "node:path"
 
 import Compiler from "./Compiler.js"
@@ -23,9 +22,6 @@ export default class Theme {
   #dependencies = []
   #lookup = null
   #breadcrumbs = null
-
-  // Build-related properties
-  #busy = false
 
   // Write-related properties
   #output = null
@@ -107,6 +103,9 @@ export default class Theme {
    */
   set dependencies(data) {
     this.#dependencies = data
+
+    if(!this.#dependencies.includes(this.#sourceFile))
+      this.#dependencies.unshift(this.#sourceFile)
   }
 
   /**
@@ -170,8 +169,6 @@ export default class Theme {
       )
 
     this.#source = source
-
-    return this
   }
 
   /**
@@ -198,13 +195,9 @@ export default class Theme {
    * @returns {Promise<void>} Resolves when build is complete
    */
   async build(buildOptions) {
-    // Store stdin handler reference to avoid multiple listeners
-    // let stdinHandler = null
-
-    this.#busy = false
-    await this.#compileTheme(this.#options, buildOptions)
-
-    return this
+    const compiler = new Compiler()
+    await compiler.compile(this, buildOptions)
+    // await this.#compileTheme(this.#options, buildOptions)
   }
 
   /**
@@ -217,148 +210,62 @@ export default class Theme {
    * @returns {Promise<void>} Resolves when compilation is complete
    * @private
    */
-  async #compileTheme(options, buildOptions) {
-    if(this.#busy)
-      return
+  async #compileTheme(options) {
+    // First, we pause because writing themes will trigger it again!
+    if(this.#watcher) {
+      await this.#watcher.close()
+      this.#watcher = null
+    }
 
-    this.#busy = true
-    try {
-      // First, we pause because writing themes will trigger it again!
-      if(this.#watcher) {
-        await this.#watcher.close()
-        this.#watcher = null
-      }
+    // Get rid of any artefacts, in case we're watching, or just set them
+    // to default. It doesn't super matter why. Why are you asking questions?
+    // Just reset already. Ok, fine.
+    this.reset()
 
-      // Get rid of any artefacts, in case we're watching, or just set them
-      // to default. It doesn't super matter why. Why are you asking questions?
-      // Just reset already. Ok, fine.
-      this.reset()
+    // Watch mode
+    if(options.watch) {
+      const dependencies = this.#dependencies
 
-      // get a new compiler and compile this bad boy/girl/other!
-      const compiler = new Compiler()
-      await compiler.compile(this, buildOptions)
+      this.#watcher = chokidar.watch(dependencies, {
+        // Prevent watching own output files
+        ignored: [this.#outputFileName],
+        // Add some stability options
+        awaitWriteFinish: {
+          stabilityThreshold: 100,
+          pollInterval: 50
+        }
+      })
 
-      // TODO: bundle stuff here - commented code references old bundle structure
-      // Term.status([
-      //   ["success", rightAlignText(`${compileCost.toLocaleString()}ms`, 10)],
-      //   `${bundle.file.module} compiled`
-      // ], options)
+      this.#watcher.on("change", async changed => {
+        const relative = path.relative(this.#cwd, changed)
+        const _changedPath = relative.startsWith("..")
+          ? changed
+          : relative
 
-      // if(Array.isArray(bundle.perf.compile))
-      //   bundle.perf.compile.push(compileCost)
-      // else
-      //   bundle.perf.compile = [compileCost]
+        if(changed === this.#sourceFile.path)
+          await this.load()
 
-      // const {cost: writeCost, result: writeResult} =
-      //   await time(async() => writeTheme(bundle, outputDir, options))
+        // Term.status([
+        //   ["modified", rightAlignText("CHANGED", 10)],
+        //   changedPath,
+        //   ["modified", bundle.file.module]
+        // ], options)
 
-      // this.#write(options)
+        // TODO: bundle stuff here - commented bundle reload logic
+        // if(changed === this.#sourceFile.path) {
+        //   const {cost: reloadCost, result: tempBundle} =
+        //       await time(async() => loadThemeAsBundle(bundle.file))
+        //   const reloadedBytes = await File.fileSize(bundle.file)
 
-      // const {state: writeState, bytes: writeBytes, fileName} = writeResult
-
-      // Term.status([
-      //   ["success", rightAlignText(`${writeCost.toLocaleString()}ms`, 10)],
-      //   `${fileName} <${writeState}>`,
-      //   ["info", `${writeBytes.toLocaleString()} bytes`],
-      // ], options)
-
-      // TODO: bundle stuff here - more commented bundle references
-      // if(Array.isArray(bundle.perf.write))
-      //   bundle.perf.write.push(writeCost)
-      // else
-      //   bundle.perf.write = [writeCost]
-
-      // Watch mode
-      if(options.watch) {
-        const dependencies = this.#dependencies
-
-        this.#watcher = chokidar.watch(dependencies, {
-          // Prevent watching own output files
-          ignored: [this.#outputFileName],
-          // Add some stability options
-          awaitWriteFinish: {
-            stabilityThreshold: 100,
-            pollInterval: 50
-          }
-        })
-
-        this.#watcher.on("change", async changed => {
-          const relative = path.relative(this.#cwd, changed)
-          const _changedPath = relative.startsWith("..")
-            ? changed
-            : relative
-
-          if(changed === this.#sourceFile.path)
-            await this.load()
-
-          // Term.status([
-          //   ["modified", rightAlignText("CHANGED", 10)],
-          //   changedPath,
-          //   ["modified", bundle.file.module]
-          // ], options)
-
-          // TODO: bundle stuff here - commented bundle reload logic
-          // if(changed === this.#sourceFile.path) {
-          //   const {cost: reloadCost, result: tempBundle} =
-          //       await time(async() => loadThemeAsBundle(bundle.file))
-          //   const reloadedBytes = await File.fileSize(bundle.file)
-
-          // Term.status([
-          //   ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 10)],
-          //   `${bundle.file.module} loaded`,
-          //   ["info", `${reloadedBytes} bytes`],
-          // ], options)
-          // }
-
-          this.#compileTheme()
-        })
-
-        // // Only set up stdin handling once
-        // if(!options.silent && !stdinHandler) {
-        //   process.stdin.setRawMode(true)
-        //   process.stdin.resume()
-        //   process.stdin.setEncoding("utf8")
-
-        //   stdinHandler = key => {
-        //     if(key === "q" || key === "\u0003") {
-        //       // 'q' or Ctrl+C to exit
-        //       Term.info("")
-        //       Term.info("Stopped watching.")
-        //       Term.info("Exiting.")
-
-        //       // TODO: bundle stuff here - stdin handler references old bundle
-        //       // Clean up
-        //       if(bundle.watcher) {
-        //         bundle.watcher.close()
-        //       }
-
-        //       if(stdinHandler) {
-        //         process.stdin.removeListener("data", stdinHandler)
-        //       }
-
-        //       process.exit(0)
-        //     } else if(key === "r" || key === "\x1b[15~") {
-        //       // F5 key sends escape sequence: \x1b[15~
-
-        //       Term.status([
-        //         ["info", "REBUILDING"],
-        //         bundle.file.path
-        //       ], options)
-
-        //       if(bundle.watcher) {
-        //         bundle.watcher.close()
-        //         bundle.watcher = null
-        //       }
-
-        //       doItUp()
-        //     }
-        //   }
-
-        //   process.stdin.on("data", stdinHandler)
+        // Term.status([
+        //   ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 10)],
+        //   `${bundle.file.module} loaded`,
+        //   ["info", `${reloadedBytes} bytes`],
+        // ], options)
         // }
-      }
-    } finally {
-      this.#busy = false
+
+        this.#compileTheme()
+      })
     }
   }
 
@@ -370,12 +277,6 @@ export default class Theme {
    */
   async write() {
     const output = this.#outputJson
-
-    if(this.#options.dryRun)
-      return Term.log(this.#outputJson)
-
-    // return {state: "dry-run", bytes: output.length, fileName}
-
     const outputDir = new DirectoryObject(this.#options.outputDir)
     const file = new FileObject(this.#outputFileName, outputDir)
     const nextHash = this.#outputHash
@@ -383,9 +284,15 @@ export default class Theme {
       ? Util.hashOf(await File.readFile(file))
       : "kakadoodoo"
 
+    if(this.#options.dryRun) {
+      Term.log(this.#outputJson)
+
+      return {status: "dry-run", file}
+    }
+
     // Skip identical bytes
     if(lastHash === nextHash)
-      return
+      return {status: "skipped", file}
 
     // return {state: "skipped", bytes: output.length, fileName}
 
@@ -393,10 +300,8 @@ export default class Theme {
     if(!await outputDir.exists)
       await File.assureDirectory(outputDir, {recursive: true})
 
-    await File.writeFile(file, `${output}`)
+    await File.writeFile(file, output)
 
-    Term.info(`${file.path} written`)
-
-    // return {state: "written", bytes: output.length, fileName}
+    return {status: "written", bytes: output.length, file}
   }
 }

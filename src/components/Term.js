@@ -63,16 +63,16 @@ export default class Term {
   }
 
   /**
-   * Emit a status line (optionally suppressed).
+   * Emit a status line to the terminal.
    *
-   * This method no longer performs any formatting or colour segment
-   * construction; it simply logs the provided argument (typically a
-   * pre‑formatted string) unless `silent` is true. The rich bracketed / coloured
-   * message assembly previously handled here has been extracted to
-   * `terminalMessage()`. Call that first if you need structured formatting, then
-   * pass or let it call back into `status()`.
+   * Accepts either a plain string or an array of message segments (see
+   * `terminalMessage()` for formatting options). If `silent` is true, output
+   * is suppressed.
    *
-   * @param {string} args - Preformatted status message string.
+   * This is a convenient shortcut for logging status updates, with optional
+   * formatting and easy suppression.
+   *
+   * @param {string | Array<string | [string, string]>} args - Message or segments.
    * @param {object} [options] - Behaviour flags.
    * @param {boolean} options.silent - When true, suppress output.
    * @returns {void}
