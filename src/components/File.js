@@ -297,6 +297,24 @@ async function assureDirectory(dirObject, options = {}) {
   return dirObject.exists
 }
 
+/**
+ * Computes the relative path from one file or directory to another.
+ *
+ * If the target is outside the source (i.e., the relative path starts with ".."),
+ * returns the absolute path to the target instead.
+ *
+ * @param {FileObject|DirectoryObject} from - The source file or directory object
+ * @param {FileObject|DirectoryObject} to - The target file or directory object
+ * @returns {string} The relative path from `from` to `to`, or the absolute path if not reachable
+ */
+function relativeOrAbsolutePath(from, to) {
+  const relative = path.relative(from.path, to.path)
+
+  return relative.startsWith("..")
+    ? to.path
+    : relative
+}
+
 export {
   // Functions
   assureDirectory,
@@ -312,6 +330,7 @@ export {
   ls,
   pathToUri,
   readFile,
+  relativeOrAbsolutePath,
   uriToPath,
   writeFile,
 }

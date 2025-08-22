@@ -18,7 +18,7 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "Simple (JSON5)",
+      "name": "Simple (JSON5) (watch)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -27,6 +27,7 @@
         "exec",
         "--",
         "build",
+        "--watch",
         "--output-dir",
         "./examples/output",
         "./examples/simple/midnight-ocean.json5"

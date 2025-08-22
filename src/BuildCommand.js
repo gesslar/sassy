@@ -1,12 +1,22 @@
 import AuntyCommand from "./components/AuntyCommand.js"
 import Term from "./components/Term.js"
 import Theme from "./components/Theme.js"
+import Util from "./Util.js"
+import FileObject from "./components/FileObject.js"
+import * as File from "./components/File.js"
+
+import chokidar from "chokidar"
+import process from "node:process"
+import {EventEmitter} from "node:events"
 
 /**
  * Command handler for building VS Code themes from source files.
  * Handles compilation, watching for changes, and output generation.
  */
 export default class BuildCommand extends AuntyCommand {
+  #emitter = new EventEmitter()
+  #watchers = new Map()
+
   /**
    * Creates a new BuildCommand instance.
    *
@@ -33,34 +43,254 @@ export default class BuildCommand extends AuntyCommand {
    * @returns {Promise<void>} Resolves when all files are processed
    */
   async execute(fileNames, options) {
-    if(options.watch) {
-      Term.status([
-        ["info", "WATCH MODE"],
-        "F5=recompile, q=quit"
-      ], options)
-      Term.info()
-    }
-
     const {cwd} = this
 
-    await Promise.allSettled(
-      fileNames.map(async fileName => {
-        const fileObject = await this.resolveThemeFileName(fileName, cwd)
-        const theme = new Theme(fileObject, cwd, options)
+    if(options.watch) {
+      this.#introduceWatching(options)
+      this.#initialiseInputHandler(options)
 
-        await theme.load()
-        await theme.build()
-        await theme.write()
+      this.#emitter.on("fileChanged", async({theme,changed}) =>
+        await this.#handleFileChange({theme,changed,options}))
+      this.#emitter.on("quit", async() =>
+        await this.#handleQuit())
+      this.#emitter.on("rebuild", async() =>
+        await this.#handleRebuild(options))
+      this.#emitter.on("resetWatcher", async theme =>
+        await this.#resetWatcher(theme, options)
+      )
+    }
 
-        return theme
-      })
+    const themes = await Promise.allSettled(
+      fileNames.map(async fileName =>
+        this.#buildTheme({fileName, cwd, options}))
     )
 
-    // Ok nothing crashed heretofore, so... ok let's make the output directory
-    // if it doesn't already exist.
+    for(const element of themes) {
+      const theme = element.value
+      if(theme instanceof Theme)
+        await this.#resetWatcher(theme, options)
+    }
+  }
 
-    // await Promise.allSettled(
-    //   inputArgs.map(input => processTheme({input, cwd, options}))
-    // )
+  /**
+   * Builds a theme from the given file name and options.
+   *
+   * @param {object} params - Parameters for building the theme
+   * @param {string} params.fileName - The theme file name
+   * @param {string} params.cwd - Current working directory
+   * @param {object} params.options - Build options
+   * @returns {Promise<Theme>} The built Theme instance
+   */
+  async #buildTheme({fileName, cwd, options}) {
+    const fileObject = await this.resolveThemeFileName(fileName, cwd)
+    const theme = new Theme(fileObject, cwd, options)
+
+    return this.#buildPipeline({theme, options})
+  }
+
+  /**
+   * Runs the build pipeline for a theme: load, build, and write.
+   *
+   * @param {object} params - Parameters for the build pipeline
+   * @param {Theme} params.theme - The theme instance
+   * @param {object} params.options - Build options
+   * @returns {Promise<Theme>} The processed Theme instance
+   */
+  async #buildPipeline({theme, options}) {
+    theme.reset()
+
+    /**
+     * ****************************************************************
+     * Have the theme load itself.
+     * ****************************************************************
+     */
+
+    const {cost: loadCost} = await Util.time(() => theme.load())
+    const bytes = await File.fileSize(theme.sourceFile)
+    Term.status([
+      ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10)],
+      `${theme.sourceFile.module} loaded`,
+      ["info", `${bytes} bytes`]
+    ], options)
+
+    /**
+     * ****************************************************************
+     * Have the theme build itself.
+     * ****************************************************************
+     */
+
+    const {cost: buildCost} = await Util.time(() => theme.build())
+    Term.status([
+      ["success", Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10)],
+      `${theme.sourceFile.module} compiled`
+    ], options)
+
+    /**
+     * ****************************************************************
+     * Lastly. Tom Riddle that shit into the IO! I would say just "O",
+     * but that wouldn't be very inclusive language. *I see you!*
+     * ****************************************************************
+     */
+
+    const {cost: writeCost, result} = await Util.time(() => theme.write())
+    const {
+      status: writeStatus,
+      file: outputFile,
+      bytes: writeBytes
+    } = result
+
+    const outputFilename = File.relativeOrAbsolutePath(this.cwd, outputFile)
+    const status = [
+      ["success", Util.rightAlignText(`${writeCost.toLocaleString()}ms`, 10)],
+    ]
+
+    if(writeStatus === "written") {
+      status.push(
+        `${outputFilename} written`,
+        ["success", `${writeBytes.toLocaleString()} bytes`]
+      )
+    } else {
+      status.push(
+        `${outputFilename}`,
+        ["warn", writeStatus.toLocaleUpperCase()]
+      )
+    }
+
+    Term.status(status)
+
+    return theme
+  }
+
+  /**
+   * Handles a file change event and triggers a rebuild for the theme.
+   *
+   * @param {object} params - Parameters for the file change
+   * @param {Theme} params.theme - The theme instance
+   * @param {string} params.changed - Path to the changed file
+   * @param {object} params.options - Build options
+   * @returns {Promise<void>}
+   */
+  async #handleFileChange({theme, changed, options}) {
+    const changedFile = new FileObject(changed)
+    const fileName = File.relativeOrAbsolutePath(this.cwd, changedFile)
+
+    Term.status([
+      ["info", "REBUILDING"],
+      fileName
+    ], options)
+
+    this.#buildPipeline({theme,options})
+  }
+
+  /**
+   * Handles quitting the watch mode and cleans up watchers.
+   *
+   * @returns {Promise<void>}
+   */
+  async #handleQuit() {
+    for(const watcher of this.#watchers.values())
+      await watcher.close()
+
+    Term.info()
+    Term.info("Exiting.")
+
+    process.stdin.setRawMode(false)
+    process.exit(0)
+  }
+
+  /**
+   * Handles a rebuild event, resetting and rebuilding all watched themes.
+   *
+   * @param {object} options - Build options
+   * @returns {Promise<void>}
+   */
+  async #handleRebuild(options) {
+    const themes = Array.from(this.#watchers.keys())
+
+    await Promise.allSettled(themes.map(async theme => {
+      await this.#resetWatcher(theme, options)
+      await this.#buildPipeline({theme, options})
+    }))
+  }
+
+  /**
+   *
+   * @param options
+   */
+  /**
+   * Displays watch mode status and instructions.
+   *
+   * @param {object} options - Build options
+   * @returns {boolean} Always returns true
+   */
+  #introduceWatching(options) {
+    Term.status([
+      ["info", "WATCH MODE"],
+      "F5=recompile, q=quit"
+    ], options)
+    Term.info()
+
+    return true
+  }
+
+  /**
+   *
+   * @param theme
+   * @param options
+   */
+  /**
+   * Resets the file watcher for a theme, setting up new dependencies.
+   *
+   * @param {Theme} theme - The theme instance
+   * @param {object} options - Build options
+   * @returns {Promise<void>}
+   */
+  async #resetWatcher(theme, options) {
+    if(options.watch) {
+      if(this.#watchers.has(theme)) {
+        let watcher = this.#watchers.get(theme)
+        await watcher.close()
+        // eslint-disable-next-line no-useless-assignment
+        watcher = null
+        this.#watchers.delete(theme)
+      }
+
+      const dependencies = theme.dependencies.map(d => d.path)
+      const watcher = chokidar.watch(dependencies, {
+        // Prevent watching own output files
+        ignored: [theme.outputFileName],
+        // Add some stability options
+        awaitWriteFinish: {
+          stabilityThreshold: 100,
+          pollInterval: 50
+        }
+      })
+
+      watcher.on("change", changed => this.#emitter.emit("fileChanged", {theme, changed}))
+
+      this.#watchers.set(theme, watcher)
+    }
+  }
+
+  /**
+   *
+   */
+  /**
+   * Initialises the input handler for watch mode (F5=recompile, q=quit).
+   *
+   * @returns {void}
+   */
+  #initialiseInputHandler() {
+    process.stdin.setRawMode(true)
+    process.stdin.resume()
+    process.stdin.setEncoding("utf8")
+    process.stdin.on("data", key => {
+
+      if(key === "q" || key === "\u0003") {
+        this.#emitter.emit("quit")
+      } else if(key === "r" || key === "\x1b[15~") {
+        this.#emitter.emit("rebuild")
+      }
+    })
   }
 }

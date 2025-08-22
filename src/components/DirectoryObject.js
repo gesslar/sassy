@@ -54,7 +54,7 @@ export default class DirectoryObject {
    * @param {string} directory - The directory path
    */
   constructor(directory) {
-    const fixedDir = File.fixSlashes(directory)
+    const fixedDir = File.fixSlashes(directory ?? ".")
     const {base,ext} = File.deconstructFilenameToParts(fixedDir)
     const fileUri = File.pathToUri(fixedDir)
     const filePath = File.uriToPath(fileUri)
