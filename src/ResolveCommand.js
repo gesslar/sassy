@@ -36,7 +36,8 @@ export default class ResolveCommand extends AuntyCommand {
     ansiColors.alias("func", ansiColors.green.bold)
     ansiColors.alias("parens", ansiColors.yellowBright.bold)
     ansiColors.alias("line", ansiColors.yellow)
-    ansiColors.alias("hex", ansiColors.cyan)
+    ansiColors.alias("hex", ansiColors.redBright)
+    ansiColors.alias("hexAlpha", ansiColors.yellow.italic)
   }
 
   /**
@@ -58,7 +59,7 @@ export default class ResolveCommand extends AuntyCommand {
       )
 
     const {cwd} = this
-    const optionName = Object.keys(options)
+    const optionName = Object.keys(options??{})
       .find(o => this.cliOptionNames.includes(o))
 
     if(!optionName) {
@@ -71,7 +72,7 @@ export default class ResolveCommand extends AuntyCommand {
     const optionValue = options[optionName]
     const resolverFunction = this[resolveFunctionName]
 
-    if(!resolverFunction)
+    if(!(resolverFunction && typeof resolverFunction === "function"))
       throw AuntyError.new(`No such function ${resolveFunctionName}`)
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
@@ -140,45 +141,61 @@ export default class ResolveCommand extends AuntyCommand {
    * Creates indented tree structure showing dependency relationships.
    *
    * @param {Array} arr - The resolution trail array (may contain nested arrays)
-   * @param {string} [prefix] - Current indentation prefix for tree formatting
-   * @param {Array<string>} [seen] - The current values that have been identified
-   * @returns {string} Formatted tree structure as string
+   * @returns {string} Formatted structure as string
    */
-  #formatOutput(arr, prefix = "", seen=[]) {
-    const resolutions = []
+  #formatOutput(arr) {
+    const work = arr.flat(Infinity)
+    const seen = new Set()
+    const out = []
 
-    arr.forEach((item, index) => {
-      const lines = {
-        last: ansiColors.line("└── "),
-        join: ansiColors.line("├── "),
-        none: "    ",
-        vert: ansiColors.line("│   "),
-      }
-      const isLastItem = index === arr.length - 1
-      const connector = ansiColors.line(lines[isLastItem ? "last" : "join"])
+    let last = null            // "variable" | "function" | "hex" | null
+    let indent = 0
+    const pad = "    "         // 4 spaces, cleaner than dots
 
-      if(Array.isArray(item)) {
-        resolutions.push(this.#formatOutput(item.slice(1), `${prefix}${(lines[isLastItem ? "none" : "vert"])}`, seen))
-      } else {
-        if(seen.includes(item)) {
-          resolutions.push(`${prefix}${connector}${this.#formatLeaf(item,seen)}`)
-        } else {
-          resolutions.push(`${prefix}${connector}${this.#formatLeaf(item,seen)}`)
-          seen.push(item)
-        }
-      }
+    const lines = {
+      elbow: ansiColors.line("└── "),
+      none: "    ",
     }
-    )
 
-    return resolutions.join("\n")
+    work.forEach(item => {
+      if(seen.has(item))
+        return
+
+      // classify
+      const isFunction = /^\w+\(.*\)$/.test(item)
+      const isHex = Colour.longHex.test(item) || Colour.shortHex.test(item)
+      const isVariable = Evaluator.sub.test(item)
+
+      if(!(isVariable || isFunction || isHex))
+        return
+
+      const curr = isFunction ? "function" : (isHex ? "hex" : "variable")
+      const showElbow = (out.length === 0) || (last === "function" && curr !== "function")
+      const prefix = pad.repeat(indent)
+      const connector = showElbow ? lines.elbow : lines.none
+
+      out.push(`${prefix}${connector}${this.#formatLeaf(item)}`)
+
+      seen.add(item)
+
+      // adjust indent for next line
+      if(curr === "function")
+        indent++
+      else if(curr === "hex")
+        indent = Math.max(0, indent - 1)
+
+      last = curr
+    })
+
+    return out.join("\n")
   }
+
 
   /**
    * Formats a single leaf value for display in the theme resolution output,
    * applying color and style based on its type.
    *
    * @param {string} [leaf] - The value to format. Can be a token, function call, or color code.
-   * @param {Array<string>} [seen] - List of values already encountered in the resolution trail (used to mark cycles).
    * @returns {string} The formatted and colorized representation of the leaf.
    *
    * If the leaf has already been seen, returns it styled as a cycle (dim/italic).
@@ -190,12 +207,13 @@ export default class ResolveCommand extends AuntyCommand {
    * tree, ensuring clear visual distinction between tokens, functions,
    * colors, and cycles.
    */
-  #formatLeaf(leaf="", seen=[]) {
+  #formatLeaf(leaf){
+    const functest = /^(?<func>\w+)(?<open>\()(?<args>.*)(?<close>\)$)$/
 
-    if(seen.includes(leaf)) {
-      return `${ansiColors.seen(leaf)}${!ansiColors.enabled?"*":""}`
-    } else if(Evaluator.func.test(leaf)) {
-      const {func,args} = Evaluator.func.exec(leaf)?.groups || {}
+    if(functest.test(leaf)) {
+      const funcstuff = functest.exec(leaf)?.groups || {}
+
+      const {func,args} = funcstuff
 
       return  ansiColors.func(func) +
               ansiColors.parens("(") +
@@ -204,11 +222,20 @@ export default class ResolveCommand extends AuntyCommand {
     } else if(Colour.longHex.test(leaf)) {
       const {colour,alpha} = Colour.longHex.exec(leaf)?.groups || {}
 
-      return `${ansiColors.hex(colour)}${alpha?ansiColors.hex(alpha):""}`
+      return `${ansiColors.hex(colour)}${alpha?ansiColors.hexAlpha(alpha):""}`
     } else if(Colour.shortHex.test(leaf)) {
       const {colour,alpha} = Colour.shortHex.exec(leaf)?.groups || {}
 
-      return `${ansiColors.hex(colour)}${alpha?ansiColors.hex(alpha):""}`
+      return `${ansiColors.hex(colour)}${alpha?ansiColors.hexAlpha(alpha):""}`
+    } else if(Evaluator.sub.test(leaf)) {
+      const {parens,none,braces} = Evaluator.sub.exec(leaf)?.groups || {}
+      const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
+      const value = braces || parens || none || leaf
+
+      return  ansiColors.func("$") +
+              ansiColors.parens(`${style[0]}`) +
+              ansiColors.leaf(value) +
+              ansiColors.parens(`${style[1]}`)
     } else {
       return `${ansiColors.leaf(leaf)}`
     }

@@ -6,7 +6,6 @@
 
 import Colour from "./Colour.js"
 import AuntyError from "./AuntyError.js"
-import _Term from "./Term.js"
 import * as _Data from "./DataUtil.js"
 
 /**
@@ -32,7 +31,8 @@ export default class Evaluator {
    *  - Braced:       ${variable.path}
    *
    * Capturing groups allow extraction of the inner path variant irrespective
-   * of wrapping style. The pattern captures (entireMatch, posix, legacy, braced).
+   * of wrapping style. The pattern captures (entireMatch, posix, legacy,
+   * braced).
    *
    * @private
    * @type {RegExp}
@@ -149,11 +149,10 @@ export default class Evaluator {
   #createLookup(variables) {
     this.clearLookup()
 
-    Object.entries(variables)
-      .forEach(([_,item]) => {
-        if(item.value != null)
-          this.#lookup.set(item.flatPath, item.value)
-      })
+    variables.forEach(item => {
+      if(item.value != null)
+        this.#lookup.set(item.flatPath, item.value)
+    })
   }
 
   /**
