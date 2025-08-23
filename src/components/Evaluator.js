@@ -184,9 +184,11 @@ export default class Evaluator {
 
         if(resolved !== text) {
           // Now let's see if we have a pre-existing breadcrumb resolution!
-          if(lookupValue && lookupKey !== token) {
+          if(lookupValue &&
+            lookupKey !== token &&
+            this.#breadcrumbs.has(lookupKey)) {
             // Woot! Okay, let's add a reference for later use when resolving
-            this.#recordBreadcrumb(token, [text,`{{${lookupKey}}}`,resolved])
+            this.#recordBreadcrumb(token, [text,`{{${captured}}}`,resolved])
           } else {
             this.#recordBreadcrumb(token, [text, resolved])
           }
