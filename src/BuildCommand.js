@@ -94,9 +94,10 @@ export default class BuildCommand extends AuntyCommand {
    * @param {object} params - Parameters for the build pipeline
    * @param {Theme} params.theme - The theme instance
    * @param {object} params.options - Build options
+   * @param {boolean} [forceWrite] - Will force a write of the theme, used by rebuild option
    * @returns {Promise<Theme>} The processed Theme instance
    */
-  async #buildPipeline({theme, options}) {
+  async #buildPipeline({theme, options}, forceWrite=false) {
     theme.reset()
 
     /**
@@ -132,7 +133,8 @@ export default class BuildCommand extends AuntyCommand {
      * ****************************************************************
      */
 
-    const {cost: writeCost, result} = await Util.time(() => theme.write())
+    const {cost: writeCost, result} =
+      await Util.time(() => theme.write(forceWrite))
     const {
       status: writeStatus,
       file: outputFile,
@@ -209,7 +211,7 @@ export default class BuildCommand extends AuntyCommand {
 
     await Promise.allSettled(themes.map(async theme => {
       await this.#resetWatcher(theme, options)
-      await this.#buildPipeline({theme, options})
+      await this.#buildPipeline({theme, options}, true)
     }))
   }
 
@@ -226,7 +228,7 @@ export default class BuildCommand extends AuntyCommand {
   #introduceWatching(options) {
     Term.status([
       ["info", "WATCH MODE"],
-      "F5=recompile, q=quit"
+      "F5=recompile (forces write), q=quit"
     ], options)
     Term.info()
 
