@@ -10,7 +10,6 @@ import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
 import _Term from "./Term.js"
-import Term from "./Term.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -63,19 +62,29 @@ export default class Compiler {
       imported.global,
       imported.colors,
       imported.tokenColors,
+      imported.semanticTokenColors,
       sourceObj
     )
 
     // Shred them up! Kinda.
-    const decompVars = this.#decomposeObject(merged.vars)
-    const decompColors = this.#decomposeObject(merged.theme.colors)
-    const decompTokenColors = this.#decomposeObject(merged.theme.tokenColors)
+    const decompVars =
+      this.#decomposeObject(merged.vars)
+    const decompColors =
+      this.#decomposeObject(merged.theme.colors)
+    const decompTokenColors =
+      this.#decomposeObject(merged.theme.tokenColors)
+    const decompSemanticTokenColors =
+      this.#decomposeObject(merged.theme.semanticTokenColors)
 
     // First let's evaluate the variables
     evaluate(decompVars) // but we don't need the return value, only the lookup
     theme.lookup = evaluator.lookup
-    const evalColors = evaluate(decompColors, theme.lookup)
-    const evalTokenColors = evaluate(decompTokenColors, theme.lookup)
+    const evalColors =
+      evaluate(decompColors, theme.lookup)
+    const evalTokenColors =
+      evaluate(decompTokenColors, theme.lookup)
+    const evalSemanticTokenColors =
+      evaluate(decompSemanticTokenColors, theme.lookup)
 
     // Now let's do some reducing... into a form that works for VS Code
     const reducer = (acc,curr) => {
@@ -85,7 +94,8 @@ export default class Compiler {
     // Assemble into one object with the proper keys
     const colors = evalColors.reduce(reducer, {})
     const tokenColors = this.#composeArray(evalTokenColors)
-    const themeColours = {colors,tokenColors}
+    const semanticTokenColors = evalSemanticTokenColors.reduce(reducer, {})
+    const themeColours = {colors,semanticTokenColors,tokenColors}
     // Mix and maaatch all jumbly wumbly...
     const output = Data.mergeObject(
       {},

@@ -197,7 +197,6 @@ export default class Theme {
   async build(buildOptions) {
     const compiler = new Compiler()
     await compiler.compile(this, buildOptions)
-    // await this.#compileTheme(this.#options, buildOptions)
   }
 
   /**
