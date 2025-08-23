@@ -1,0 +1,31 @@
+theme:
+  tokenColors:
+    - settings:
+        foreground: "#909090"
+  semanticTokenColors:
+    # Literals - keep them close to your existing syntax colors
+    stringLiteral: $colors.green     # Your existing string color
+    numberLiteral: $colors.blue      # Match your accent for important literals
+    customLiteral: lighten($colors.orange, 15)  # Slightly warmer for user-defined
+
+    # Operators and keywords - use your accent system
+    newOperator: $std.fg.accent.secondary       # Your blue accent
+    keyword: $colors.purple                     # Distinguish from regular keywords
+
+    # Types and declarations - semantic meaning
+    type: $colors.teal                          # Your secondary accent
+    class: lighten($colors.teal, 25)            # Brighter for class names
+    interface: $colors.teal                     # Match types
+    namespace: $colors.orange                   # Warm for organizational constructs
+
+    # Variables and references
+    variable: $std.fg                           # Default foreground
+    parameter: lighten($colors.blue, 30)       # Lighter than accent
+    property: $colors.yellow                    # Distinct for object properties
+
+    # Functions and methods
+    function: $colors.orange                    # Warm, inviting
+    method: $colors.orange                      # Match functions
+
+    # Comments and documentation
+    comment: fade($std.fg, 0.6)                # Your existing comment style

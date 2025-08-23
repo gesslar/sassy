@@ -70,6 +70,23 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "Advanced (YAML) (semantics)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "build",
+        "--",
+        "--output-dir",
+        "./examples/output",
+        "./examples/advanced/src/blackboard-semantics.yaml"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Advanced (YAML) (watch)",
       "type": "node",
       "request": "launch",
