@@ -45,9 +45,15 @@ export default class BuildCommand extends AuntyCommand {
   async execute(fileNames, options) {
     const {cwd} = this
 
+    options.watch && this.#introduceWatching(options)
+
+    const themes = await Promise.allSettled(
+      fileNames.map(async fileName =>
+        await this.#buildTheme({fileName, cwd, options}))
+    )
+
     if(options.watch) {
-      this.#introduceWatching(options)
-      this.#initialiseInputHandler(options)
+      this.#initialiseInputHandler()
 
       this.#emitter.on("fileChanged", async({theme,changed}) =>
         await this.#handleFileChange({theme,changed,options}))
@@ -56,19 +62,13 @@ export default class BuildCommand extends AuntyCommand {
       this.#emitter.on("rebuild", async() =>
         await this.#handleRebuild(options))
       this.#emitter.on("resetWatcher", async theme =>
-        await this.#resetWatcher(theme, options)
-      )
-    }
+        await this.#resetWatcher(theme, options))
 
-    const themes = await Promise.allSettled(
-      fileNames.map(async fileName =>
-        this.#buildTheme({fileName, cwd, options}))
-    )
-
-    for(const element of themes) {
-      const theme = element.value
-      if(theme instanceof Theme)
-        await this.#resetWatcher(theme, options)
+      for(const element of themes) {
+        const theme = element.value
+        if(theme instanceof Theme)
+          await this.#resetWatcher(theme, options)
+      }
     }
   }
 
@@ -95,7 +95,7 @@ export default class BuildCommand extends AuntyCommand {
    * @param {Theme} params.theme - The theme instance
    * @param {object} params.options - Build options
    * @param {boolean} [forceWrite] - Will force a write of the theme, used by rebuild option
-   * @returns {Promise<Theme>} The processed Theme instance
+   * @returns {Promise<Theme>} The same Theme instance passed in, after processing
    */
   async #buildPipeline({theme, options}, forceWrite=false) {
     theme.reset()
@@ -158,7 +158,7 @@ export default class BuildCommand extends AuntyCommand {
       )
     }
 
-    Term.status(status)
+    Term.status(status, options)
 
     return theme
   }
@@ -181,7 +181,7 @@ export default class BuildCommand extends AuntyCommand {
       fileName
     ], options)
 
-    this.#buildPipeline({theme,options})
+    await this.#buildPipeline({theme,options})
   }
 
   /**
@@ -210,8 +210,10 @@ export default class BuildCommand extends AuntyCommand {
     const themes = Array.from(this.#watchers.keys())
 
     await Promise.allSettled(themes.map(async theme => {
-      await this.#resetWatcher(theme, options)
-      await this.#buildPipeline({theme, options}, true)
+      await (async() => {
+        await this.#resetWatcher(theme, options)
+        await this.#buildPipeline({theme, options}, true)
+      })()
     }))
   }
 
@@ -252,8 +254,6 @@ export default class BuildCommand extends AuntyCommand {
       if(this.#watchers.has(theme)) {
         let watcher = this.#watchers.get(theme)
         await watcher.close()
-        // eslint-disable-next-line no-useless-assignment
-        watcher = null
         this.#watchers.delete(theme)
       }
 

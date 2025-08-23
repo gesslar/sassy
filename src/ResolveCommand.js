@@ -1,9 +1,16 @@
 import AuntyCommand from "./components/AuntyCommand.js"
 import AuntyError from "./components/AuntyError.js"
 import * as DataUtil from "./components/DataUtil.js"
+import Evaluator from "./components/Evaluator.js"
+import Colour from "./components/Colour.js"
 import Util from "./Util.js"
 import Theme from "./components/Theme.js"
 import Term from "./components/Term.js"
+
+import ansiColors from "ansi-colors"
+import colorSupport from "color-support"
+
+ansiColors.enabled = colorSupport.hasBasic
 
 /**
  * Command handler for resolving theme tokens and variables to their final values.
@@ -22,6 +29,14 @@ export default class ResolveCommand extends AuntyCommand {
     this.cliOptions = {
       "token": ["-t, --token <key>", "resolve a key to its final evaluated value"],
     }
+
+    ansiColors.alias("head", ansiColors.yellowBright)
+    ansiColors.alias("leaf", ansiColors.green)
+    ansiColors.alias("seen", ansiColors.green.dim.italic)
+    ansiColors.alias("func", ansiColors.green.bold)
+    ansiColors.alias("parens", ansiColors.yellowBright.bold)
+    ansiColors.alias("line", ansiColors.yellow)
+    ansiColors.alias("hex", ansiColors.cyan)
   }
 
   /**
@@ -32,7 +47,7 @@ export default class ResolveCommand extends AuntyCommand {
    * @param {object} options - Resolution options (token, etc.)
    * @returns {Promise<void>} Resolves when resolution is complete
    */
-  async execute(inputArg, options) {
+  async execute(inputArg, options={}) {
     const intersection =
       DataUtil.arrayIntersection(this.cliOptionNames, Object.keys(options))
 
@@ -45,6 +60,13 @@ export default class ResolveCommand extends AuntyCommand {
     const {cwd} = this
     const optionName = Object.keys(options)
       .find(o => this.cliOptionNames.includes(o))
+
+    if(!optionName) {
+      throw AuntyError.new(
+        `No valid option provided. Please specify one of: ${this.cliOptionNames.join(", ")}.`
+      )
+    }
+
     const resolveFunctionName = `resolve${Util.capitalize(optionName)}`
     const optionValue = options[optionName]
     const resolverFunction = this[resolveFunctionName]
@@ -58,7 +80,7 @@ export default class ResolveCommand extends AuntyCommand {
     await theme.load()
     await theme.build({saveBreadcrumbs: true})
 
-    resolverFunction.call(this, theme, optionValue)
+    await resolverFunction.call(this, theme, optionValue)
   }
 
   /**
@@ -76,8 +98,8 @@ export default class ResolveCommand extends AuntyCommand {
       return Term.info(`'${token}' not found.`)
 
     const trail = breadcrumbs.get(token)
-    const fullTrail = this.#getFulltrail(token, trail, breadcrumbs)
-    const output = `\n${token} resolves to:\n${this.#formatOutput(fullTrail)}`
+    const fullTrail = this.#getFullTrail(token, trail, breadcrumbs)
+    const output = `\n${ansiColors.head(token)}:\n${this.#formatOutput(fullTrail)}`
 
     Term.info(output)
   }
@@ -91,7 +113,7 @@ export default class ResolveCommand extends AuntyCommand {
    * @param {Map} breadcrumbs - Map of all token breadcrumbs
    * @returns {Array} Complete resolution trail with nested dependencies
    */
-  #getFulltrail(token, trail, breadcrumbs) {
+  #getFullTrail(token, trail, breadcrumbs) {
     return trail.reduce((acc, curr) => {
       const [_, reference] = curr.match(/\{\{(.*)\}\}/) || []
 
@@ -100,7 +122,7 @@ export default class ResolveCommand extends AuntyCommand {
       } else {
         if(breadcrumbs.has(reference)) {
           const fork = breadcrumbs.get(reference)
-          const forked = this.#getFulltrail(reference, fork, breadcrumbs)
+          const forked = this.#getFullTrail(reference, fork, breadcrumbs)
 
           forked.unshift(reference)
           acc.push(forked)
@@ -118,25 +140,77 @@ export default class ResolveCommand extends AuntyCommand {
    * Creates indented tree structure showing dependency relationships.
    *
    * @param {Array} arr - The resolution trail array (may contain nested arrays)
-   * @param {string} prefix - Current indentation prefix for tree formatting
+   * @param {string} [prefix] - Current indentation prefix for tree formatting
+   * @param {Array<string>} [seen] - The current values that have been identified
    * @returns {string} Formatted tree structure as string
    */
-  #formatOutput(arr, prefix = "") {
-    let result = ""
+  #formatOutput(arr, prefix = "", seen=[]) {
+    const resolutions = []
 
     arr.forEach((item, index) => {
+      const lines = {
+        last: ansiColors.line("└── "),
+        join: ansiColors.line("├── "),
+        none: "    ",
+        vert: ansiColors.line("│   "),
+      }
       const isLastItem = index === arr.length - 1
-      const connector = isLastItem ? "└── " : "├── "
+      const connector = ansiColors.line(lines[isLastItem ? "last" : "join"])
 
       if(Array.isArray(item)) {
-        // result += prefix + connector + `[${index}]\n`
-        result += this.#formatOutput(item, prefix + (isLastItem ? "    " : "│   "))
+        resolutions.push(this.#formatOutput(item.slice(1), `${prefix}${(lines[isLastItem ? "none" : "vert"])}`, seen))
       } else {
-        result += prefix + connector + item + "\n"
+        if(seen.includes(item)) {
+          resolutions.push(`${prefix}${connector}${this.#formatLeaf(item,seen)}`)
+        } else {
+          resolutions.push(`${prefix}${connector}${this.#formatLeaf(item,seen)}`)
+          seen.push(item)
+        }
       }
-    })
+    }
+    )
 
-    return result
+    return resolutions.join("\n")
   }
 
+  /**
+   * Formats a single leaf value for display in the theme resolution output,
+   * applying color and style based on its type.
+   *
+   * @param {string} [leaf] - The value to format. Can be a token, function call, or color code.
+   * @param {Array<string>} [seen] - List of values already encountered in the resolution trail (used to mark cycles).
+   * @returns {string} The formatted and colorized representation of the leaf.
+   *
+   * If the leaf has already been seen, returns it styled as a cycle (dim/italic).
+   * If the leaf matches a function pattern, formats as a function call with arguments.
+   * If the leaf matches a long or short hex color pattern, formats as a color code (with optional alpha).
+   * Otherwise, formats as a regular leaf value.
+   *
+   * Used internally by #formatOutput to render each node in the resolution
+   * tree, ensuring clear visual distinction between tokens, functions,
+   * colors, and cycles.
+   */
+  #formatLeaf(leaf="", seen=[]) {
+
+    if(seen.includes(leaf)) {
+      return `${ansiColors.seen(leaf)}${!ansiColors.enabled?"*":""}`
+    } else if(Evaluator.func.test(leaf)) {
+      const {func,args} = Evaluator.func.exec(leaf)?.groups || {}
+
+      return  ansiColors.func(func) +
+              ansiColors.parens("(") +
+              ansiColors.leaf(args) +
+              ansiColors.parens(")")
+    } else if(Colour.longHex.test(leaf)) {
+      const {colour,alpha} = Colour.longHex.exec(leaf)?.groups || {}
+
+      return `${ansiColors.hex(colour)}${alpha?ansiColors.hex(alpha):""}`
+    } else if(Colour.shortHex.test(leaf)) {
+      const {colour,alpha} = Colour.shortHex.exec(leaf)?.groups || {}
+
+      return `${ansiColors.hex(colour)}${alpha?ansiColors.hex(alpha):""}`
+    } else {
+      return `${ansiColors.leaf(leaf)}`
+    }
+  }
 }

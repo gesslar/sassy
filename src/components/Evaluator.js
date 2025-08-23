@@ -37,7 +37,7 @@ export default class Evaluator {
    * @private
    * @type {RegExp}
    */
-  #sub = /(?<captured>\$\((?<parens>[^()]+)\)|\$(?<none>[\w]+(?:\.[\w]+)*)|\$\{(?<braces>[^()]+)\})/
+  static sub = /(?<captured>\$\((?<parens>[^()]+)\)|\$(?<none>[\w]+(?:\.[\w]+)*)|\$\{(?<braces>[^()]+)\})/
 
   /**
    * Regular expression for matching colour / transformation function calls
@@ -46,7 +46,7 @@ export default class Evaluator {
    * @private
    * @type {RegExp}
    */
-  #func = /(?<func>\w+)\((?<args>[^()]+)\)/
+  static func = /(?<func>\w+)\((?<args>[^()]+)\)/
 
   /**
    * Lookup cache mapping flat variable paths (e.g. "std.bg.panel.inner") to
@@ -170,8 +170,8 @@ export default class Evaluator {
       token === "editor.inactiveSelectionBackground" ||
       token === "editor.selectionBackground"
     while(true) {
-      if(this.#sub.test(text)) {
-        const testResult = this.#sub.exec(text)
+      if(Evaluator.sub.test(text)) {
+        const testResult = Evaluator.sub.exec(text)
         const {captured,none,parens,braces} = testResult
           ? testResult.groups
           : {}
@@ -194,8 +194,8 @@ export default class Evaluator {
 
           text = resolved
         }
-      } else if(this.#func.test(text)) {
-        const testResult = this.#func.exec(text)
+      } else if(Evaluator.func.test(text)) {
+        const testResult = Evaluator.func.exec(text)
         const {func,args} = testResult
           ? testResult.groups
           : {}
@@ -290,7 +290,7 @@ export default class Evaluator {
     if(typeof item.value !== "string")
       return false
 
-    return this.#sub.test(item.value) || this.#func.test(item.value)
+    return Evaluator.sub.test(item.value) || Evaluator.func.test(item.value)
   }
 
   #recordBreadcrumb(token, crumbs) {

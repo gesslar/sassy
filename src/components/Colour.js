@@ -48,26 +48,26 @@ const toUnit = r => Math.max(0, Math.min(100, r)) / 100
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 
 /**
- * Regular expression for matching long hex color codes with optional alpha.
- * Matches patterns like #ff0000 or #ff0000ff
- *
- * @type {RegExp}
- */
-const longHex = /^(?<colour>#[a-f0-9]{6})(?<alpha>[a-f0-9]{2})?$/i
-
-/**
- * Regular expression for matching short hex color codes with optional alpha.
- * Matches patterns like #f00 or #f00f
- *
- * @type {RegExp}
- */
-const shortHex = /^(?<colour>#[a-f0-9]{3})(?<alpha>[a-f0-9]{1})?$/i
-
-/**
  * Color manipulation utility class providing static methods for color operations.
  * Handles hex color parsing, alpha manipulation, mixing, and format conversions.
  */
 export default class Colour {
+  /**
+   * Regular expression for matching long hex color codes with optional alpha.
+   * Matches patterns like #ff0000 or #ff0000ff
+   *
+   * @type {RegExp}
+   */
+  static longHex = /^(?<colour>#[a-f0-9]{6})(?<alpha>[a-f0-9]{2})?$/i
+
+  /**
+   * Regular expression for matching short hex color codes with optional alpha.
+   * Matches patterns like #f00 or #f00f
+   *
+   * @type {RegExp}
+   */
+  static shortHex = /^(?<colour>#[a-f0-9]{3})(?<alpha>[a-f0-9]{1})?$/i
+
   /**
    * Lightens or darkens a hex color by a specified amount.
    *
@@ -151,7 +151,7 @@ export default class Colour {
    * @returns {string} The normalized 6-character hex color code
    */
   static normalizeHex(code) {
-    const matches = code.match(shortHex)
+    const matches = code.match(Colour.shortHex)
 
     if(!matches)
       throw AuntyError.new(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
@@ -171,8 +171,8 @@ export default class Colour {
    */
   static parseHexColour(hex) {
     const parsed =
-      hex.match(longHex)?.groups ||
-      hex.match(shortHex)?.groups ||
+      hex.match(Colour.longHex)?.groups ||
+      hex.match(Colour.shortHex)?.groups ||
       null
 
     if(!parsed)
