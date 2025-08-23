@@ -273,16 +273,13 @@ export default class Theme {
    * Writes the compiled theme output to a file or stdout.
    * Handles dry-run mode, output directory creation, and duplicate write prevention.
    *
+   * @param {boolean} [force] - Force a write. Used by the rebuild CLI option.
    * @returns {Promise<void>} Resolves when write operation is complete
    */
-  async write() {
+  async write(force=false) {
     const output = this.#outputJson
     const outputDir = new DirectoryObject(this.#options.outputDir)
     const file = new FileObject(this.#outputFileName, outputDir)
-    const nextHash = this.#outputHash
-    const lastHash = await file.exists
-      ? Util.hashOf(await File.readFile(file))
-      : "kakadoodoo"
 
     if(this.#options.dryRun) {
       Term.log(this.#outputJson)
@@ -291,10 +288,15 @@ export default class Theme {
     }
 
     // Skip identical bytes
-    if(lastHash === nextHash)
-      return {status: "skipped", file}
+    if(!force) {
+      const nextHash = this.#outputHash
+      const lastHash = await file.exists
+        ? Util.hashOf(await File.readFile(file))
+        : "kakadoodoo"
 
-    // return {state: "skipped", bytes: output.length, fileName}
+      if(lastHash === nextHash)
+        return {status: "skipped", file}
+    }
 
     // Real write (timed)
     if(!await outputDir.exists)
