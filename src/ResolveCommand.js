@@ -121,14 +121,19 @@ export default class ResolveCommand extends AuntyCommand {
       if(!reference) {
         acc.push(curr)
       } else {
-        if(breadcrumbs.has(reference)) {
-          const fork = breadcrumbs.get(reference)
-          const forked = this.#getFullTrail(reference, fork, breadcrumbs)
+        // Extract the lookup key from the reference syntax
+        const lookupKey = reference.startsWith("$(") ?
+          reference.slice(2, -1) :
+          reference.startsWith("${") ?
+            reference.slice(2, -1) :
+            reference.slice(1)  // Handle $var
 
-          forked.unshift(reference)
+        if(breadcrumbs.has(lookupKey)) {
+          // Use lookupKey for breadcrumb lookup, but display reference
+          const fork = breadcrumbs.get(lookupKey)
+          const forked = this.#getFullTrail(lookupKey, fork, breadcrumbs)
+          forked.unshift(reference)  // Display original syntax
           acc.push(forked)
-        } else {
-          acc.push(curr)
         }
       }
 
@@ -164,11 +169,6 @@ export default class ResolveCommand extends AuntyCommand {
       // classify
       const isFunction = /^\w+\(.*\)$/.test(item)
       const isHex = Colour.longHex.test(item) || Colour.shortHex.test(item)
-      const isVariable = Evaluator.sub.test(item)
-
-      if(!(isVariable || isFunction || isHex))
-        return
-
       const curr = isFunction ? "function" : (isHex ? "hex" : "variable")
       const showElbow = (out.length === 0) || (last === "function" && curr !== "function")
       const prefix = pad.repeat(indent)
