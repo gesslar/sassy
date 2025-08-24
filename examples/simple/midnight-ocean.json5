@@ -52,7 +52,7 @@
         background: "$std.bg.panel",
         foreground: "$std.fg",
         selectionBackground: "$std.bg.accent",
-        lineHighlightBackground: "fade($std.bg.accent, 30)"
+        lineHighlightBackground: "darken(fade($std.bg.accent, 30), 25)"
       },
 
       // UI Chrome
