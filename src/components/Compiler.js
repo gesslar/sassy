@@ -1,7 +1,14 @@
 /**
- * @file Theme compilation engine for processing theme configuration files.
- * Handles compilation of theme source files including variable resolution,
- * imports, and output generation for VS Code colour themes.
+ * @file Compiler.js
+ *
+ * Defines the Compiler class, the main engine for processing theme configuration files.
+ * Handles all phases of theme compilation:
+ *   1. Import resolution (merging modular theme files)
+ *   2. Variable decomposition and flattening
+ *   3. Token evaluation and colour function application
+ *   4. Recursive resolution of references
+ *   5. Output assembly for VS Code themes
+ * Supports extension points for custom phases and output formats.
  */
 
 import * as Data from "./DataUtil.js"
@@ -9,7 +16,6 @@ import Evaluator from "./Evaluator.js"
 import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
-import Term from "./Term.js"
 
 /**
  * Main compiler class for processing theme source files.

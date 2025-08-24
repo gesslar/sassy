@@ -7,9 +7,19 @@
 import Color from "color"
 import AuntyError from "./AuntyError.js"
 
-// ADD near top (after imports)
+// Cache for parsed colors to improve performance
 const _colorCache = new Map()
+
+// Cache for mixed colors to avoid recomputation
 const _mixCache = new Map()
+
+/**
+ * Parses a color string into a Color object with caching.
+ *
+ * @param {string} s - The color string to parse
+ * @returns {Color} The parsed Color object
+ * @throws {AuntyError} If the input is null, undefined, or empty
+ */
 const asColor = s => {
   // This is a comment explaining that 'x == null' will be true if the function
   // receives 'undefined' or 'null'. Some robot says that I need to document
@@ -34,7 +44,22 @@ const asColor = s => {
   return v
 }
 
+/**
+ * Generates a cache key for color mixing operations.
+ *
+ * @param {string} a - First color string
+ * @param {string} b - Second color string
+ * @param {number} t - Mixing ratio (0-1)
+ * @returns {string} Cache key
+ */
 const mixKey = (a, b, t) => `${a}|${b}|${t}`
+
+/**
+ * Converts a percentage to a unit value (0-1).
+ *
+ * @param {number} r - Percentage value
+ * @returns {number} Unit value
+ */
 const toUnit = r => Math.max(0, Math.min(100, r)) / 100
 
 /**

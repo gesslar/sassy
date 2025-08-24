@@ -1,15 +1,20 @@
 
 /**
+ * @file ThemePool.js
+ *
+ * Defines the ThemePool class, a collection of ThemeTokens for lookup and dependency tracking.
+ * Manages resolved values, raw resolutions, and token relationships during theme compilation.
+ */
+
+import AuntyError from "./AuntyError.js"
+import ThemeToken from "./ThemeToken.js"
+
+/**
  * ThemePool represents a collection of ThemeTokens serving both as a
  * lookup of string>ThemeToken and dependencies.
  *
  * @class ThemePool
  */
-
-import AuntyError from "./AuntyError.js"
-import Term from "./Term.js"
-import ThemeToken from "./ThemeToken.js"
-
 export default class ThemePool {
   #tokens = new Map()
   #resolved = new Map()
@@ -28,26 +33,50 @@ export default class ThemePool {
    * Retrieves a resolved token by its name.
    *
    * @param {string} name - The token to look up.
-   * @returns {string|undefined} The the resolved token string or undefined.
+   * @returns {string|undefined} The resolved token string or undefined.
    */
   lookup(name) {
     return this.#resolved.get(name)
   }
 
+  /**
+   * Sets a resolved value for a token key.
+   *
+   * @param {string} key - The token key.
+   * @param {string} value - The resolved value.
+   */
   resolve(key, value) {
     // Term.debug("[#resolved]", key, value)
     this.#resolved.set(key, value)
   }
 
+  /**
+   * Sets a raw resolved value for a token key.
+   *
+   * @param {string} key - The token key.
+   * @param {string} value - The raw resolved value.
+   */
   rawResolve(key, value) {
     // Term.debug("[#rawResolved]", key, value)
     this.#rawResolved.set(key, value)
   }
 
+  /**
+   * Checks if a token name exists in resolved map.
+   *
+   * @param {string} name - The token name to check.
+   * @returns {boolean} True if the token exists.
+   */
   has(name) {
     return this.#resolved.has(name)
   }
 
+  /**
+   * Checks if a token exists by its name.
+   *
+   * @param {ThemeToken} token - The token to check.
+   * @returns {boolean} True if the token exists.
+   */
   hasToken(token) {
     return this.has(token.name)
   }
@@ -82,6 +111,12 @@ export default class ThemePool {
     return token
   }
 
+  /**
+   * Finds a token by its value.
+   *
+   * @param {string} value - The value to search for.
+   * @returns {ThemeToken|undefined} The found token or undefined.
+   */
   findToken(value) {
     return [...this.#tokens.entries()].find(arg => arg[0] === value)?.[1]
   }
