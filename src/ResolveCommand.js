@@ -6,6 +6,7 @@ import Colour from "./components/Colour.js"
 import Util from "./Util.js"
 import Theme from "./components/Theme.js"
 import Term from "./components/Term.js"
+import ThemeToken from "./components/ThemeToken.js"
 
 import ansiColors from "ansi-colors"
 import colorSupport from "color-support"
@@ -79,7 +80,7 @@ export default class ResolveCommand extends AuntyCommand {
     const theme = new Theme(fileObject, cwd, options)
 
     await theme.load()
-    await theme.build({saveBreadcrumbs: true})
+    await theme.build()
 
     await resolverFunction.call(this, theme, optionValue)
   }
@@ -88,156 +89,158 @@ export default class ResolveCommand extends AuntyCommand {
    * Resolves a specific token to its final value and displays the resolution trail.
    * Shows the complete dependency chain for the requested token.
    *
-   * @param {object} theme - The compiled theme object with breadcrumbs
-   * @param {string} token - The token key to resolve
+   * @param {object} theme - The compiled theme object with pool
+   * @param {string} tokenName - The token key to resolve
    * @returns {void}
    */
-  async resolveToken(theme, token) {
-    const breadcrumbs = theme.breadcrumbs
+  async resolveToken(theme, tokenName) {
+    const pool = theme.pool
+    if(!pool || !pool.has(tokenName))
+      return Term.info(`'${tokenName}' not found.`)
 
-    if(!breadcrumbs.has(token))
-      return Term.info(`'${token}' not found.`)
-
-    const trail = breadcrumbs.get(token)
-    const fullTrail = this.#getFullTrail(token, trail, breadcrumbs)
-    const output = `\n${ansiColors.head(token)}:\n${this.#formatOutput(fullTrail)}`
+    const tokens = pool.getTokens
+    const token = tokens.get(tokenName)
+    const trail = token.getTrail()
+    const fullTrail = this.#getFullTrail(trail,pool)
+    const output = `\n${ansiColors.head(tokenName)}:\n${this.#formatOutput(fullTrail)}`
 
     Term.info(output)
   }
 
-  /**
-   * Recursively builds the full resolution trail for a token.
-   * Follows reference chains to build complete dependency tree.
-   *
-   * @param {string} token - The token being resolved
-   * @param {Array} trail - Current resolution trail
-   * @param {Map} breadcrumbs - Map of all token breadcrumbs
-   * @returns {Array} Complete resolution trail with nested dependencies
-   */
-  #getFullTrail(token, trail, breadcrumbs) {
-    return trail.reduce((acc, curr) => {
-      const [_, reference] = curr.match(/\{\{(.*)\}\}/) || []
+  #getFullTrail(trail, pool) {
+    if(trail.length === 0)
+      return fullTrail
 
-      if(!reference) {
-        acc.push(curr)
-      } else {
-        // Extract the lookup key from the reference syntax
-        const lookupKey = reference.startsWith("$(") ?
-          reference.slice(2, -1) :
-          reference.startsWith("${") ?
-            reference.slice(2, -1) :
-            reference.slice(1)  // Handle $var
+    const fullTrail = []
 
-        if(breadcrumbs.has(lookupKey)) {
-          // Use lookupKey for breadcrumb lookup, but display reference
-          const fork = breadcrumbs.get(lookupKey)
-          const forked = this.#getFullTrail(lookupKey, fork, breadcrumbs)
-          forked.unshift(reference)  // Display original syntax
-          acc.push(forked)
-        }
+    // Start with the original token's raw value (the full expression)
+    const originalToken = trail.at(-1)
+    const parentTokenKey = originalToken.getParentTokenKey()
+
+    if(parentTokenKey) {
+      const parentToken = pool.getTokens.get(parentTokenKey)
+      if(parentToken) {
+        fullTrail.push(parentToken.getRawValue())
       }
-
-      return acc
-    }, [])
-  }
-
-  /**
-   * Formats a resolution trail array into a tree-like visual output.
-   * Creates indented tree structure showing dependency relationships.
-   *
-   * @param {Array} arr - The resolution trail array (may contain nested arrays)
-   * @returns {string} Formatted structure as string
-   */
-  #formatOutput(arr) {
-    const work = arr.flat(Infinity)
-    const seen = new Set()
-    const out = []
-
-    let last = null            // "variable" | "function" | "hex" | null
-    let indent = 0
-    const pad = "    "         // 4 spaces, cleaner than dots
-
-    const lines = {
-      elbow: ansiColors.line("└── "),
-      none: "    ",
     }
 
-    work.forEach(item => {
-      if(seen.has(item))
+    // Process each step in the trail to recreate the entire trail with
+    // all intermediate steps.
+    trail.forEach(token => {
+      const rawValue = token.getRawValue()
+      const value = token.getValue()
+      const kind = token.getKind()
+      const dependency = token.getDependency()
+
+      if(kind === "variable" && dependency) {
+        fullTrail.push(rawValue)
+        fullTrail.push(dependency.getValue())
+      } else if(kind === "function") {
+        fullTrail.push(rawValue)
+        if(rawValue !== value) {
+          fullTrail.push(value)
+        }
+      }
+    })
+
+    return fullTrail
+  }
+  /**
+   * Formats a resolution trail Set into a tree-like visual output.
+   * Creates indented tree structure showing dependency relationships.
+   *
+   * @param {Array<ThemeToken>} trail - The resolution trail from pool.getTrail()
+   * @returns {string} Formatted structure as string
+   */
+  #formatOutput(trail) {
+    if(trail.length === 0)
+      return ""
+
+    const spacers = {
+      elbow: ansiColors.line("└── "),
+      space: "    ",
+    }
+
+    const out = []
+    const seen = []
+
+    let indent = 0, last = null
+    let lastIndent = indent
+
+    trail.forEach((item, index) => {
+      if(seen.includes(item))
         return
 
-      // classify
-      const isFunction = /^\w+\(.*\)$/.test(item)
-      const isHex = Colour.longHex.test(item) || Colour.shortHex.test(item)
-      const curr = isFunction ? "function" : (isHex ? "hex" : "variable")
-      const showElbow = (out.length === 0) || (last === "function" && curr !== "function")
-      const prefix = pad.repeat(indent)
-      const connector = showElbow ? lines.elbow : lines.none
+      let [line,kind] = this.#formatLeaf(item)
+      const wasFunction = last === "function"
+      const isHex = kind === "hex"
 
-      out.push(`${prefix}${connector}${this.#formatLeaf(item)}`)
-
-      seen.add(item)
-
-      // adjust indent for next line
-      if(curr === "function")
+      if(wasFunction)
         indent++
-      else if(curr === "hex")
+      else if(isHex)
+        indent++
+      else
         indent = Math.max(0, indent - 1)
 
-      last = curr
+      const prefix = spacers.space.repeat(indent)
+      const showElbow = index === 0 || indent > lastIndent
+      const connector = showElbow ? spacers.elbow : spacers.space
+
+      last = kind
+      lastIndent = indent
+
+      seen.push(item)
+      out.push(`${prefix}${connector}${line}`)
     })
 
     return out.join("\n")
   }
 
+  #func = /^(?<func>\w+)(?<open>\()(?<args>.*)(?<close>\)$)$/
+  #sub = Evaluator.sub
+  #hex = value => Colour.isHex(value)
 
   /**
-   * Formats a single leaf value for display in the theme resolution output,
+   * Formats a single ThemeToken for display in the theme resolution output,
    * applying color and style based on its type.
    *
-   * @param {string} [leaf] - The value to format. Can be a token, function call, or color code.
-   * @returns {string} The formatted and colorized representation of the leaf.
+   * @param {string} value - The man, the mystrery, the value.
+   * @returns {string} The formatted and colorized representation of the token.
    *
-   * If the leaf has already been seen, returns it styled as a cycle (dim/italic).
-   * If the leaf matches a function pattern, formats as a function call with arguments.
-   * If the leaf matches a long or short hex color pattern, formats as a color code (with optional alpha).
-   * Otherwise, formats as a regular leaf value.
-   *
-   * Used internally by #formatOutput to render each node in the resolution
-   * tree, ensuring clear visual distinction between tokens, functions,
-   * colors, and cycles.
+   * Uses the token's kind property to determine formatting instead of regex matching.
+   * Provides clear visual distinction between tokens, functions, colors, and variables.
    */
-  #formatLeaf(leaf){
-    const functest = /^(?<func>\w+)(?<open>\()(?<args>.*)(?<close>\)$)$/
+  #formatLeaf(value) {
+    if(this.#hex(value)) {
+      const {colour,alpha} = Colour.longHex.test(value)
+        ? Colour.longHex.exec(value).groups
+        : Colour.shortHex.exec(value).groups
 
-    if(functest.test(leaf)) {
-      const funcstuff = functest.exec(leaf)?.groups || {}
-
-      const {func,args} = funcstuff
-
-      return  ansiColors.func(func) +
-              ansiColors.parens("(") +
-              ansiColors.leaf(args) +
-              ansiColors.parens(")")
-    } else if(Colour.longHex.test(leaf)) {
-      const {colour,alpha} = Colour.longHex.exec(leaf)?.groups || {}
-
-      return `${ansiColors.hex(colour)}${alpha?ansiColors.hexAlpha(alpha):""}`
-    } else if(Colour.shortHex.test(leaf)) {
-      const {colour,alpha} = Colour.shortHex.exec(leaf)?.groups || {}
-
-      return `${ansiColors.hex(colour)}${alpha?ansiColors.hexAlpha(alpha):""}`
-    } else if(Evaluator.sub.test(leaf)) {
-      const {parens,none,braces} = Evaluator.sub.exec(leaf)?.groups || {}
-      const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
-      const value = braces || parens || none || leaf
-
-      return  ansiColors.func("$") +
-              ansiColors.parens(`${style[0]}`) +
-              ansiColors.leaf(value) +
-              ansiColors.parens(`${style[1]}`)
-    } else {
-      return `${ansiColors.leaf(leaf)}`
+      return [
+        `${ansiColors.hex(colour)}${alpha?ansiColors.hexAlpha(alpha):""}`,
+        "hex"
+      ]
     }
+
+    if(this.#func.test(value)) {
+      const {func,args} = this.#func.exec(value).groups
+      return [
+        `${ansiColors.func(func)}${ansiColors.parens("(")}${ansiColors.leaf(args)}${ansiColors.parens(")")}`,
+        "function"
+      ]
+    }
+
+
+    if(this.#sub.test(value)) {
+      const {parens,none,braces} = Evaluator.sub.exec(value)?.groups || {}
+      const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
+      const varValue = braces || parens || none || value
+      return [
+        `${ansiColors.func("$")}${ansiColors.parens(style[0])}${ansiColors.leaf(varValue)}${ansiColors.parens(style[1])}`,
+        "variable"
+      ]
+    }
+
+    return [ansiColors.leaf(value), "literal"]
   }
 }

@@ -40,8 +40,8 @@ export default class Term {
    *
    * @param {any} msg - Warning text / object.
    */
-  static warn(msg) {
-    console.warn(msg)
+  static warn(...msg) {
+    console.warn(...msg)
   }
 
   /**

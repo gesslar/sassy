@@ -6,18 +6,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Test All",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "test",
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
-    },
-    {
       "name": "Simple (JSON5) (watch)",
       "type": "node",
       "request": "launch",
@@ -67,7 +55,7 @@
         "./examples/advanced/src/blackboard.yaml"
       ],
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
+      "console": "internalConsole"
     },
     {
       "name": "Advanced (YAML) (semantics)",
@@ -84,7 +72,7 @@
         "./examples/advanced/src/blackboard-semantics.yaml"
       ],
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
+      "console": "internalConsole"
     },
     {
       "name": "Advanced (YAML) (watch)",
@@ -95,6 +83,7 @@
         "run-script",
         "exec",
         "--",
+        "build",
         "--nerd",
         "--watch",
         "--output-dir",

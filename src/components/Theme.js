@@ -1,5 +1,3 @@
-import path from "node:path"
-
 import Compiler from "./Compiler.js"
 import AuntyError from "./AuntyError.js"
 import * as File from "./File.js"
@@ -7,7 +5,7 @@ import Term from "./Term.js"
 import Util from "../Util.js"
 import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
-import process from "node:process"
+import ThemePool from "./ThemePool.js"
 
 /**
  * Represents a theme compilation unit with source file, compilation state,
@@ -17,20 +15,16 @@ import process from "node:process"
 export default class Theme {
   #sourceFile = null
   #source = null
-  #cwd = null
   #options = null
   #dependencies = []
   #lookup = null
-  #breadcrumbs = null
+  #pool = null
 
   // Write-related properties
   #output = null
   #outputJson = null
   #outputFileName = null
   #outputHash = null
-
-  // Watch-related properties
-  #watcher = null
 
   /**
    * Creates a new Theme instance.
@@ -42,7 +36,6 @@ export default class Theme {
   constructor(themeFile, cwd, options) {
     this.#sourceFile = themeFile
     this.#outputFileName = `${themeFile.module}.color-theme.json`
-    this.#cwd = process.cwd()
     this.#options = options
   }
 
@@ -55,7 +48,7 @@ export default class Theme {
     this.#outputJson = null
     this.#outputHash = null
     this.#lookup = null
-    this.#breadcrumbs = null
+    this.#pool = null
   }
 
   /**
@@ -136,21 +129,38 @@ export default class Theme {
   }
 
   /**
-   * Gets the breadcrumbs data for variable resolution tracking.
+   * Gets the pool data for variable resolution tracking or null if one has
+   * not been set.
    *
-   * @returns {Map|null} The breadcrumbs map for tracking variable resolution
+   * @returns {ThemePool|null} The pool for this theme.
    */
-  get breadcrumbs() {
-    return this.#breadcrumbs
+  get pool() {
+    return this.#pool
   }
 
   /**
-   * Sets the breadcrumbs data for variable resolution tracking.
+   * Sets the pool data for variable resolution tracking. May not be over-
+   * written publicly. May only be reset
    *
-   * @param {Map} data - The breadcrumbs map for tracking variable resolution
+   * @see reset
+   *
+   * @param {ThemePool} pool - The pool to assign to this theme
+   * @throws If there is already a pool.
    */
-  set breadcrumbs(data) {
-    this.#breadcrumbs = data
+  set pool(pool) {
+    if(this.#pool)
+      throw AuntyError.new("Cannot override existing pool.")
+
+    this.#pool = pool
+  }
+
+  /**
+   * Method to return true or false if this theme has a pool.
+   *
+   * @returns {boolean} True if a pool has been set, false otherwise.
+   */
+  hasPool() {
+    return this.#pool instanceof ThemePool
   }
 
   /**
@@ -197,75 +207,6 @@ export default class Theme {
   async build(buildOptions) {
     const compiler = new Compiler()
     await compiler.compile(this, buildOptions)
-  }
-
-  /**
-   * Internal method to compile the theme with the given options.
-   * Handles the compilation process including dependency management,
-   * compiler instantiation, and watch mode setup.
-   *
-   * @param {object} options - Compilation options
-   * @param {object} [buildOptions] - Optional build configuration
-   * @returns {Promise<void>} Resolves when compilation is complete
-   * @private
-   */
-  async #compileTheme(options) {
-    // First, we pause because writing themes will trigger it again!
-    if(this.#watcher) {
-      await this.#watcher.close()
-      this.#watcher = null
-    }
-
-    // Get rid of any artefacts, in case we're watching, or just set them
-    // to default. It doesn't super matter why. Why are you asking questions?
-    // Just reset already. Ok, fine.
-    this.reset()
-
-    // Watch mode
-    if(options.watch) {
-      const dependencies = this.#dependencies
-
-      this.#watcher = chokidar.watch(dependencies, {
-        // Prevent watching own output files
-        ignored: [this.#outputFileName],
-        // Add some stability options
-        awaitWriteFinish: {
-          stabilityThreshold: 100,
-          pollInterval: 50
-        }
-      })
-
-      this.#watcher.on("change", async changed => {
-        const relative = path.relative(this.#cwd, changed)
-        const _changedPath = relative.startsWith("..")
-          ? changed
-          : relative
-
-        if(changed === this.#sourceFile.path)
-          await this.load()
-
-        // Term.status([
-        //   ["modified", rightAlignText("CHANGED", 10)],
-        //   changedPath,
-        //   ["modified", bundle.file.module]
-        // ], options)
-
-        // TODO: bundle stuff here - commented bundle reload logic
-        // if(changed === this.#sourceFile.path) {
-        //   const {cost: reloadCost, result: tempBundle} =
-        //       await time(async() => loadThemeAsBundle(bundle.file))
-        //   const reloadedBytes = await File.fileSize(bundle.file)
-
-        // Term.status([
-        //   ["success", rightAlignText(`${reloadCost.toLocaleString()}ms`, 10)],
-        //   `${bundle.file.module} loaded`,
-        //   ["info", `${reloadedBytes} bytes`],
-        // ], options)
-        // }
-
-        this.#compileTheme()
-      })
-    }
   }
 
   /**

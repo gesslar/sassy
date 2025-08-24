@@ -9,3 +9,4 @@ dist/
 examples/output
 !.vscode/launch.json
 test.bash
+temp/

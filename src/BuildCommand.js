@@ -14,13 +14,18 @@ import {EventEmitter} from "node:events"
  * Handles compilation, watching for changes, and output generation.
  */
 export default class BuildCommand extends AuntyCommand {
+  /** @type {EventEmitter} Internal event emitter for watch mode coordination */
   #emitter = new EventEmitter()
+
+  /** @type {Map<Theme, object>} Map of themes to their file watchers */
   #watchers = new Map()
 
   /**
    * Creates a new BuildCommand instance.
    *
-   * @param {object} base - Base configuration containing cwd and packageJson
+   * @param {object} base - Base configuration object
+   * @param {string} base.cwd - Current working directory path
+   * @param {object} base.packageJson - Package.json configuration data
    */
   constructor(base) {
     super(base)
@@ -39,8 +44,13 @@ export default class BuildCommand extends AuntyCommand {
    * Processes each file in parallel, optionally watching for changes.
    *
    * @param {string[]} fileNames - Array of theme file paths to process
-   * @param {object} options - Build options including watch, output-dir, dry-run, silent
+   * @param {object} options - Build options
+   * @param {boolean} [options.watch] - Enable watch mode for file changes
+   * @param {string} [options.output-dir] - Custom output directory path
+   * @param {boolean} [options.dry-run] - Print JSON to stdout without writing files
+   * @param {boolean} [options.silent] - Silent mode, only show errors or dry-run output
    * @returns {Promise<void>} Resolves when all files are processed
+   * @throws {Error} When theme compilation fails
    */
   async execute(fileNames, options) {
     const {cwd} = this
@@ -51,6 +61,12 @@ export default class BuildCommand extends AuntyCommand {
       fileNames.map(async fileName =>
         await this.#buildTheme({fileName, cwd, options}))
     )
+
+    if(themes.some(theme => theme.status === "rejected")) {
+      const rejected = themes.filter(theme => theme.status === "rejected")
+
+      rejected.forEach(item => Term.error(item.reason))
+    }
 
     if(options.watch) {
       this.#initialiseInputHandler()
@@ -94,7 +110,7 @@ export default class BuildCommand extends AuntyCommand {
    * @param {object} params - Parameters for the build pipeline
    * @param {Theme} params.theme - The theme instance
    * @param {object} params.options - Build options
-   * @param {boolean} [forceWrite] - Will force a write of the theme, used by rebuild option
+   * @param {boolean} [forceWrite] - Forces a write of the theme, used by rebuild option (defaults to false)
    * @returns {Promise<Theme>} The same Theme instance passed in, after processing
    */
   async #buildPipeline({theme, options}, forceWrite=false) {
@@ -120,10 +136,21 @@ export default class BuildCommand extends AuntyCommand {
      * ****************************************************************
      */
 
+
     const {cost: buildCost} = await Util.time(() => theme.build())
+    const bytesCompiled = await theme.dependencies.reduce(
+      async(accPromise, item) => {
+        const acc = await accPromise
+        const processed = await File.fileSize(item)
+
+        return acc + processed
+      }, Promise.resolve(0)
+    )
+
     Term.status([
       ["success", Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10)],
-      `${theme.sourceFile.module} compiled`
+      `${theme.sourceFile.module} compiled`,
+      ["success", `${bytesCompiled.toLocaleString()} bytes`]
     ], options)
 
     /**
@@ -218,13 +245,10 @@ export default class BuildCommand extends AuntyCommand {
   }
 
   /**
-   *
-   * @param options
-   */
-  /**
    * Displays watch mode status and instructions.
    *
-   * @param {object} options - Build options
+   * @param {object} options - Build options for silent mode check
+   * @param {boolean} [options.silent] - Whether to suppress status output
    * @returns {boolean} Always returns true
    */
   #introduceWatching(options) {
@@ -237,11 +261,6 @@ export default class BuildCommand extends AuntyCommand {
     return true
   }
 
-  /**
-   *
-   * @param theme
-   * @param options
-   */
   /**
    * Resets the file watcher for a theme, setting up new dependencies.
    *
@@ -275,10 +294,8 @@ export default class BuildCommand extends AuntyCommand {
   }
 
   /**
-   *
-   */
-  /**
    * Initialises the input handler for watch mode (F5=recompile, q=quit).
+   * Sets up raw mode input handling for interactive commands.
    *
    * @returns {void}
    */

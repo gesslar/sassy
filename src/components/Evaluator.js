@@ -7,6 +7,10 @@
 import Colour from "./Colour.js"
 import AuntyError from "./AuntyError.js"
 import * as _Data from "./DataUtil.js"
+import ThemePool from "./ThemePool.js"
+import ThemeToken from "./ThemeToken.js"
+import Term from "./Term.js"
+
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.
@@ -46,44 +50,11 @@ export default class Evaluator {
    * @private
    * @type {RegExp}
    */
-  static func = /(?<func>\w+)\((?<args>[^()]+)\)/
+  static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
 
-  /**
-   * Lookup cache mapping flat variable paths (e.g. "std.bg.panel.inner") to
-   * their resolved string values. Populated incrementally via `createLookup()`.
-   *
-   * @private
-   * @type {Map<string,string>}
-   */
-  #lookup = new Map()
-  get lookup() {
-    return this.#lookup
-  }
-
-  set lookup(lookup) {
-    this.#lookup = lookup
-  }
-
-  /**
-   * Clears the current lookup data and returns the previous lookup.
-   *
-   * @returns {Map} The previous lookup map
-   */
-  clearLookup() {
-    const lookup = this.#lookup
-
-    this.#lookup = new Map()
-
-    return lookup
-  }
-
-  #breadcrumbs = new Map()
-  get breadcrumbs() {
-    return this.#breadcrumbs
-  }
-
-  set breadcrumbs(breadcrumbs) {
-    this.#breadcrumbs = breadcrumbs
+  #pool = new ThemePool()
+  get pool() {
+    return this.#pool
   }
 
   /**
@@ -105,15 +76,9 @@ export default class Evaluator {
    *  - Returned value is the (now resolved) theme entries array for chaining.
    *
    * @param {Array<{flatPath:string,value:any}>} decomposed - Variable entries to resolve.
-   * @param {Map} [lookup] - Variables to act as the lookup. If not provided, will be generated.
    * @returns {Array<object>} The mutated & fully resolved theme entry array.
    */
-  evaluate(decomposed, lookup) {
-    if(lookup)
-      this.#lookup = lookup
-    else
-      this.#createLookup(decomposed)
-
+  evaluate(decomposed) {
     this.#processScope(decomposed)
 
     return decomposed
@@ -128,31 +93,42 @@ export default class Evaluator {
    */
   #processScope(target) {
     let it = 0
+    let innerit = 0
 
     do {
       target.forEach(item => {
+        innerit++
+        const trail = new Array()
+
+        // Term.debug()
+        // Term.debug("[item.flatPath]", item.flatPath)
+
         if(typeof item.value === "string") {
-          item.value = this.processToken(item.flatPath, item.value)
+          const raw = item.value
+          item.value = this.#evaluateValue(trail, item.flatPath, raw)
           // Keep lookup in sync with latest resolved value for chained deps.
-          this.#lookup.set(item.flatPath, item.value)
+          const token = this.#pool.findToken(item.flatPath)
+          this.#pool.resolve(item.flatPath, item.value)
+          this.#pool.rawResolve(raw, item.value)
+          // Term.debug("[processScope]", "trail", [...trail.entries()].map(e => e[1].getName()))
+
+          if(token) {
+            token.setValue(item.value).addTrail(trail)
+          } else {
+            const newToken = new ThemeToken(item.flatPath)
+              .setRawValue(raw)
+              .setValue(item.value)
+              .setKind("input")
+              .addTrail(trail)
+
+            this.#pool.addToken(newToken)
+          }
         }
       })
-    } while(++it < this.#maxIterations &&
-            this.#hasUnresolvedTokens(target))
-  }
-
-  /**
-   * Merge an array of entries into the path→value lookup cache. Last write wins.
-   *
-   * @param {Array<{flatPath:string,value:any}>} variables - Entries to index.
-   */
-  #createLookup(variables) {
-    this.clearLookup()
-
-    variables.forEach(item => {
-      if(item.value != null)
-        this.#lookup.set(item.flatPath, item.value)
-    })
+    } while(
+      ++it < this.#maxIterations &&
+      this.#hasUnresolvedTokens(target)
+    )
   }
 
   /**
@@ -160,64 +136,87 @@ export default class Evaluator {
    * the passed value.
    *
    * @private
-   * @param {string} token - The token being processed
-   * @param {string} text - Raw tokenised string.
+   * @param parentTokenKeyString
+   * @param trail
+   * @param {string} value - Raw tokenised string.
    * @returns {string} Fully resolved string.
    */
-  processToken(token, text) {
-    const _checker = () =>
-      token === "editor.inactiveSelectionBackground" ||
-      token === "editor.selectionBackground"
-    while(true) {
-      if(Evaluator.sub.test(text)) {
-        const testResult = Evaluator.sub.exec(text)
-        const {captured,none,parens,braces} = testResult
-          ? testResult.groups
-          : {}
+  #evaluateValue(trail, parentTokenKeyString, value) {
+    let it = 0
 
-        const lookupKey = none ?? parens ?? braces
-        const lookupValue = this.#lookup.get(lookupKey)
+    for(;;) {
+      // Term.debug("[evaluateValue]", it, parentTokenKeyString, value)
+      let resolved
 
-        const resolved = lookupValue
-          ? text.replace(captured, lookupValue)
-          : text
+      if(Colour.isHex(value))
+        resolved = this.#resolveHex(value)
+      else if(Evaluator.sub.test(value))
+        resolved = this.#resolveVariable(value)
+      else if(Evaluator.func.test(value))
+        resolved = this.#resolveFunction(value)
+      else
+        resolved = this.#resolveLiteral(value)
 
-        if(resolved !== text) {
-          // Now let's see if we have a pre-existing breadcrumb resolution!
-          if(lookupValue &&
-            lookupKey !== token &&
-            this.#breadcrumbs.has(lookupKey)) {
-            // Woot! Okay, let's add a reference for later use when resolving
-            this.#recordBreadcrumb(token, [text,`{{${captured}}}`,resolved])
-          } else {
-            this.#recordBreadcrumb(token, [text, resolved])
-          }
+      if(!resolved || resolved.getValue() === value)
+        return value
 
-          text = resolved
-        }
-      } else if(Evaluator.func.test(text)) {
-        const testResult = Evaluator.func.exec(text)
-        const {func,args} = testResult
-          ? testResult.groups
-          : {}
-
-        if(func && args) {
-          const argList = args.split(",").map(a => a.trim()).filter(Boolean)
-          const transformed = this.#applyTransform(func, argList)
-          const resolved = text.replace(testResult.input, transformed)
-          const existing = this.#breadcrumbs.get(text)
-
-          if(!existing || existing.at(-1) !== resolved)
-            this.#recordBreadcrumb(token, [text, resolved])
-
-          text = resolved
-        } else {
-          return text
-        }
-      } else {
-        return text
-      }
+      // Otherwise keep processing the new value
+      this.#pool.addToken(resolved).setParentTokenKey(parentTokenKeyString)
+      trail.push(resolved)
+      value = resolved.getValue()
     }
+  }
+
+  #resolveLiteral(value) {
+    const existing = this.#pool.findToken(value)
+
+    return existing ??
+     new ThemeToken(value)
+       .setKind("literal")
+       .setRawValue(value)
+       .setValue(value)
+  }
+
+  #resolveHex(value) {
+    const hex = Colour.normaliseHex(value)
+
+    return new ThemeToken(value)
+      .setKind("hex")
+      .setRawValue(value)
+      .setValue(hex)
+  }
+
+  #resolveVariable(value) {
+    const {captured,none,parens,braces} = Evaluator.sub.exec(value).groups
+    const work = none ?? parens ?? braces
+    const existing = this.#pool.findToken(work)
+
+    if(!existing)
+      return null
+
+    const resolved = value.replace(captured,existing.getValue())
+
+    return new ThemeToken(value)
+      .setKind("variable")
+      .setRawValue(captured)
+      .setValue(resolved)
+      .setDependency(existing)
+  }
+
+  #resolveFunction(value) {
+    const {captured,func,args} = Evaluator.func.exec(value).groups
+    const split = args?.split(",").map(a => a.trim()) ?? []
+    const applied = this.#applyTransform(func, split)
+
+    if(!applied)
+      return null
+
+    const resolved = value.replace(captured, applied)
+
+    return new ThemeToken(value)
+      .setKind("function")
+      .setRawValue(captured)
+      .setValue(resolved)
   }
 
   /**
@@ -256,7 +255,7 @@ export default class Evaluator {
           case "hsv": case "hsva":
             return Colour.toHex(func, args[3], ...args.slice(0, 3))
           default:
-            return def
+            return null
         }
       } catch(e) {
         const err = `Applying transform ${def}`
@@ -292,22 +291,5 @@ export default class Evaluator {
       return false
 
     return Evaluator.sub.test(item.value) || Evaluator.func.test(item.value)
-  }
-
-  #recordBreadcrumb(token, crumbs) {
-    const _checker = () =>
-      token === "editor.inactiveSelectionBackground" ||
-      token === "editor.selectionBackground"
-    const breadcrumbs = this.#breadcrumbs.get(token) ?? []
-    const insert = breadcrumbs.at(-1) === crumbs.at(0)
-      ? crumbs.slice(1)
-      : crumbs
-
-    if(!insert.length)
-      return
-
-    breadcrumbs.push(...insert)
-
-    this.#breadcrumbs.set(token, breadcrumbs)
   }
 }
