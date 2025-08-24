@@ -143,14 +143,24 @@ export default class Colour {
     return decimalValue.toString(16).padStart(2, "0")
   }
 
+  static isHex(value) {
+    return Colour.shortHex.test(value) ||
+           Colour.longHex.test(value)
+  }
+
   /**
-   * Normalizes a short hex color code to a full 6-character format.
+   * Normalises a short hex color code to a full 6-character format.
    * Converts 3-character hex codes like "#f00" to "#ff0000".
    *
    * @param {string} code - The short hex color code
    * @returns {string} The normalized 6-character hex color code
    */
-  static normalizeHex(code) {
+  static normaliseHex(code) {
+    // did some rube give us a long hex?
+    if(Colour.longHex.test(code))
+      // send it back! pshaw!
+      return code
+
     const matches = code.match(Colour.shortHex)
 
     if(!matches)
@@ -181,12 +191,12 @@ export default class Colour {
     const result = {}
 
     result.colour = parsed.colour.length === 3
-      ? Colour.normalizeHex(parsed.colour)
+      ? Colour.normaliseHex(parsed.colour)
       : parsed.colour
 
     if(parsed.alpha) {
       parsed.alpha = parsed.alpha.length === 1
-        ? Colour.normalizeHex(parsed.alpha)
+        ? Colour.normaliseHex(parsed.alpha)
         : parsed.alpha
 
       result.alpha = {

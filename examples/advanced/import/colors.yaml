@@ -400,7 +400,7 @@ theme:
       foldBackground: $(std.bg.accent.whisper)
       foldPlaceholderForeground: lighten($(std.fg.accent), 50)
       # Active line highlight
-      lineHighlightBackground: fade(lighten($(std.bg.panel.innermost), 25) , 0.25)
+      lineHighlightBackground: fade(lighten($(std.bg.panel.innermost), 25), 0.25)
       lineHighlightBorder: fade($(std.outline.whisper), 0.25) # Border color of the active line highlight.
       # Hover highlight
       hoverHighlightBackground: fade($(std.bg.accent.faint), 0.60) # Background color of the hover highlight.

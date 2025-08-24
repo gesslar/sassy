@@ -87,7 +87,6 @@ void (async function main() {
     void(await resolvecommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)
 
-
     // Let'er rip, bitches! VROOM VROOM, motherfucker!!
     program.parse()
   } catch(e) {

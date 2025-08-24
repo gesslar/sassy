@@ -9,7 +9,7 @@ import Evaluator from "./Evaluator.js"
 import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
-import _Term from "./Term.js"
+import Term from "./Term.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -105,7 +105,7 @@ export default class Compiler {
     )
     // Voilà!
     theme.output = output
-    theme.breadcrumbs = evaluator.breadcrumbs
+    theme.pool = evaluator.pool
   }
 
   /**
@@ -121,42 +121,42 @@ export default class Compiler {
     const imported = {}
     const importedFiles = []
 
-    for(const [sectionName,target] of Object.entries(imports)) {
-      if(!target)
-        continue
+    const importPromises = await Promise.allSettled(
+      Object.entries(imports).map(async([sectionName,target]) => {
+        if(!target)
+          return
 
-      const toImport = typeof target === "string" ? [target] : target
+        const importing = typeof target === "string" ? [target] : target
 
-      if(!Data.isArrayUniform(toImport, "string"))
-        throw new AuntyError(
-          `Import '${sectionName}' must be a string or an array of strings.`
+        if(!Data.isArrayUniform(importing, "string"))
+          throw new AuntyError(
+            `Import '${sectionName}' must be a string or an array of strings.`
+          )
+
+
+        const files = importing.map(f => new FileObject(f, file.directory))
+
+        importedFiles.push(...files)
+
+        const filePromises = await Promise.allSettled(files.map(File.loadDataFile))
+        const rejected = filePromises.filter(({status}) => status === "rejected")
+        if(rejected.length > 0)
+          throw AuntyError.new(`Unable to load file(s).\n${rejected.map(({reason}) => reason)}`)
+
+        const importedData = filePromises.map(({value}) => value)
+        const mergedData = Data.mergeObject({}, ...importedData)
+        const inner = Data.mergeObject(
+          {}, imported[sectionName] ?? {}, mergedData
         )
 
-      // things should already be resolved at this point as far as
-      // the header is concerned
+        imported[sectionName] = inner
+      })
+    )
 
-      // const evaluator = new Evaluator()
-      // const resolved = toImport.map(path => {
-      //   const subbing = this.#decomposeObject({path})
-      //   const subbingWith = this.#decomposeObject(header)
 
-      //   return evaluator.evaluate({
-      //     theme: subbing, vars: subbingWith
-      //   })[0]
-      // })
-
-      const files = toImport.map(f => new FileObject(f, file.directory))
-
-      importedFiles.push(...files)
-
-      const importedData = await Promise.all(files.map(File.loadDataFile))
-      const mergedData = Data.mergeObject({}, ...importedData)
-      const inner = Data.mergeObject(
-        {}, imported[sectionName] ?? {}, mergedData
-      )
-
-      imported[sectionName] = inner
-    }
+    const rejected = importPromises.filter((({status}) => status === "rejected"))
+    if(rejected.length > 0)
+      throw AuntyError.new(`Unable to import file(s).\n${rejected.map(({reason}) => reason)}`)
 
     return {imported,importedFiles}
   }

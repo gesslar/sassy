@@ -5,7 +5,8 @@ config:
   type: dark
 
   import:
-    global: ../import/variables.yaml
+    global:
+      - ../import/variables.yaml
     colors:
       - ../import/colors.yaml
     tokenColors:

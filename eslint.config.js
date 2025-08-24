@@ -75,15 +75,18 @@ export default [
           finally: { before: true, after: true },
         }
       }],
-      "@stylistic/max-len": ["warn", {
-        code: 80,
-        ignoreComments: true,
-        ignoreUrls: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-        ignoreRegExpLiterals: true,
-        tabWidth: 2
-      }],
+      // Blocks
+      "@stylistic/space-before-blocks": ["error", "always"],
+
+      // "@stylistic/max-len": ["warn", {
+      //   code: 80,
+      //   ignoreComments: true,
+      //   ignoreUrls: true,
+      //   ignoreStrings: true,
+      //   ignoreTemplateLiterals: true,
+      //   ignoreRegExpLiterals: true,
+      //   tabWidth: 2
+      // }],
       "@stylistic/no-tabs": "error",
       "@stylistic/no-trailing-spaces": ["error"],
       "@stylistic/object-curly-spacing": ["error", "never", {
