@@ -1,7 +1,14 @@
 /**
- * @file Variable and token evaluation engine for theme compilation.
- * Handles recursive resolution of variable references and colour function calls
- * within theme configuration objects.
+ * @file Evaluator.js
+ *
+ * Defines the Evaluator class, responsible for variable and token resolution
+ * during theme compilation.
+ *
+ * Handles recursive substitution of variable references and colour function
+ * calls within theme configuration objects.
+ *
+ * Ensures deterministic scoping and supports extension for new colour
+ * functions.
  */
 
 import Colour from "./Colour.js"
@@ -9,8 +16,6 @@ import AuntyError from "./AuntyError.js"
 import * as _Data from "./DataUtil.js"
 import ThemePool from "./ThemePool.js"
 import ThemeToken from "./ThemeToken.js"
-import Term from "./Term.js"
-
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.
@@ -51,7 +56,11 @@ export default class Evaluator {
    * @type {RegExp}
    */
   static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
+  static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
 
+  #pool = new ThemePool()
+  get pool() {
+    return this.#pool
   #pool = new ThemePool()
   get pool() {
     return this.#pool
@@ -79,6 +88,7 @@ export default class Evaluator {
    * @returns {Array<object>} The mutated & fully resolved theme entry array.
    */
   evaluate(decomposed) {
+  evaluate(decomposed) {
     this.#processScope(decomposed)
 
     return decomposed
@@ -93,11 +103,8 @@ export default class Evaluator {
    */
   #processScope(target) {
     let it = 0
-    let innerit = 0
-
     do {
       target.forEach(item => {
-        innerit++
         const trail = new Array()
 
         // Term.debug()
@@ -106,7 +113,31 @@ export default class Evaluator {
         if(typeof item.value === "string") {
           const raw = item.value
           item.value = this.#evaluateValue(trail, item.flatPath, raw)
+          const raw = item.value
+          item.value = this.#evaluateValue(trail, item.flatPath, raw)
           // Keep lookup in sync with latest resolved value for chained deps.
+          const token = this.#pool.findToken(item.flatPath)
+          this.#pool.resolve(item.flatPath, item.value)
+          this.#pool.rawResolve(raw, item.value)
+          // Term.debug("[processScope]", "trail", [...trail.entries()].map(e => e[1].getName()))
+
+          if(token) {
+            token.setValue(item.value).addTrail(trail)
+          } else {
+            const newToken = new ThemeToken(item.flatPath)
+              .setRawValue(raw)
+              .setValue(item.value)
+              .setKind("input")
+              .addTrail(trail)
+
+            this.#pool.addToken(newToken)
+          }
+        }
+      })
+    } while(
+      ++it < this.#maxIterations &&
+      this.#hasUnresolvedTokens(target)
+    )
           const token = this.#pool.findToken(item.flatPath)
           this.#pool.resolve(item.flatPath, item.value)
           this.#pool.rawResolve(raw, item.value)
@@ -136,14 +167,12 @@ export default class Evaluator {
    * the passed value.
    *
    * @private
-   * @param parentTokenKeyString
-   * @param trail
-   * @param {string} value - Raw tokenised string.
+   * @param {Array<ThemeToken>} trail - Array to track resolution chain.
+   * @param {string} parentTokenKeyString - Key string for parent token.
+   * @param {string} value - Raw tokenised string to resolve.
    * @returns {string} Fully resolved string.
    */
   #evaluateValue(trail, parentTokenKeyString, value) {
-    let it = 0
-
     for(;;) {
       // Term.debug("[evaluateValue]", it, parentTokenKeyString, value)
       let resolved
@@ -167,6 +196,13 @@ export default class Evaluator {
     }
   }
 
+  /**
+   * Resolve a literal value to a ThemeToken.
+   *
+   * @private
+   * @param {string} value - The literal value.
+   * @returns {ThemeToken} The resolved token.
+   */
   #resolveLiteral(value) {
     const existing = this.#pool.findToken(value)
 
@@ -177,6 +213,13 @@ export default class Evaluator {
        .setValue(value)
   }
 
+  /**
+   * Resolve a hex color value to a ThemeToken.
+   *
+   * @private
+   * @param {string} value - The hex color value.
+   * @returns {ThemeToken} The resolved token.
+   */
   #resolveHex(value) {
     const hex = Colour.normaliseHex(value)
 
@@ -186,6 +229,13 @@ export default class Evaluator {
       .setValue(hex)
   }
 
+  /**
+   * Resolve a variable token to its value.
+   *
+   * @private
+   * @param {string} value - The variable token string.
+   * @returns {ThemeToken|null} The resolved token or null.
+   */
   #resolveVariable(value) {
     const {captured,none,parens,braces} = Evaluator.sub.exec(value).groups
     const work = none ?? parens ?? braces
@@ -203,6 +253,13 @@ export default class Evaluator {
       .setDependency(existing)
   }
 
+  /**
+   * Resolve a function token to its value.
+   *
+   * @private
+   * @param {string} value - The function token string.
+   * @returns {ThemeToken|null} The resolved token or null.
+   */
   #resolveFunction(value) {
     const {captured,func,args} = Evaluator.func.exec(value).groups
     const split = args?.split(",").map(a => a.trim()) ?? []
@@ -255,6 +312,7 @@ export default class Evaluator {
           case "hsv": case "hsva":
             return Colour.toHex(func, args[3], ...args.slice(0, 3))
           default:
+            return null
             return null
         }
       } catch(e) {

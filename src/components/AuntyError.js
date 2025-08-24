@@ -1,3 +1,14 @@
+/**
+ * @file AuntyError.js
+ *
+ * Defines the AuntyError class, a custom error type for theme compilation
+ * errors.
+ *
+ * Supports error chaining, trace management, and formatted reporting for both
+ * user-friendly and verbose (nerd) output.
+ * Used throughout the theme engine for structured error handling and
+ * debugging.
+ */
 import Term from "./Term.js"
 
 /**
