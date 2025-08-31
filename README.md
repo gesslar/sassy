@@ -279,19 +279,19 @@ config:
       colors: "./shared/colors.yaml"
       # Can import multiple files
       typography: ["./shared/fonts.yaml", "./shared/sizes.yaml"]
-    
+
     # Import global configuration
     global:
       base: "./shared/base-config.yaml"
-    
+
     # Import VS Code color definitions
     colors:
       ui: "./shared/ui-colors.yaml"
-    
+
     # Import syntax highlighting rules
     tokenColors:
       syntax: "./shared/syntax.yaml"
-    
+
     # Import semantic token colors
     semanticTokenColors:
       semantic: "./shared/semantic.yaml"
@@ -306,8 +306,9 @@ config:
 **Merge Order:**
 
 The merge happens in a precise order with each level overriding the previous:
+
 1. `global` imports (merged first)
-2. `colors` imports 
+2. `colors` imports
 3. `tokenColors` imports
 4. `semanticTokenColors` imports
 5. Your theme file's own definitions (final override)
