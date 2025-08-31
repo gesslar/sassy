@@ -230,7 +230,7 @@ export default class ThemeToken {
    * @returns {boolean} True if ancestor exists.
    */
   hasDependency(name) {
-    return this.#dependency && this.#dependency.name === name
+    return this.#dependency && this.#dependency.getName() === name
   }
 
   /**
