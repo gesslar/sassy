@@ -16,6 +16,7 @@ import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
 import {uniformStringArray} from "./DataUtil.js"
 import AuntyError from "./AuntyError.js"
+import Term from "./Term.js"
 
 /**
  * Fix slashes in a path

@@ -125,9 +125,9 @@ export default class BuildCommand extends AuntyCommand {
     const {cost: loadCost} = await Util.time(() => theme.load())
     const bytes = await File.fileSize(theme.sourceFile)
     Term.status([
-      ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10)],
+      ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10), ["[","]"]],
       `${theme.sourceFile.module} loaded`,
-      ["info", `${bytes} bytes`]
+      ["info", `${bytes} bytes`, ["[","]"]]
     ], options)
 
     /**
@@ -136,22 +136,49 @@ export default class BuildCommand extends AuntyCommand {
      * ****************************************************************
      */
 
-
     const {cost: buildCost} = await Util.time(() => theme.build())
-    const bytesCompiled = await theme.dependencies.reduce(
-      async(accPromise, item) => {
-        const acc = await accPromise
-        const processed = await File.fileSize(item)
+    // const bytesCompiled = await theme.dependencies.reduce(
+    //   async(accPromise, item) => {
+    //     const acc = await accPromise
+    //     const processed = await File.fileSize(item)
 
-        return acc + processed
-      }, Promise.resolve(0)
-    )
+    //     return acc + processed
+    //   }, Promise.resolve(0)
+    // )
+
+    const filesCompiled =
+      await Promise.allSettled(theme.dependencies.map(async dep => {
+
+        return await (async fileObject => {
+          const fileName = File.relativeOrAbsolutePath(this.cwd, fileObject)
+          const fileSize = await File.fileSize(fileObject)
+          return [fileName, fileSize]
+        })(dep)
+
+      }))
+
+    const dependencies = filesCompiled.slice(1).map(dep => dep.value)
+    const totalBytes = filesCompiled.reduce((acc,curr) => acc + curr.value[1], 0)
 
     Term.status([
-      ["success", Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10)],
+      ["success", Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10), ["[","]"]],
       `${theme.sourceFile.module} compiled`,
-      ["success", `${bytesCompiled.toLocaleString()} bytes`]
+      ["success", `${filesCompiled[0].value[1].toLocaleString()} bytes`, ["[","]"]],
+      ["info", `${totalBytes.toLocaleString()} total bytes`, ["(",")"]],
     ], options)
+
+    if(options.nerd) {
+      dependencies.forEach(f => {
+        const [fileName,fileSize] = f
+
+        Term.status([
+          `${" ".repeat(13)}`,
+          ["muted", fileName],
+          ["muted", `${fileSize.toLocaleString()} bytes`, ["{","}"]]
+        ], options)
+
+      })
+    }
 
     /**
      * ****************************************************************
@@ -170,18 +197,18 @@ export default class BuildCommand extends AuntyCommand {
 
     const outputFilename = File.relativeOrAbsolutePath(this.cwd, outputFile)
     const status = [
-      ["success", Util.rightAlignText(`${writeCost.toLocaleString()}ms`, 10)],
+      ["success", Util.rightAlignText(`${writeCost.toLocaleString()}ms`, 10), ["[","]"]],
     ]
 
     if(writeStatus === "written") {
       status.push(
         `${outputFilename} written`,
-        ["success", `${writeBytes.toLocaleString()} bytes`]
+        ["success", `${writeBytes.toLocaleString()} bytes`, ["[","]"]]
       )
     } else {
       status.push(
         `${outputFilename}`,
-        ["warn", writeStatus.toLocaleUpperCase()]
+        ["warn", writeStatus.toLocaleUpperCase(), ["[","]"]]
       )
     }
 
@@ -204,7 +231,7 @@ export default class BuildCommand extends AuntyCommand {
     const fileName = File.relativeOrAbsolutePath(this.cwd, changedFile)
 
     Term.status([
-      ["info", "REBUILDING"],
+      ["info", "REBUILDING", ["[","]"]],
       fileName
     ], options)
 
@@ -253,7 +280,7 @@ export default class BuildCommand extends AuntyCommand {
    */
   #introduceWatching(options) {
     Term.status([
-      ["info", "WATCH MODE"],
+      ["info", "WATCH MODE", ["[","]"]],
       "F5=recompile (forces write), q=quit"
     ], options)
     Term.info()
