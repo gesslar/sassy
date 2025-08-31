@@ -138,7 +138,7 @@ export default class ThemeToken {
    */
   setRawValue(raw) {
     if(!this.#rawValue)
-      this.#rawValue= raw
+      this.#rawValue = raw
 
     return this
   }

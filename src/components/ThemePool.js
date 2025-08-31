@@ -82,7 +82,7 @@ export default class ThemePool {
   }
 
   /**
-   * Retrieves a token's depdendency.
+   * Retrieves a token's dependency.
    *
    * @param {ThemeToken} token - The token to look up.
    * @returns {ThemeToken?} The dependent token with the given token, or undefined.
