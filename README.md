@@ -61,41 +61,41 @@ No installation needed - use with npx:
 
 ```bash
 # Create your first theme
-npx @gesslar/aunty my-theme.yaml
+npx @gesslar/aunty build my-theme.yaml
 
 # Watch mode for development
-npx @gesslar/aunty my-theme.yaml --watch
+npx @gesslar/aunty build my-theme.yaml --watch
 
 # Custom output location
-npx @gesslar/aunty -o ./themes my-theme.yaml
+npx @gesslar/aunty build -o ./themes my-theme.yaml
 ```
 
 ## CLI Usage
 
 ```bash
 # Basic compilation
-npx @gesslar/aunty <theme-file>
+npx @gesslar/aunty build <theme-file>
 
 # Multiple files at once
-npx @gesslar/aunty theme1.yaml theme2.yaml theme3.yaml
+npx @gesslar/aunty build theme1.yaml theme2.yaml theme3.yaml
 
 # Watch for changes (rebuilds automatically)
-npx @gesslar/aunty --watch my-theme.yaml
+npx @gesslar/aunty build --watch my-theme.yaml
 
 # Custom output directory
-npx @gesslar/aunty --output-dir ./my-themes my-theme.yaml
+npx @gesslar/aunty build --output-dir ./my-themes my-theme.yaml
 
 # See the compiled JSON without writing files
-npx @gesslar/aunty --dry-run my-theme.yaml
+npx @gesslar/aunty build --dry-run my-theme.yaml
 
 # Silent mode (only show errors)
-npx @gesslar/aunty --silent my-theme.yaml
+npx @gesslar/aunty build --silent my-theme.yaml
 
 # Debug mode (detailed error traces)
-npx @gesslar/aunty --nerd my-theme.yaml
+npx @gesslar/aunty build --nerd my-theme.yaml
 ```
 
-### CLI Options
+### Build Command Options
 
 | Option | Description |
 |--------|-------------|
@@ -113,7 +113,14 @@ npx @gesslar/aunty --nerd my-theme.yaml
 npx @gesslar/aunty resolve --token editor.background my-theme.yaml
 ```
 
-This shows you the complete resolution chain for any theme property.
+This shows you the complete resolution chain for any theme property, displaying each step of variable substitution and function evaluation with color-coded output.
+
+### Resolve Command Options
+
+| Option | Description |
+|--------|-------------|
+| `-t, --token <key>` | Resolve a specific token/variable to its final value |
+| `--nerd` | Show detailed error traces if resolution fails |
 
 ## Basic Theme Structure
 
@@ -161,6 +168,7 @@ Make colors that work together:
 | `alpha(color, value)` | `alpha($(brand), 0.5)` | Set exact transparency |
 | `mix(color1, color2, %)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
 | `invert(color)` | `invert($(fg))` | Perfect opposite |
+| `solidify(color, %)` | `solidify($(bg.accent), 30)` | Increase opacity by percentage |
 
 ## Variable Reference
 
@@ -189,7 +197,7 @@ touch ocean-theme.yaml
 
 ```bash
 # Start watching for changes
-npx @gesslar/aunty --watch ocean-theme.yaml
+npx @gesslar/aunty build --watch ocean-theme.yaml
 ```
 
 ### 3. Install Your Theme
@@ -220,7 +228,7 @@ extension.
 
 ### Modular Theme Design
 
-Break your themes into reusable components:
+Break your themes into reusable components using the import system:
 
 ```yaml
 # colors.yaml
@@ -259,15 +267,59 @@ theme:
     "statusBar.background": $(std.bg.accent)
 ```
 
-This creates three themes with the same structure but different accent
-colors.
+### Import System
+
+Aunty Rose supports importing different types of theme components:
+
+```yaml
+config:
+  imports:
+    # Import variables (merged into your vars section)
+    vars:
+      colors: "./shared/colors.yaml"
+      # Can import multiple files
+      typography: ["./shared/fonts.yaml", "./shared/sizes.yaml"]
+    
+    # Import global configuration
+    global:
+      base: "./shared/base-config.yaml"
+    
+    # Import VS Code color definitions
+    colors:
+      ui: "./shared/ui-colors.yaml"
+    
+    # Import syntax highlighting rules
+    tokenColors:
+      syntax: "./shared/syntax.yaml"
+    
+    # Import semantic token colors
+    semanticTokenColors:
+      semantic: "./shared/semantic.yaml"
+```
+
+**Import Format Options:**
+
+- **Single file:** `"./path/to/file.yaml"`
+- **Multiple files:** `["./file1.yaml", "./file2.yaml"]`
+- **File types:** Both `.yaml` and `.json5` are supported
+
+**Merge Order:**
+
+The merge happens in a precise order with each level overriding the previous:
+1. `global` imports (merged first)
+2. `colors` imports 
+3. `tokenColors` imports
+4. `semanticTokenColors` imports
+5. Your theme file's own definitions (final override)
+
+Within each section, if you import multiple files, they merge in array order. This layered approach gives you fine-grained control over which definitions take precedence.
 
 ### Watch Mode for Development
 
 Perfect for theme development - see changes instantly:
 
 ```bash
-npx @gesslar/aunty my-theme.yaml --watch
+npx @gesslar/aunty build my-theme.yaml --watch
 ```
 
 Now edit your YAML file and watch VS Code update automatically!
@@ -331,7 +383,7 @@ different approaches and techniques.
 
 ```bash
 # See detailed error information
-npx @gesslar/aunty --nerd my-theme.yaml
+npx @gesslar/aunty build --nerd my-theme.yaml
 
 # Check what a specific variable resolves to
 npx @gesslar/aunty resolve --token problematic.variable my-theme.yaml

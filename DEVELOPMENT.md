@@ -5,21 +5,29 @@ extending Aunty Rose.
 
 ## CLI Implementation
 
-The CLI is built with Commander.js and follows a command pattern:
+The CLI is built with Commander.js using a subcommand architecture:
 
 ```text
-Usage: aunty [options] <file...>
-       aunty resolve [options] <file>
+Usage: aunty <command> [options] <args...>
 
-Main Options:
+Commands:
+  build <file...>          Compile theme files to VS Code format
+  resolve <file>           Resolve and inspect theme variables/tokens
+
+Build Command Options:
   -w, --watch              File watching with chokidar
   -o, --output-dir <dir>   Output directory handling
   -n, --dry-run            Stdout instead of file writes
   -s, --silent             Suppress non-error output
+
+Resolve Command Options:
+  -t, --token <key>        Resolve specific token to final value
+
+Global Options:
   --nerd                   Full error stack traces
 ```
 
-See README.md for complete CLI usage examples.
+The CLI delegates to command classes (`BuildCommand`, `ResolveCommand`) that extend `AuntyCommand`. See README.md for complete CLI usage examples.
 
 ## Error Handling Architecture
 
@@ -69,7 +77,7 @@ this.#watcher = chokidar.watch(dependencies, {
 
 ## Theme Class Structure
 
-Internally each entry file becomes a Theme instance:
+Each entry file becomes a Theme instance that manages the complete compilation lifecycle:
 
 ```ts
 interface Theme {
@@ -78,19 +86,51 @@ interface Theme {
   output: object                    // final theme JSON object
   dependencies: FileObject[]        // all secondary sources discovered during compile
   lookup: object                    // variable lookup data for compilation
-  breadcrumbs: Map                  // variable resolution tracking
-  
+  pool: ThemePool                   // token resolution tracking system
+  outputFileName: string            // computed output file path
+
   // Methods
   load(): Promise<Theme>            // loads and parses the source file
   build(options?): Promise<Theme>   // compiles via Compiler
-  write(): Promise<void>            // outputs to file or stdout
+  write(forceWrite?): Promise<object> // outputs to file or stdout with hash checking
   addDependency(file): Theme        // adds a file dependency
   reset(): void                     // clears compilation state
 }
 ```
 
-The Theme class manages its complete lifecycle and internal watch mode with chokidar.
-You won't usually instantiate this directly unless extending the compiler.
+The Theme class manages its complete lifecycle including:
+
+- File loading and parsing (JSON5/YAML support)
+- Dependency tracking for imports
+- Internal watch mode with chokidar integration
+- Hash-based output skipping to prevent unnecessary writes
+
+## Theme Resolution System
+
+The current implementation uses a sophisticated token resolution system:
+
+- **ThemePool**: Central registry for all tokens and their relationships
+- **ThemeToken**: Individual token with value, dependencies, and resolution trail
+- **Evaluator**: Handles variable substitution and function evaluation
+
+This architecture enables the `resolve` command to provide detailed introspection into how any variable resolves to its final value.
+
+### Resolve Command Implementation
+
+The `ResolveCommand` class provides theme debugging capabilities:
+
+```bash
+npx @gesslar/aunty resolve --token std.bg.accent.faint my-theme.yaml
+```
+
+This command:
+
+1. Loads and compiles the theme to build the complete ThemePool
+2. Retrieves the requested token and its resolution trail
+3. Formats a tree-like visual output showing each resolution step
+4. Color-codes different token types (variables, functions, hex colors, literals)
+
+The output shows the complete dependency chain from the original expression to the final resolved value, making it easy to debug complex variable relationships.
 
 ## Imports
 
@@ -121,10 +161,15 @@ npm install @gesslar/aunty
 ```
 
 ```javascript
-import Compiler from '@gesslar/aunty'
+import Theme from '@gesslar/aunty/src/components/Theme.js'
+import FileObject from '@gesslar/aunty/src/components/FileObject.js'
 
-const file = await loadDataFile('my-theme.yaml')
-await Compiler.compile(file)
+const fileObject = new FileObject('my-theme.yaml')
+const theme = new Theme(fileObject, process.cwd(), {})
+
+await theme.load()
+await theme.build()
+await theme.write()
 // Result available in my-theme.color-theme.json
 ```
 
@@ -132,16 +177,14 @@ await Compiler.compile(file)
 
 Aunty Rose processes themes in phases:
 
-1. **Import Resolution** - Merge modular theme files
-2. **Variable Decomposition** - Flatten nested structures
-3. **Token Evaluation** - Resolve `$(variable)` references
-4. **Function Application** - Execute colour manipulation functions
-5. **Recursive Resolution** - Handle variables that reference other
-   variables
-6. **Theme Assembly** - Build final VS Code theme JSON
+1. **Import Resolution** - Merge modular theme files using `config.imports`
+2. **Variable Decomposition** - Flatten nested object structures into dot-notation paths
+3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool system
+4. **Function Application** - Execute color manipulation functions (`lighten`, `darken`, etc.)
+5. **Dependency Resolution** - Build token dependency graph and resolve in correct order
+6. **Theme Assembly** - Compose final VS Code theme JSON with proper structure
 
-Error handling is per-entry theme: a failure in one file doesn't halt
-others (thanks to `Promise.allSettled`).
+The ThemePool/ThemeToken system tracks resolution trails, enabling debugging and circular dependency detection. Error handling is per-entry theme: a failure in one file doesn't halt others (thanks to `Promise.allSettled`).
 
 ## Variable / Token Reference Syntax
 
@@ -186,13 +229,12 @@ If you build something neat, consider opening a PR or sharing a gist.
 git clone https://github.com/gesslar/aunty
 cd aunty
 npm install
-npm test
 ```
 
 Local CLI development:
 
 ```bash
-node ./src/cli.js examples/simple/midnight-ocean.yaml -o ./examples/output \
+node ./src/cli.js build examples/simple/midnight-ocean.yaml -o ./examples/output \
   --watch
 ```
 
