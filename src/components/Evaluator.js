@@ -56,11 +56,7 @@ export default class Evaluator {
    * @type {RegExp}
    */
   static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
-  static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
 
-  #pool = new ThemePool()
-  get pool() {
-    return this.#pool
   #pool = new ThemePool()
   get pool() {
     return this.#pool
@@ -70,6 +66,7 @@ export default class Evaluator {
    * Resolve variables and theme token entries in two distinct passes to ensure
    * deterministic scoping and to prevent partially-resolved values from
    * leaking between stages:
+   *
    *  1. Variable pass: each variable is resolved only with access to the
    *     variable set itself (no theme values yet). This ensures variables are
    *     self-contained building blocks.
@@ -87,7 +84,6 @@ export default class Evaluator {
    * @param {Array<{flatPath:string,value:any}>} decomposed - Variable entries to resolve.
    * @returns {Array<object>} The mutated & fully resolved theme entry array.
    */
-  evaluate(decomposed) {
   evaluate(decomposed) {
     this.#processScope(decomposed)
 
@@ -113,31 +109,7 @@ export default class Evaluator {
         if(typeof item.value === "string") {
           const raw = item.value
           item.value = this.#evaluateValue(trail, item.flatPath, raw)
-          const raw = item.value
-          item.value = this.#evaluateValue(trail, item.flatPath, raw)
           // Keep lookup in sync with latest resolved value for chained deps.
-          const token = this.#pool.findToken(item.flatPath)
-          this.#pool.resolve(item.flatPath, item.value)
-          this.#pool.rawResolve(raw, item.value)
-          // Term.debug("[processScope]", "trail", [...trail.entries()].map(e => e[1].getName()))
-
-          if(token) {
-            token.setValue(item.value).addTrail(trail)
-          } else {
-            const newToken = new ThemeToken(item.flatPath)
-              .setRawValue(raw)
-              .setValue(item.value)
-              .setKind("input")
-              .addTrail(trail)
-
-            this.#pool.addToken(newToken)
-          }
-        }
-      })
-    } while(
-      ++it < this.#maxIterations &&
-      this.#hasUnresolvedTokens(target)
-    )
           const token = this.#pool.findToken(item.flatPath)
           this.#pool.resolve(item.flatPath, item.value)
           this.#pool.rawResolve(raw, item.value)
@@ -312,7 +284,6 @@ export default class Evaluator {
           case "hsv": case "hsva":
             return Colour.toHex(func, args[3], ...args.slice(0, 3))
           default:
-            return null
             return null
         }
       } catch(e) {
