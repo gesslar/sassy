@@ -21,7 +21,6 @@ import Util from "../Util.js"
 import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
 import ThemePool from "./ThemePool.js"
-import ThemePool from "./ThemePool.js"
 
 /**
  * Theme class: manages the lifecycle of a theme compilation unit.
@@ -33,7 +32,6 @@ export default class Theme {
   #options = null
   #dependencies = []
   #lookup = null
-  #pool = null
   #pool = null
 
   // Write-related properties
@@ -148,14 +146,9 @@ export default class Theme {
   /**
    * Gets the pool data for variable resolution tracking or null if one has
    * not been set.
-   * Gets the pool data for variable resolution tracking or null if one has
-   * not been set.
    *
    * @returns {ThemePool|null} The pool for this theme.
-   * @returns {ThemePool|null} The pool for this theme.
    */
-  get pool() {
-    return this.#pool
   get pool() {
     return this.#pool
   }
@@ -165,28 +158,7 @@ export default class Theme {
    * written publicly. May only be reset
    *
    * @see reset
-   * Sets the pool data for variable resolution tracking. May not be over-
-   * written publicly. May only be reset
    *
-   * @see reset
-   *
-   * @param {ThemePool} pool - The pool to assign to this theme
-   * @throws If there is already a pool.
-   */
-  set pool(pool) {
-    if(this.#pool)
-      throw AuntyError.new("Cannot override existing pool.")
-
-    this.#pool = pool
-  }
-
-  /**
-   * Method to return true or false if this theme has a pool.
-   *
-   * @returns {boolean} True if a pool has been set, false otherwise.
-   */
-  hasPool() {
-    return this.#pool instanceof ThemePool
    * @param {ThemePool} pool - The pool to assign to this theme
    * @throws If there is already a pool.
    */
