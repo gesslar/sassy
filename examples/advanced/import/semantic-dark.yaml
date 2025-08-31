@@ -1,0 +1,38 @@
+theme:
+  semanticTokenColors:
+    # Token Types
+    namespace: $colors.orange
+    class: $colors.teal
+    enum: lighten($colors.teal, 25)
+    interface: $colors.teal
+    struct: $colors.teal
+    typeParameter: lighten($colors.blue, 30)
+    type: $colors.teal
+    parameter: lighten($colors.blue, 30)
+    variable: $std.fg
+    property: $colors.yellow
+    enumMember: $colors.blue
+    decorator: $colors.purple
+    event: $colors.orange
+    function: $colors.orange
+    method: $colors.orange
+    macro: $colors.purple
+    label: $colors.green
+    comment: $colors.red
+    string: $colors.green
+    keyword: $colors.purple
+    number: $colors.blue
+    regexp: $colors.orange
+    operator: $std.fg.accent.secondary
+
+    # Token Modifiers (can be combined with types)
+    declaration: lighten($std.fg, 15)
+    definition: lighten($std.fg, 25)
+    readonly: fade($std.fg, 0.8)
+    static: $colors.purple
+    deprecated: fade($std.fg, 0.5)
+    abstract: fade($colors.teal, 0.8)
+    async: $colors.blue
+    modification: $colors.orange
+    documentation: fade($colors.green, 0.7)
+    defaultLibrary: $colors.teal

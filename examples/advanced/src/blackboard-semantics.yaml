@@ -8,6 +8,8 @@ config:
     global: ../import/variables.yaml
     colors:
       - ../import/colors.yaml
+    tokenColors:
+      - ../import/karyprocolors-$(type).tmLanguage.yaml
     semanticTokenColors:
       - ../import/semantics.yaml
 

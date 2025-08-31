@@ -15,6 +15,8 @@ ansiColors.alias("error", ansiColors.redBright)
 ansiColors.alias("error-bracket", ansiColors.red)
 ansiColors.alias("modified", ansiColors.magentaBright)
 ansiColors.alias("modified-bracket", ansiColors.magenta)
+ansiColors.alias("muted", ansiColors.white.dim.italic)
+ansiColors.alias("muted-bracket", ansiColors.blackBright.italic)
 
 export default class Term {
   /**
@@ -92,6 +94,8 @@ export default class Term {
    *  - array: each element is either:
    *    - a plain string (emitted unchanged), or
    *    - a tuple: [level, text] where `level` maps to an ansiColors alias
+   *        (e.g. success, info, warn, error, modified).
+   *    - a tuple: [level, text, [openBracket,closeBracket]] where `level` maps to an ansiColors alias
    *        (e.g. success, info, warn, error, modified). These are rendered as
    *        colourised bracketed segments: [TEXT].
    *
@@ -102,7 +106,7 @@ export default class Term {
    * Recursion: array input is normalised into a single string then re-dispatched
    * through `status` to leverage the string branch (keeps logic DRY).
    *
-   * @param {string | Array<string | [string, string]>} args - Message spec.
+   * @param {string | Array<string, string> | Array<string, string, string>} args - Message spec.
    * @returns {void}
    */
   static terminalMessage(args) {
@@ -114,7 +118,12 @@ export default class Term {
         .map(curr => {
           // Bracketed
           if(Array.isArray(curr))
-            return Term.terminalBracket(curr)
+
+            if(curr.length === 3 && Array.isArray(curr[2]))
+              return Term.terminalBracket(curr)
+
+            else
+              return Term.terminalBracket([...curr, ["",""]])
 
           // Plain string, no decoration
           if(typeof curr === "string")
@@ -152,13 +161,13 @@ export default class Term {
    * @returns {string} Colourised bracketed segment (e.g. "[TEXT]").
    * @throws {AuntyError} If any element of `parts` is not a string.
    */
-  static terminalBracket([level, text]) {
+  static terminalBracket([level, text, brackets=["",""]]) {
     if(!(typeof level === "string" && typeof text === "string"))
       throw AuntyError.new("Each element must be a string.")
 
     return "" +
-        ansiColors[`${level}-bracket`]("[")
+        ansiColors[`${level}-bracket`](brackets[0])
       + ansiColors[level](text)
-      + ansiColors[`${level}-bracket`]("]")
+      + ansiColors[`${level}-bracket`](brackets[1])
   }
 }
