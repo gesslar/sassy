@@ -164,11 +164,11 @@ Make colors that work together:
 |----------|---------|--------|
 | `lighten(color, %)` | `lighten($(bg), 25)` | 25% lighter background |
 | `darken(color, %)` | `darken($(accent), 30)` | 30% darker accent |
-| `fade(color, %)` | `fade($(accent), 50)` | 50% transparent |
+| `fade(color, alpha)` | `fade($(accent), 0.5)` | Set to 50% transparent |
 | `alpha(color, value)` | `alpha($(brand), 0.5)` | Set exact transparency |
 | `mix(color1, color2, %)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
 | `invert(color)` | `invert($(fg))` | Perfect opposite |
-| `solidify(color, %)` | `solidify($(bg.accent), 30)` | Increase opacity by percentage |
+| `solidify(color, alpha)` | `solidify($(bg.accent), 0.3)` | Increase opacity to 30% |
 
 ## Variable Reference
 
