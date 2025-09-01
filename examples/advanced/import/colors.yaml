@@ -360,7 +360,7 @@ theme:
       unfocusedHoverBorder: $(std.outline.faint)
       lastPinnedBorder: $(tab.activeBorderTop)
       # Modified Indicator
-      activeModifiedBorder: fade($(status.added), $opacity.weak)
+      activeModifiedBorder: fade($(status.added), $opacity.mild)
       inactiveModifiedBorder: fade($(tab.activeModifiedBorder), 0.4)
       unfocusedActiveModifiedBorder: fade($(tab.activeModifiedBorder), 0.2)
       unfocusedInactiveModifiedBorder: fade($(tab.inactiveModifiedBorder), 0.2)
