@@ -52,8 +52,6 @@ export default class BuildCommand extends AuntyCommand {
   async execute(fileNames, options) {
     const {cwd} = this
 
-    this.#options = options
-
     if(options.watch) {
       options.watch && this.#initialiseInputHandler()
 
