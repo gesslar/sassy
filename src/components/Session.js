@@ -40,7 +40,7 @@ export default class AuntySession {
 
   async run() {
     this.#building = true
-    this.#command.asyncEmit("building")
+    await this.#command.asyncEmit("building")
 
     await this.#buildPipeline()
 
