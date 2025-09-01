@@ -172,7 +172,8 @@ export default class Compiler {
 
   /**
    * Decomposes a nested object into flat entries with path information.
-   * Recursively processes objects and arrays to create a flat structure for evaluation.
+   * Recursively processes objects and arrays to create a flat structure for
+   * evaluation.
    *
    * @param {object} work - The object to decompose
    * @param {string[]} path - Current path array for nested properties
@@ -194,7 +195,7 @@ export default class Compiler {
           const path = [...currPath, String(index+1)]
           result.push({
             key,
-            value: item,
+            value: String(item),
             path,
             flatPath: path.join("."),
             array: {
@@ -205,7 +206,7 @@ export default class Compiler {
           })
         })
       } else {
-        result.push({key, value: item, path, flatPath: currPath.join(".")})
+        result.push({key, value: String(item), path, flatPath: currPath.join(".")})
       }
     }
 
