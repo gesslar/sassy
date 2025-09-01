@@ -103,8 +103,11 @@ async function fileSize(file) {
 }
 
 /**
+ * Gets the last modification time of a file.
+ * Used by the caching system to determine if cached data is still valid.
  *
- * @param file
+ * @param {FileObject} file - The file object to check
+ * @returns {Promise<Date|null>} The last modification time, or null if file doesn't exist
  */
 async function fileModified(file) {
   try {

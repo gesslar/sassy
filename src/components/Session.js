@@ -4,6 +4,8 @@ import * as File from "./File.js"
 
 import chokidar from "chokidar"
 import AuntyError from "./AuntyError.js"
+import AuntyCommand from "./AuntyCommand.js"
+import Theme from "./Theme.js"
 
 export default class AuntySession {
   #theme = null
@@ -18,6 +20,18 @@ export default class AuntySession {
     return this.#theme
   }
 
+  /**
+   * Creates a new AuntySession instance for managing theme compilation lifecycle.
+   * Sessions provide persistent state across rebuilds, error tracking, and
+   * individual theme management within the build system.
+   *
+   * @param {AuntyCommand} command - The parent build command instance
+   * @param {Theme} theme - The theme instance to manage
+   * @param {object} options - Build configuration options
+   * @param {boolean} [options.watch] - Whether to enable file watching
+   * @param {boolean} [options.nerd] - Whether to show verbose output
+   * @param {boolean} [options.dryRun] - Whether to skip file writes
+   */
   constructor(command, theme, options) {
     this.#command = command
     this.#theme = theme
@@ -223,6 +237,14 @@ export default class AuntySession {
     }
   }
 
+  /**
+   * Displays a formatted summary of the session's build statistics and performance.
+   * Shows total builds, success/failure counts, success rate percentage, and timing
+   * information from the most recent build. Used during session cleanup to provide
+   * final statistics to the user.
+   *
+   * @returns {void}
+   */
   showSummary() {
     const {builds, successes, failures} = this.#stats
     const successRate = builds > 0 ? ((successes / builds) * 100).toFixed(1) : "0.0"

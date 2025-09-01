@@ -1,6 +1,5 @@
 import AuntyError from "./AuntyError.js"
 import FileObject from "./FileObject.js"
-import Term from "./Term.js"
 
 /**
  * Base class for command-line interface commands.
@@ -172,6 +171,16 @@ export default class AuntyCommand {
     return fileObject
   }
 
+  /**
+   * Emits an event asynchronously and waits for all listeners to complete.
+   * Unlike the standard EventEmitter.emit() which is synchronous, this method
+   * properly handles async event listeners by waiting for all of them to resolve
+   * or reject using Promise.allSettled().
+   *
+   * @param {string} event - The event name to emit
+   * @param {any[]} [arg] - Arguments to pass to event listeners
+   * @returns {Promise<void>} Resolves when all listeners have completed
+   */
   async asyncEmit(event, arg) {
     arg = arg || new Array()
 
