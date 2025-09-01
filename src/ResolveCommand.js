@@ -77,7 +77,7 @@ export default class ResolveCommand extends AuntyCommand {
       throw AuntyError.new(`No such function ${resolveFunctionName}`)
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
-    const theme = new Theme(fileObject, cwd, options)
+    const theme = new Theme(fileObject, options)
 
     await theme.load()
     await theme.build()

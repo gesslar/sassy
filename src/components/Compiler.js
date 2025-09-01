@@ -22,6 +22,8 @@ import AuntyError from "./AuntyError.js"
  * Handles the complete compilation pipeline from source to VS Code theme output.
  */
 export default class Compiler {
+  #theme
+
   /**
    * Compiles a theme source file into a VS Code colour theme.
    * Processes configuration, variables, imports, and theme definitions.
@@ -30,6 +32,8 @@ export default class Compiler {
    * @returns {Promise<void>} Resolves when compilation is complete
    */
   async compile(theme) {
+    this.#theme = theme
+
     await Promise.resolve()  // yielding control in the event loop or something
 
     const source = theme.source
@@ -144,7 +148,7 @@ export default class Compiler {
 
         importedFiles.push(...files)
 
-        const filePromises = await Promise.allSettled(files.map(File.loadDataFile))
+        const filePromises = await Promise.allSettled(files.map(file => this.#theme.cache.loadCachedData(file)))
         const rejected = filePromises.filter(({status}) => status === "rejected")
         if(rejected.length > 0)
           throw AuntyError.new(`Unable to load file(s).\n${rejected.map(({reason}) => reason)}`)

@@ -12,6 +12,11 @@ export default class AuntySession {
   #watcher = null
   #history = []
   #stats = Object.seal({builds: 0, successes: 0, failures: 0})
+  #building = false
+
+  get theme() {
+    return this.#theme
+  }
 
   constructor(command, theme, options) {
     this.#command = command
@@ -20,6 +25,9 @@ export default class AuntySession {
   }
 
   async run() {
+    this.#building = true
+    this.#command.asyncEmit("building")
+
     await this.#buildPipeline()
 
     if(this.#options.watch) {
@@ -41,6 +49,9 @@ export default class AuntySession {
    * @returns {Promise<void>} Nuttin', honey.
    */
   async #buildPipeline(forceWrite=false) {
+    if(!this.#building)
+      return
+
     this.#theme.reset()
 
     const buildStart = Date.now()
@@ -60,7 +71,6 @@ export default class AuntySession {
         `${this.#theme.sourceFile.module} loaded`,
         ["info", `${bytes} bytes`, ["[","]"]]
       ], this.#options)
-
       /**
        * ****************************************************************
        * Have the theme build itself.
@@ -70,15 +80,15 @@ export default class AuntySession {
       buildCost = (await Util.time(() => this.#theme.build())).cost
 
       const compileResult =
-      await Promise.allSettled(this.#theme.dependencies.map(async dep => {
+        await Promise.allSettled(this.#theme.dependencies.map(async dep => {
 
-        return await (async fileObject => {
-          const fileName = File.relativeOrAbsolutePath(this.#command.cwd, fileObject)
-          const fileSize = await File.fileSize(fileObject)
-          return [fileName, fileSize]
-        })(dep)
+          return await (async fileObject => {
+            const fileName = File.relativeOrAbsolutePath(this.#command.cwd, fileObject)
+            const fileSize = await File.fileSize(fileObject)
+            return [fileName, fileSize]
+          })(dep)
 
-      }))
+        }))
 
       const rejected = compileResult.filter(result => result.status === "rejected")
       if(rejected.length > 0) {
@@ -124,7 +134,6 @@ export default class AuntySession {
         file: outputFile,
         bytes: writeBytes
       } = result
-
       const outputFilename = File.relativeOrAbsolutePath(this.#command.cwd, outputFile)
       const status = [
         ["success", Util.rightAlignText(`${writeCost.toLocaleString()}ms`, 10), ["[","]"]],
@@ -170,6 +179,9 @@ export default class AuntySession {
 
       if(error instanceof AuntyError)
         error.report(this.#options.nerd)
+    } finally {
+      this.#building = false
+      this.#command.asyncEmit("finishedBuilding")
     }
   }
 
@@ -180,25 +192,35 @@ export default class AuntySession {
    * @returns {Promise<void>}
    */
   async #handleFileChange(changed) {
-    const changedFile = this.#theme.dependencies.find(dep => dep.path === changed)
+    try {
+      if(this.#building)
+        return
 
-    if(!changedFile)
-      return
+      this.#building = true
+      this.#command.asyncEmit("building")
 
-    const fileName = File.relativeOrAbsolutePath(this.#command.cwd, changedFile)
+      const changedFile = this.#theme.dependencies.find(dep => dep.path === changed)
 
-    const message = [
-      ["info", "REBUILDING", ["[","]"]],
-      this.#theme.sourceFile.module,
-    ]
+      if(!changedFile)
+        return
 
-    if(this.#options.nerd)
-      message.push(["muted", fileName])
+      const fileName = File.relativeOrAbsolutePath(this.#command.cwd, changedFile)
 
-    Term.status(message)
+      const message = [
+        ["info", "REBUILDING", ["[","]"]],
+        this.#theme.sourceFile.module,
+      ]
 
-    await this.#resetWatcher()
-    await this.#buildPipeline()
+      if(this.#options.nerd)
+        message.push(["muted", fileName])
+
+      Term.status(message)
+
+      await this.#resetWatcher()
+      await this.#buildPipeline()
+    } finally {
+      this.#building = false
+    }
   }
 
   showSummary() {
@@ -239,11 +261,18 @@ export default class AuntySession {
    * @returns {Promise<void>}
    */
   async #handleRebuild() {
+    if(this.#building)
+      return
+
     try {
+      this.#building = true
       await this.#resetWatcher()
+      this.#command.asyncEmit("building")
       await this.#buildPipeline(true)
     } catch(_) {
       void _
+    } finally {
+      this.#building = false
     }
   }
 

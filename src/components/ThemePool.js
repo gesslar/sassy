@@ -46,7 +46,6 @@ export default class ThemePool {
    * @param {string} value - The resolved value.
    */
   resolve(key, value) {
-    // Term.debug("[#resolved]", key, value)
     this.#resolved.set(key, value)
   }
 
@@ -57,7 +56,6 @@ export default class ThemePool {
    * @param {string} value - The raw resolved value.
    */
   rawResolve(key, value) {
-    // Term.debug("[#rawResolved]", key, value)
     this.#rawResolved.set(key, value)
   }
 
@@ -105,7 +103,6 @@ export default class ThemePool {
     if(!(dependency === null || dependency instanceof ThemeToken))
       throw AuntyError.new("Token must be null or of type ThemeToken.")
 
-    // Term.debug("[addToken]", token.getName(), token)
     this.#tokens.set(token.getName(), token)
 
     return token

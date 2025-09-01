@@ -33,6 +33,7 @@ export default class Theme {
   #dependencies = []
   #lookup = null
   #pool = null
+  #cache = null
 
   // Write-related properties
   #output = null
@@ -47,7 +48,7 @@ export default class Theme {
    * @param {DirectoryObject} cwd - Current working directory object
    * @param {object} options - Compilation options
    */
-  constructor(themeFile, cwd, options) {
+  constructor(themeFile, options) {
     this.#sourceFile = themeFile
     this.#outputFileName = `${themeFile.module}.color-theme.json`
     this.#options = options
@@ -63,6 +64,15 @@ export default class Theme {
     this.#outputHash = null
     this.#lookup = null
     this.#pool = null
+  }
+
+  set cache(cache) {
+    if(!this.cache)
+      this.#cache=cache
+  }
+
+  get cache() {
+    return this.#cache
   }
 
   /**
@@ -185,7 +195,7 @@ export default class Theme {
    * @throws {AuntyError} If source file lacks required 'config' property
    */
   async load() {
-    const source = await File.loadDataFile(this.#sourceFile)
+    const source = await this.#cache.loadCachedData(this.#sourceFile)
 
     if(!source.config)
       throw AuntyError.new(

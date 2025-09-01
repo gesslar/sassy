@@ -1,5 +1,6 @@
 import AuntyError from "./AuntyError.js"
 import FileObject from "./FileObject.js"
+import Term from "./Term.js"
 
 /**
  * Base class for command-line interface commands.
@@ -13,6 +14,8 @@ export default class AuntyCommand {
   #cwd
   #packageJson
 
+  #cache
+
   /**
    * Creates a new AuntyCommand instance.
    *
@@ -23,6 +26,15 @@ export default class AuntyCommand {
   constructor({cwd,packageJson}) {
     this.#cwd = cwd
     this.#packageJson = packageJson
+  }
+
+  get cache() {
+    return this.#cache
+  }
+
+  set cache(cache) {
+    if(!this.#cache)
+      this.#cache = cache
   }
 
   /**
@@ -160,4 +172,10 @@ export default class AuntyCommand {
     return fileObject
   }
 
+  async asyncEmit(event, arg) {
+    arg = arg || new Array()
+
+    const listeners = this.emitter.listeners(event)
+    await Promise.allSettled(listeners.map(listener => listener(...arg)))
+  }
 }
