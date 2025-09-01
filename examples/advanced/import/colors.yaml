@@ -91,7 +91,7 @@ theme:
       submoduleResourceForeground: $(status.info)
     git:
       blame:
-        editorDecorationForeground: fade($(gitDecoration.addedResourceForeground), $opacity.faint)
+        editorDecorationForeground: fade($(gitDecoration.addedResourceForeground), $opacity.mid)
     # Source Control Graph colors
     scmGraph:
       historyItemHoverLabelForeground: $(std.fg.hover)
