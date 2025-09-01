@@ -1,3 +1,11 @@
+vars:
+  opacity:
+    faint: 0.05
+    mild: 0.25
+    mid: 0.5
+    strong: 0.8
+    strongest: 0.95
+
 theme:
   colors:
     contrastActiveBorder: $(transparent)
@@ -83,7 +91,7 @@ theme:
       submoduleResourceForeground: $(status.info)
     git:
       blame:
-        editorDecorationForeground: fade($(gitDecoration.addedResourceForeground), 0.5)
+        editorDecorationForeground: fade($(gitDecoration.addedResourceForeground), $opacity.faint)
     # Source Control Graph colors
     scmGraph:
       historyItemHoverLabelForeground: $(std.fg.hover)
@@ -261,7 +269,7 @@ theme:
     scrollbar:
       shadow: $(std.shadow)
     scrollbarSlider:
-      background: fade($(std.bg.accent.faint), 0.80)
+      background: fade($(std.bg.accent.faint), $opacity.strong)
       hoverBackground: solidify(lighten($(scrollbarSlider.background), 10), 0.50)
       activeBackground: solidify(lighten($(scrollbarSlider.hoverBackground), 10), 0.25)
     # Progress bar
@@ -309,7 +317,7 @@ theme:
       inactiveIndentGuidesStroke: $(std.line.whisper)
       # The following two are used in the profiles page.
       tableColumnsBorder: $(control.outline) # Hover over a table/list, separators
-      tableOddRowsBackground: fade($(control.bg.secondary), 0.95) # Weirdly used as background for column headers
+      tableOddRowsBackground: fade($(control.bg.secondary), $opacity.strongest) # Weirdly used as background for column headers
 
     # Editor Groups & Tabs
     # Editor Groups
@@ -334,8 +342,8 @@ theme:
       unfocusedInactiveForeground: $(std.fg.inactive)
       activeBackground: mix($(std.bg.accent), $(std.bg.panel.inner), 80)
       inactiveBackground: $(std.bg.panel.inner.inactive)
-      unfocusedActiveBackground: fade($(tab.activeBackground), 0.75)
-      unfocusedInactiveBackground: fade($(std.bg.panel.inner.inactive), 0.50)
+      unfocusedActiveBackground: fade($(tab.activeBackground), $opacity.strong)
+      unfocusedInactiveBackground: fade($(std.bg.panel.inner.inactive), $opacity.mid)
       selectedBackground: lighten($(tab.activeBackground), 100)
       selectedForeground: $(std.fg)
       border: $(std.outline.whisper)
@@ -352,7 +360,7 @@ theme:
       unfocusedHoverBorder: $(std.outline.faint)
       lastPinnedBorder: $(tab.activeBorderTop)
       # Modified Indicator
-      activeModifiedBorder: fade($(status.added), 0.2)
+      activeModifiedBorder: fade($(status.added), $opacity.weak)
       inactiveModifiedBorder: fade($(tab.activeModifiedBorder), 0.4)
       unfocusedActiveModifiedBorder: fade($(tab.activeModifiedBorder), 0.2)
       unfocusedInactiveModifiedBorder: fade($(tab.inactiveModifiedBorder), 0.2)
