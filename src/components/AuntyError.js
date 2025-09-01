@@ -6,6 +6,7 @@
  *
  * Supports error chaining, trace management, and formatted reporting for both
  * user-friendly and verbose (nerd) output.
+ *
  * Used throughout the theme engine for structured error handling and
  * debugging.
  */
@@ -68,7 +69,6 @@ export default class AuntyError extends Error {
    */
   report(nerdMode=false) {
     Term.error(
-      "\n" +
       `${Term.terminalBracket(["error", "Something Went Wrong"])}\n` +
       this.trace.join("\n")
     )
@@ -83,8 +83,9 @@ export default class AuntyError extends Error {
   }
 
   /**
-   * Formats the stack trace for display, removing the first line and formatting
-   * each line with appropriate indentation.
+   * Formats the stack trace for display, removing the first line and
+   * formatting each line with appropriate indentation.
+   *
    * Note: Returns formatted stack trace or undefined if no stack available.
    *
    * @returns {string|undefined} Formatted stack trace or undefined
@@ -107,7 +108,8 @@ export default class AuntyError extends Error {
   }
 
   /**
-   * Creates an AuntyError from an existing Error object with additional trace message.
+   * Creates an AuntyError from an existing Error object with additional
+   * trace message.
    *
    * @param {Error} error - The original error object
    * @param {string} message - Additional trace message to add
@@ -127,8 +129,8 @@ export default class AuntyError extends Error {
 
   /**
    * Factory method to create or enhance AuntyError instances.
-   * If error parameter is provided, enhances existing AuntyError or wraps other errors.
-   * Otherwise creates a new AuntyError instance.
+   * If error parameter is provided, enhances existing AuntyError or wraps
+   * other errors. Otherwise creates a new AuntyError instance.
    *
    * @param {string} message - The error message
    * @param {Error|AuntyError} [error] - Optional existing error to wrap or enhance
