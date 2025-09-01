@@ -103,9 +103,6 @@ export default class Evaluator {
       target.forEach(item => {
         const trail = new Array()
 
-        // Term.debug()
-        // Term.debug("[item.flatPath]", item.flatPath)
-
         if(typeof item.value === "string") {
           const raw = item.value
           item.value = this.#evaluateValue(trail, item.flatPath, raw)
@@ -113,7 +110,6 @@ export default class Evaluator {
           const token = this.#pool.findToken(item.flatPath)
           this.#pool.resolve(item.flatPath, item.value)
           this.#pool.rawResolve(raw, item.value)
-          // Term.debug("[processScope]", "trail", [...trail.entries()].map(e => e[1].getName()))
 
           if(token) {
             token.setValue(item.value).addTrail(trail)
@@ -146,7 +142,6 @@ export default class Evaluator {
    */
   #evaluateValue(trail, parentTokenKeyString, value) {
     for(;;) {
-      // Term.debug("[evaluateValue]", it, parentTokenKeyString, value)
       let resolved
 
       if(Colour.isHex(value))

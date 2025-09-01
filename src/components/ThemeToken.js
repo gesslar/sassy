@@ -36,7 +36,6 @@ export default class ThemeToken {
    * @param {string} name - The token name for this token.
    */
   constructor(name) {
-    // Term.debug("[ThemeToken:constructor]", name)
     if(typeof name !== "string")
       throw AuntyError.new("Token name must be a bare string.")
 
@@ -202,8 +201,6 @@ export default class ThemeToken {
    * @returns {ThemeToken} This token instance.
    */
   addTrail(trail) {
-    // Term.debug("[addTrail]", "Adding Trail", trail.map(e => e.getName()), "to", this.getName())
-
     const current = this.#trail
 
     trail.forEach(value => {

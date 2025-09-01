@@ -103,6 +103,19 @@ async function fileSize(file) {
 }
 
 /**
+ *
+ * @param file
+ */
+async function fileModified(file) {
+  try {
+    const stat = await fs.stat(file.path)
+    return stat.mtime
+  } catch(_) {
+    return null
+  }
+}
+
+/**
  * Check if a directory exists
  *
  * @param {DirectoryObject} dirObject - The directory map to check
@@ -323,6 +336,7 @@ export {
   deconstructFilenameToParts,
   directoryExists,
   fileExists,
+  fileModified,
   fileSize,
   fixSlashes,
   getFiles,

@@ -35,12 +35,13 @@ import {program} from "commander"
 import process from "node:process"
 import {fileURLToPath,URL} from "node:url"
 
-import * as File from "./components/File.js"
 import FileObject from "./components/FileObject.js"
 import DirectoryObject from "./components/DirectoryObject.js"
 import AuntyError from "./components/AuntyError.js"
 import BuildCommand from "./BuildCommand.js"
 import ResolveCommand from "./ResolveCommand.js"
+import AuntyCache from "./components/AuntyCache.js"
+import Term from "./components/Term.js"
 
 /**
  * Main application entry point.
@@ -58,11 +59,14 @@ void (async function main() {
   // we need nerd mode info here so that it's available in 'catch'
   const auntyRoseOptions = {}
 
+  setupAbortHandlers()
+
   try {
+    const cache = new AuntyCache()
     const cr = new DirectoryObject(fileURLToPath(new URL("..", import.meta.url)))
     const cwd = new DirectoryObject(process.cwd())
     const packageJson = new FileObject("package.json", cr)
-    const pkgJson = await File.loadDataFile(packageJson)
+    const pkgJson = await cache.loadCachedData(packageJson)
 
     // These are available to all subcommands in addition to whatever they
     // provide.
@@ -77,12 +81,14 @@ void (async function main() {
 
     // Add the build subcommand
     const buildCommand = new BuildCommand({cwd, packageJson: pkgJson})
+    buildCommand.cache = cache
 
     void(await buildCommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)
 
     // Add the resolve subcommand
     const resolvecommand = new ResolveCommand({cwd, packageJson: pkgJson})
+    resolvecommand.cache = cache
 
     void(await resolvecommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)
@@ -94,7 +100,19 @@ void (async function main() {
       ? e.report(auntyRoseOptions.nerd)
       : AuntyError.from(e, "Starting Aunty Rose").report(auntyRoseOptions.nerd || true)
 
-
     process.exit(1)
+  }
+
+  /**
+   * Creates handlers for various reasons that the application may crash.
+   */
+  function setupAbortHandlers() {
+    void["SIGINT", "SIGTERM", "SIGHUP"].forEach(signal => {
+      process.on(signal, async() => {
+        Term.log(`Received ${signal}, performing graceful shutdown...`)
+        await Term.resetTerminal()
+        process.exit(0)
+      })
+    })
   }
 })()

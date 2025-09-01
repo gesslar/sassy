@@ -1,6 +1,8 @@
 import console from "node:console"
 import ansiColors from "ansi-colors"
 import colorSupport from "color-support"
+import process from "node:process"
+
 import AuntyError from "./AuntyError.js"
 
 // Required everywhere. Will modularise this kind of thing later.
@@ -169,5 +171,20 @@ export default class Term {
         ansiColors[`${level}-bracket`](brackets[0])
       + ansiColors[level](text)
       + ansiColors[`${level}-bracket`](brackets[1])
+  }
+
+  static async resetTerminal() {
+    await Term.directWrite("\x1b[?25h")
+    process.stdin.setRawMode(false)
+  }
+
+  static async clearLines(num) {
+    await Term.directWrite(`${"\r\x1b[2K\x1b[1A".repeat(num)}`)
+  }
+
+  static directWrite(output) {
+    return new Promise(resolve => {
+      process.stdout.write(output, () => resolve())
+    })
   }
 }

@@ -1,10 +1,10 @@
 import AuntyCommand from "./components/AuntyCommand.js"
 import Term from "./components/Term.js"
 import Theme from "./components/Theme.js"
+import AuntySession from "./components/Session.js"
 
 import process from "node:process"
 import {EventEmitter} from "node:events"
-import AuntySession from "./components/Session.js"
 
 /**
  * Command handler for building VS Code themes from source files.
@@ -13,6 +13,10 @@ import AuntySession from "./components/Session.js"
 export default class BuildCommand extends AuntyCommand {
   /** @type {EventEmitter} Internal event emitter for watch mode coordination */
   emitter = new EventEmitter()
+
+  #options
+  #hasPrompt = false
+  #building = 0
 
   /**
    * Creates a new BuildCommand instance.
@@ -49,10 +53,25 @@ export default class BuildCommand extends AuntyCommand {
   async execute(fileNames, options) {
     const {cwd} = this
 
+    this.#options = options
+
+    if(options.watch) {
+      options.watch && this.#initialiseInputHandler()
+
+      this.emitter.on("quit", async() =>
+        await this.#handleQuit())
+
+      this.emitter.on("building", async() => await this.#startBuilding())
+      this.emitter.on("finishedBuilding", () => this.#finishBuilding())
+      this.emitter.on("erasePrompt", async() => await this.#erasePrompt())
+      this.emitter.on("printPrompt", () => this.#printPrompt())
+    }
+
     const sessionResults = await Promise.allSettled(
       fileNames.map(async fileName => {
         const fileObject = await this.resolveThemeFileName(fileName, cwd)
-        const theme = new Theme(fileObject, cwd, options)
+        const theme = new Theme(fileObject, options)
+        theme.cache = this.cache
 
         return new AuntySession(this, theme, options)
       })
@@ -65,17 +84,9 @@ export default class BuildCommand extends AuntyCommand {
       process.exit(1)
     }
 
-    if(options.watch) {
-      options.watch && this.#introduceWatching(options)
-      options.watch && this.#initialiseInputHandler()
-
-      this.emitter.on("quit", async() =>
-        await this.#handleQuit())
-    }
-
     const sessions = sessionResults.map(result => result.value)
     const firstRun = await Promise.allSettled(
-      sessions.map(async session => session.run())
+      sessions.map(async(session, index) => await session.run(index))
     )
     const rejected = firstRun.filter(reject => reject.status === "rejected")
     if(rejected.length > 0) {
@@ -95,37 +106,13 @@ export default class BuildCommand extends AuntyCommand {
   async #handleQuit() {
     await this.asyncEmit("closeSession")
 
-    Term.debug("Byeeeeeeee")
+    await Term.directWrite("\x1b[?25h")
 
     Term.info()
     Term.info("Exiting.")
 
     process.stdin.setRawMode(false)
     process.exit(0)
-  }
-
-  /**
-   * Displays watch mode status and instructions.
-   *
-   * @param {object} options - Build options for silent mode check
-   * @param {boolean} [options.silent] - Whether to suppress status output
-   * @returns {boolean} Always returns true
-   */
-  #introduceWatching(options) {
-    Term.status([
-      ["info","Watch Mode"],
-      ["info", "F5", ["<",">"]],
-      "recompile/rewrite",
-      ["info", "Ctrl-C", ["<",">"]],
-      "quit",
-      ["info", "Ctrl-S", ["<",">"]],
-      "save snapshot",
-      ["info", "Ctrl-Z", ["<",">"]],
-      "undo to previous snapshot",
-    ], options)
-    Term.info()
-
-    return true
   }
 
   /**
@@ -149,13 +136,47 @@ export default class BuildCommand extends AuntyCommand {
         await this.asyncEmit("revertCheckpoint")
       }
     })
+    await Term.directWrite("\x1b[?25l")
   }
 
-  async asyncEmit(event, arg) {
-    arg = arg || new Array()
+  async #printPrompt() {
+    if(this.#hasPrompt && this.#building > 0)
+      return
 
-    const listeners = this.emitter.listeners(event)
-    Term.debug(event, listeners)
-    await Promise.allSettled(listeners.map(listener => listener(...arg)))
+    await Term.directWrite("\n")
+
+    await Term.directWrite(Term.terminalMessage([
+      ["info", "F5", ["<",">"]],
+      "rebuild all,",
+      ["info", "Ctrl-C", ["<",">"]],
+      "quit,",
+      ["info", "Ctrl-S", ["<",">"]],
+      "save snapshot,",
+      ["info", "Ctrl-Z", ["<",">"]],
+      "undo to previous snapshot",
+    ]))
+
+    this.#hasPrompt = true
+  }
+
+  async #erasePrompt() {
+    if(!this.#hasPrompt)
+      return
+
+    this.#hasPrompt = false
+
+    await Term.clearLines(1)
+  }
+
+  async #startBuilding() {
+    await this.#erasePrompt()
+    this.#building++
+  }
+
+  #finishBuilding() {
+    this.#building = Math.max(0, this.#building-1)
+
+    if(this.#building === 0)
+      this.#printPrompt()
   }
 }
