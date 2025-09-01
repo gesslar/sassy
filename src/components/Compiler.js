@@ -13,7 +13,6 @@
 
 import * as Data from "./DataUtil.js"
 import Evaluator from "./Evaluator.js"
-import * as File from "./File.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
 

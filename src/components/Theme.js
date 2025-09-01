@@ -45,7 +45,6 @@ export default class Theme {
    * Creates a new Theme instance.
    *
    * @param {FileObject} themeFile - The source theme file object
-   * @param {DirectoryObject} cwd - Current working directory object
    * @param {object} options - Compilation options
    */
   constructor(themeFile, options) {
