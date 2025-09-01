@@ -14,7 +14,6 @@ export default class BuildCommand extends AuntyCommand {
   /** @type {EventEmitter} Internal event emitter for watch mode coordination */
   emitter = new EventEmitter()
 
-  #options
   #hasPrompt = false
   #building = 0
 
