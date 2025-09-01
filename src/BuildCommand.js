@@ -83,7 +83,7 @@ export default class BuildCommand extends AuntyCommand {
       rejected.forEach(reject => Term.error(reject.reason))
 
       if(firstRun.length === rejected.length)
-        this.emitter.emit("quit")
+        await this.asyncEmit("quit")
     }
   }
 
@@ -93,6 +93,10 @@ export default class BuildCommand extends AuntyCommand {
    * @returns {Promise<void>}
    */
   async #handleQuit() {
+    await this.asyncEmit("closeSession")
+
+    Term.debug("Byeeeeeeee")
+
     Term.info()
     Term.info("Exiting.")
 
@@ -130,20 +134,28 @@ export default class BuildCommand extends AuntyCommand {
    *
    * @returns {void}
    */
-  #initialiseInputHandler() {
+  async #initialiseInputHandler() {
     process.stdin.setRawMode(true)
     process.stdin.resume()
     process.stdin.setEncoding("utf8")
-    process.stdin.on("data", key => {
+    process.stdin.on("data", async key => {
       if(key === "q" || key === "\u0003") {   // Ctrl+C
-        this.emitter.emit("quit")
+        await this.asyncEmit("quit")
       } else if(key === "r" || key === "\x1b[15~") {  // F5
-        this.emitter.emit("rebuild")
+        await this.asyncEmit("rebuild")
       } else if(key === "\u0013") {  // Ctrl+S
-        this.emitter.emit("saveCheckpoint")
+        await this.asyncEmit("saveCheckpoint")
       } else if(key === "\u001a") {  // Ctrl+Z
-        this.emitter.emit("revertCheckpoint")
+        await this.asyncEmit("revertCheckpoint")
       }
     })
+  }
+
+  async asyncEmit(event, arg) {
+    arg = arg || new Array()
+
+    const listeners = this.emitter.listeners(event)
+    Term.debug(event, listeners)
+    await Promise.allSettled(listeners.map(listener => listener(...arg)))
   }
 }

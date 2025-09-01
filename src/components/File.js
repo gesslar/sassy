@@ -16,7 +16,6 @@ import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
 import {uniformStringArray} from "./DataUtil.js"
 import AuntyError from "./AuntyError.js"
-import Term from "./Term.js"
 
 /**
  * Fix slashes in a path
@@ -271,7 +270,7 @@ async function loadDataFile(fileObject) {
     try {
       return YAML.parse(content)
     } catch{
-      throw AuntyError.new(`'${fileObject.path}' Content is neither valid JSON nor valid YAML`)
+      throw AuntyError.new(`Content is neither valid JSON nor valid YAML:\n'${fileObject.path}'`)
     }
   }
 }
