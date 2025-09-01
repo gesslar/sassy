@@ -12,7 +12,7 @@ import AuntySession from "./components/Session.js"
  */
 export default class BuildCommand extends AuntyCommand {
   /** @type {EventEmitter} Internal event emitter for watch mode coordination */
-  #emitter = new EventEmitter()
+  emitter = new EventEmitter()
 
   /**
    * Creates a new BuildCommand instance.
@@ -69,7 +69,7 @@ export default class BuildCommand extends AuntyCommand {
       options.watch && this.#introduceWatching(options)
       options.watch && this.#initialiseInputHandler()
 
-      this.#emitter.on("quit", async() =>
+      this.emitter.on("quit", async() =>
         await this.#handleQuit())
     }
 
@@ -83,7 +83,7 @@ export default class BuildCommand extends AuntyCommand {
       rejected.forEach(reject => Term.error(reject.reason))
 
       if(firstRun.length === rejected.length)
-        this.#emitter.emit("quit")
+        this.emitter.emit("quit")
     }
   }
 
@@ -135,14 +135,14 @@ export default class BuildCommand extends AuntyCommand {
     process.stdin.resume()
     process.stdin.setEncoding("utf8")
     process.stdin.on("data", key => {
-      if(key === "q" || key === "\u0003") {
-        this.#emitter.emit("quit")
-      } else if(key === "r" || key === "\x1b[15~") {
-        this.#emitter.emit("rebuild")
+      if(key === "q" || key === "\u0003") {   // Ctrl+C
+        this.emitter.emit("quit")
+      } else if(key === "r" || key === "\x1b[15~") {  // F5
+        this.emitter.emit("rebuild")
       } else if(key === "\u0013") {  // Ctrl+S
-        this.#emitter.emit("saveCheckpoint")
+        this.emitter.emit("saveCheckpoint")
       } else if(key === "\u001a") {  // Ctrl+Z
-        this.#emitter.emit("revertCheckpoint")
+        this.emitter.emit("revertCheckpoint")
       }
     })
   }

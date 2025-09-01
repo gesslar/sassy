@@ -12,7 +12,6 @@ export default class AuntySession {
   #command = null
   #options = null
   #watcher = null
-  #emitter = new EventEmitter()
   #history = []
   #runs = {}
   #stats = Object.seal({builds: 0, successes: 0, failures: 0})
@@ -27,13 +26,14 @@ export default class AuntySession {
     await this.#buildPipeline()
 
     if(this.#options.watch) {
-      this.#emitter.on("fileChanged", async changed =>
+      this.#command.emitter.on("fileChanged", async changed =>
         await this.#handleFileChange(changed))
-      this.#emitter.on("quit", async() =>
+      this.#command.emitter.on("quit", async() =>
         await this.#handleQuit())
-      this.#emitter.on("rebuild", async() =>
-        await this.#handleRebuild())
-      this.#emitter.on("resetWatcher", async() =>
+      this.#command.emitter.on("rebuild", async() => {
+        await this.#handleRebuild()
+      })
+      this.#command.emitter.on("resetWatcher", async() =>
         await this.#resetWatcher())
 
       await this.#resetWatcher()
@@ -154,6 +154,9 @@ export default class AuntySession {
    * @returns {Promise<void>}
    */
   async #handleFileChange(changed) {
+    if(!this.#theme.dependencies.includes(changed))
+      return
+
     const changedFile = new FileObject(changed)
     const fileName = File.relativeOrAbsolutePath(this.cwd, changedFile)
 
@@ -205,7 +208,7 @@ export default class AuntySession {
       }
     })
 
-    this.#watcher.on("change", changed => this.#emitter.emit("fileChanged", changed))
+    this.#watcher.on("change", changed => this.emitter.emit("fileChanged", changed))
   }
 
   /**
