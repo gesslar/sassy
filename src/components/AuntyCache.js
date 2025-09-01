@@ -59,7 +59,7 @@ export default class AuntyCache {
       }
     }
 
-    const data = File.loadDataFile(fileObject)
+    const data = await File.loadDataFile(fileObject)
 
     this.#modifiedTimes.set(fileObject.path, lastModified)
     this.#dataCache.set(fileObject.path, data)

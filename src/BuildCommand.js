@@ -83,7 +83,7 @@ export default class BuildCommand extends AuntyCommand {
 
     const sessions = sessionResults.map(result => result.value)
     const firstRun = await Promise.allSettled(
-      sessions.map(async(session, index) => await session.run(index))
+      sessions.map(async session => await session.run())
     )
     const rejected = firstRun.filter(reject => reject.status === "rejected")
     if(rejected.length > 0) {
@@ -146,11 +146,7 @@ export default class BuildCommand extends AuntyCommand {
       ["info", "F5", ["<",">"]],
       "rebuild all,",
       ["info", "Ctrl-C", ["<",">"]],
-      "quit,",
-      ["info", "Ctrl-S", ["<",">"]],
-      "save snapshot,",
-      ["info", "Ctrl-Z", ["<",">"]],
-      "undo to previous snapshot",
+      "quit",
     ]))
 
     this.#hasPrompt = true
