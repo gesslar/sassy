@@ -277,6 +277,7 @@ export default class Evaluator {
           case "rgb": case "rgba":
           case "hsl": case "hsla":
           case "hsv": case "hsva":
+          case "oklch": case "oklcha":
             return Colour.toHex(func, args[3], ...args.slice(0, 3))
           default:
             return null

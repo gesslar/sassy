@@ -4,7 +4,14 @@
  * mixing, alpha manipulation, and format conversions.
  */
 
-import Color from "color"
+import {
+  parse,
+  formatHex,
+  formatHex8,
+  hsl,
+  interpolate,
+  converter
+} from "culori"
 import AuntyError from "./AuntyError.js"
 
 // Cache for parsed colors to improve performance
@@ -17,7 +24,7 @@ const _mixCache = new Map()
  * Parses a color string into a Color object with caching.
  *
  * @param {string} s - The color string to parse
- * @returns {Color} The parsed Color object
+ * @returns {object} The parsed color object
  * @throws {AuntyError} If the input is null, undefined, or empty
  */
 const asColor = s => {
@@ -27,7 +34,22 @@ const asColor = s => {
   // detailing "received null/undefined", like it's a completely different
   // book. Also, who doesn't know that 'x == null' is true for null/undefined?
   // Maybe they need Udemy, or a refund from Udemy. Something. I'm not a
-  // coding BABYSITTER.
+  // coding BABYSITTER. - gesslar @ 2025-08-13
+  //
+  // Addendum consequent to a recent robot's review. I will not be removing
+  // the above. That you take issue with this is exactly why this comment
+  // exists. I will not be judged on the quality of my work by my documentation
+  // verbiage. I'm going to say it right here, in plain view: if someone's
+  // poor, puritanical little pearls are so delicate as to be abraded by the
+  // above message, they should (in any combination of)
+  //
+  // 1. avoid looking at any of the other comments in this project which are
+  //    way worse,
+  // 2. find another project that is as good or better than this one at its
+  //    purpose,
+  // 3. recall that this project is Unlicensed, and are invited to fork off.
+  //
+  // snoochie boochies, with love, gesslar @ 2025-09-02
   if(s == null)
     throw AuntyError.new("asColor(): received null/undefined")
 
@@ -37,7 +59,11 @@ const asColor = s => {
 
   let v = _colorCache.get(k)
   if(!v) {
-    v = Color(k)            // throws if truly unparsable (good!)
+    v = parse(k) // returns undefined if invalid
+
+    if(!v)
+      throw AuntyError.new(`Unable to parse color: ${k}`)
+
     _colorCache.set(k, v)
   }
 
@@ -102,12 +128,15 @@ export default class Colour {
    */
   static lightenOrDarken(hex, amount=0) {
     const extracted = Colour.parseHexColour(hex)
-    const colour = Color(extracted.colour)
+    const colour = parse(extracted.colour)
     const change = clamp(Math.abs(amount/100), 0, 1)
 
-    const modifiedColour = amount >= 0
-      ? colour.lighten(change).hex()
-      : colour.darken(change).hex()
+    // Manual lightness adjustment using LCH
+    const lch = converter("lch")(colour)
+    lch.l = amount >= 0
+      ? Math.min(100, lch.l + (change * 100))
+      : Math.max(0, lch.l - (change * 100))
+    const modifiedColour = formatHex(lch)
 
     const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
 
@@ -123,9 +152,9 @@ export default class Colour {
    */
   static invert(hex) {
     const extracted = Colour.parseHexColour(hex)
-    const hsl = Color(extracted.colour).hsl()
-    hsl.color[2] = 100 - hsl.color[2]
-    const modifiedColour = hsl.hex()
+    const hslColor = hsl(extracted.colour)
+    hslColor.l = 1 - hslColor.l  // culori uses 0-1 for lightness
+    const modifiedColour = formatHex(hslColor)
 
     const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
 
@@ -244,7 +273,8 @@ export default class Colour {
   static setAlpha(hex, amount) {
     const work = Colour.parseHexColour(hex)
     const alpha = clamp(amount, 0, 1)
-    const result = Color(work.colour).alpha(alpha).hexa().toLowerCase()
+    const colour = parse(work.colour)
+    const result = formatHex8({...colour, alpha}).toLowerCase()
 
     return result
   }
@@ -296,12 +326,17 @@ export default class Colour {
     const c1 = asColor(colorA)
     const c2 = asColor(colorB)
 
-    // color-space mix
-    const mixed = c1.mix(c2, t)
+    // color-space mix using culori interpolation
+    const colorSpace = (c1.mode === "oklch" || c2.mode === "oklch") ? "oklch" : "rgb"
+    const interpolateFn = interpolate([c1, c2], colorSpace)
+    const mixed = interpolateFn(t)
 
     // alpha blend too
-    const a = c1.alpha() * (1 - t) + c2.alpha() * t
-    const out = (a < 1 ? mixed.alpha(a).hexa() : mixed.hex()).toLowerCase()
+    const a1 = c1.alpha ?? 1
+    const a2 = c2.alpha ?? 1
+    const a = a1 * (1 - t) + a2 * t
+    const withAlpha = {...mixed, alpha: a}
+    const out = (a < 1 ? formatHex8(withAlpha) : formatHex(mixed)).toLowerCase()
 
     _mixCache.set(key, out)
     return out
@@ -328,6 +363,18 @@ export default class Colour {
         if(index === 0 && mode.match(/^(hsl|hsv)/))
           return clamp(Number(v), 0, 360)
 
+        if(mode === "oklch" || mode === "oklcha") {
+          // OKLCH: Lightness (0-1), Chroma (0-0.4), Hue (0-360)
+          if(index === 0)
+            return clamp(Number(v), 0, 1)       // L: 0-1
+
+          if(index === 1)
+            return clamp(Number(v), 0, 0.4)     // C: 0-0.4
+
+          if(index === 2)
+            return clamp(Number(v), 0, 360)     // H: 0-360
+        }
+
         return clamp(Number(v), 0, 100)
       })
 
@@ -337,13 +384,26 @@ export default class Colour {
     if(alpha != null)
       alpha = clamp(Number(alpha), 0, 1)
 
-    return mode.endsWith("a")
-      ? Color[mode.slice(0, -1)](values)
-        .alpha(alpha ?? 1)
-        .hexa()
-        .toLowerCase()
-      : Color[mode](values)
-        .hex()
-        .toLowerCase()
+    // Create color object based on mode
+    let colorObj
+    if(mode === "rgb" || mode === "rgba") {
+      colorObj = {mode: "rgb", r: values[0] / 255, g: values[1] / 255, b: values[2] / 255}
+    } else if(mode === "hsl" || mode === "hsla") {
+      colorObj = {mode: "hsl", h: values[0], s: values[1] / 100, l: values[2] / 100}
+    } else if(mode === "hsv" || mode === "hsva") {
+      colorObj = (values[1] === 0)
+        ? {mode: "oklch", l: values[0], c: values[1]}
+        : {mode: "oklch", l: values[0], c: values[1], h: values[2]}
+    } else {
+      throw AuntyError.new(`Unsupported color mode: ${mode}`)
+    }
+
+    if(mode.endsWith("a") && alpha != null) {
+      colorObj.alpha = alpha
+    }
+
+    return (colorObj.alpha != null && colorObj.alpha < 1)
+      ? formatHex8(colorObj).toLowerCase()
+      : formatHex(colorObj).toLowerCase()
   }
 }
