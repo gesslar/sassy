@@ -78,6 +78,7 @@ export default class ResolveCommand extends AuntyCommand {
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
     const theme = new Theme(fileObject, options)
+    theme.cache = this.cache
 
     await theme.load()
     await theme.build()
