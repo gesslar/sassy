@@ -96,7 +96,6 @@ export default class FileObject {
    *
    * @returns {string} string representation of the FileObject
    */
-  c
 
   /**
    * Returns a JSON representation of the FileObject.

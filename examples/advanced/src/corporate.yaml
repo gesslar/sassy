@@ -10,15 +10,15 @@ config:
     colors:
       - ../import/colors.yaml
     tokenColors:
-      - ../import/karyprocolors-$(type).tmLanguage.yaml
+      - ../import/token-colors-$(type).yaml
 
   custom:
     semanticHighlighting: true
     colorSpaceName: sRGB
 
 vars:
-  colors.white: hsv(240,0,92)
-  colors.black: hsv(222,30,17)
+  white: oklch(0.92 0 0)
+  black: oklch(0.27 0.03 256)
   main: $(colors.white)
   inverse: invert($(main))
 

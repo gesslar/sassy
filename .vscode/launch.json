@@ -41,6 +41,23 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "Simple - Mixed (YAML)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "build",
+        "--output-dir",
+        "./examples/output",
+        "./examples/simple/midnight-ocean-mixed.yaml"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Advanced (YAML)",
       "type": "node",
       "request": "launch",
