@@ -5,28 +5,28 @@ config:
   type: dark
 
   import:
-    global:
-      - ../import/variables.yaml
-    colors:
-      - ../import/colors.yaml
-    tokenColors:
-      - ../import/token-colors-$(type).yaml
+    global: ../import/variables.yaml
+    colors: ../import/colors.yaml
+    tokenColors: ../import/token-colors-${type}.yaml
 
   custom:
     semanticHighlighting: true
     colorSpaceName: sRGB
 
 vars:
-  main: $(colors.white)
-  inverse: invert($(main))
+  main: $colors.white
+  inverse: invert($main)
 
-  std:
-    # The following define primary basics that can be relied upon by the
-    # variables definitions. Dark and light themes will define these
-    # differently. Anything expressed here will override anything being
-    # imported.
-    fg: $(main)
-    bg: $(inverse)
-    accent: $(colors.pink)
-    accent.secondary: darken($(colors.pink), 60)
-    shadow: alpha($(std.accent), 0.25)
+  # The following define primary basics that can be relied upon by the
+  # variables definitions. Dark and light themes will define these
+  # differently. Anything expressed here will override anything being
+  # imported.
+  fg:
+    main: $main
+
+  theme:
+    fg: $main
+    bg: $colors.black
+    accent: $colors.pink
+    accentSecondary: darken($colors.pink, 60)
+    shadow: alpha($theme.accent, 0.25)

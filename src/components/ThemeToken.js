@@ -29,6 +29,7 @@ export default class ThemeToken {
   #dependency = null
   #parentTokenKey = null
   #trail = new Array()
+  #parsedColor = null
 
   /**
    * Constructs a ThemeToken with a given token name.
@@ -221,6 +222,26 @@ export default class ThemeToken {
   }
 
   /**
+   * Sets the parsed color object for this token.
+   *
+   * @param {object} parsedColor - The parsed Culori color object
+   * @returns {ThemeToken} This token instance.
+   */
+  setParsedColor(parsedColor) {
+    this.#parsedColor = parsedColor
+    return this
+  }
+
+  /**
+   * Gets the parsed color object of this token.
+   *
+   * @returns {object|null} The parsed Culori color object or null.
+   */
+  getParsedColor() {
+    return this.#parsedColor
+  }
+
+  /**
    * Checks if this token has an ancestor with the given token name.
    *
    * @param {string} name - The name of the ancestor token to check for.
@@ -237,5 +258,23 @@ export default class ThemeToken {
    */
   getPool() {
     return this.#pool
+  }
+
+  /**
+   * Returns a JSON representation of the ThemeToken.
+   *
+   * @returns {object} JSON representation of the ThemeToken
+   */
+  toJSON() {
+    return {
+      name: this.#name,
+      kind: this.#kind,
+      rawValue: this.#rawValue,
+      value: this.#value,
+      dependency: this.#dependency?.toJSON() ?? null,
+      parentTokenKey: this.#parentTokenKey,
+      trail: this.#trail,
+      parsedColor: this.#parsedColor
+    }
   }
 }
