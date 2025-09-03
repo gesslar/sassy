@@ -30,7 +30,7 @@ vars:
 
   scope:
     # Basic structural elements
-    comment: fade(mix($colors.tc.grey, $colors.tc.teal, 55), 0.20)
+    comment: fade(mix($colors.tc.grey, $colors.teal, 55), 0.20)
     text: $colors.tc.blue
     punctuation: $colors.tc.blue
     baseText: $colors.tc.white
@@ -72,7 +72,7 @@ vars:
 
     # Markup and documentation
     header: $colors.tc.headerOrange
-    code: $colors.tc.teal
+    code: $colors.teal
     link: $colors.tc.gold
 
     # String interpolation (different from strings)
