@@ -27,7 +27,8 @@ Global Options:
   --nerd                   Full error stack traces
 ```
 
-The CLI delegates to command classes (`BuildCommand`, `ResolveCommand`) that extend `AuntyCommand`. See README.md for complete CLI usage examples.
+The CLI delegates to command classes (`BuildCommand`, `ResolveCommand`) that
+extend `AuntyCommand`. See README.md for complete CLI usage examples.
 
 ## Error Handling Architecture
 
@@ -77,7 +78,8 @@ this.#watcher = chokidar.watch(dependencies, {
 
 ## Theme Class Structure
 
-Each entry file becomes a Theme instance that manages the complete compilation lifecycle:
+Each entry file becomes a Theme instance that manages the complete compilation
+lifecycle:
 
 ```ts
 interface Theme {
@@ -113,7 +115,8 @@ The current implementation uses a sophisticated token resolution system:
 - **ThemeToken**: Individual token with value, dependencies, and resolution trail
 - **Evaluator**: Handles variable substitution and function evaluation
 
-This architecture enables the `resolve` command to provide detailed introspection into how any variable resolves to its final value.
+This architecture enables the `resolve` command to provide detailed
+introspection into how any variable resolves to its final value.
 
 ### Resolve Command Implementation
 
@@ -128,9 +131,12 @@ This command:
 1. Loads and compiles the theme to build the complete ThemePool
 2. Retrieves the requested token and its resolution trail
 3. Formats a tree-like visual output showing each resolution step
-4. Colour-codes different token types (variables, functions, hex colours, literals)
+4. Colour-codes different token types (variables, functions, hex colours,
+   literals)
 
-The output shows the complete dependency chain from the original expression to the final resolved value, making it easy to debug complex variable relationships.
+The output shows the complete dependency chain from the original expression to
+the final resolved value, making it easy to debug complex variable
+relationships.
 
 ## Imports
 
@@ -178,13 +184,20 @@ await theme.write()
 Aunty Rose processes themes in phases:
 
 1. **Import Resolution** - Merge modular theme files using `config.imports`
-2. **Variable Decomposition** - Flatten nested object structures into dot-notation paths
-3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool system
-4. **Function Application** - Execute colour manipulation functions (`lighten`, `darken`, `oklch`, `oklcha`, etc.)
-5. **Dependency Resolution** - Build token dependency graph and resolve in correct order
+2. **Variable Decomposition** - Flatten nested object structures into dot-
+   notation paths
+3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool
+  system
+4. **Function Application** - Execute colour manipulation functions (`lighten`,
+  `darken`, `oklch`, `oklcha`, etc.) leveraging Culori's comprehensive parsing
+  for automatic support of any colour format
+5. **Dependency Resolution** - Build token dependency graph and resolve in
+  correct order
 6. **Theme Assembly** - Compose final VS Code theme JSON with proper structure
 
-The ThemePool/ThemeToken system tracks resolution trails, enabling debugging and circular dependency detection. Error handling is per-entry theme: a failure in one file doesn't halt others (thanks to `Promise.allSettled`).
+The ThemePool/ThemeToken system tracks resolution trails, enabling debugging
+and circular dependency detection. Error handling is per-entry theme: a failure
+in one file doesn't halt others (thanks to `Promise.allSettled`).
 
 ## Variable / Token Reference Syntax
 
@@ -212,11 +225,41 @@ Resolution order:
 This guarantees variables never see partially-resolved theme state and lets
 theme keys layer atop a stable semantic base.
 
+## Culori Integration
+
+Aunty Rose leverages [Culori](https://culorijs.org/) for colour parsing and
+manipulation. The Evaluator's colour function system works as follows:
+
+**Architecture:**
+
+- **Explicit functions** (`lighten`, `darken`, `mix`, etc.) have dedicated
+  switch cases for custom logic
+- **Default case** passes any unrecognized colour expression to
+  `Colour.toHex(raw)`
+- **Colour.toHex()** uses Culori's `parse()` function to handle any supported
+  colour format automatically
+
+**This means:**
+
+- Any colour format Culori supports works instantly (LAB, LCH, HWB, Display P3,
+  Rec. 2020, etc.)
+- No need to add switch cases for new colour formats
+- Theme developers get the full power of modern colour science
+
+**Example flow:**
+
+```yaml
+primary: oklch(0.7, 25, 180)     # → default case → Colour.toHex() → "#4a9eff"
+accent: lighten($(primary), 20)  # → explicit case → Colour.lightenOrDarken()
+mixed: lab(50 20 -30)           # → default case → Colour.toHex() → "#7d5a47"
+```
+
 ## Extending
 
 Potential extension points (PRs / forks):
 
-- Additional colour manipulation functions
+- Additional colour manipulation functions (though Culori's automatic support
+  reduces this need)
 - Custom phase injectors (e.g. contrast auto-tuning)
 - Output format plugins (JetBrains, Sublime, etc.)
 - Structured profiling / JSON stats emitter when `--profile` is set

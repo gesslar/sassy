@@ -157,6 +157,39 @@ theme:
     "sideBar.background": $(std.bg)
 ```
 
+## Unlimited Colour Freedom
+
+Aunty Rose is built on [Culori](https://culorijs.org/), a comprehensive colour
+manipulation library. This means **if Culori supports it, Aunty Rose supports
+it automatically** - no configuration needed.
+
+### Beyond the Built-ins
+
+While Aunty Rose provides common functions like `lighten()`, `darken()`, and
+`mix()`, you have access to the entire spectrum of colour formats:
+
+```yaml
+vars:
+  # Use any colour space Culori understands
+  lab_colour: lab(50 20 -30)           # LAB colour space
+  hwb_colour: hwb(180 30% 20%)         # HWB (Hue-Whiteness-Blackness)
+  lch_colour: lch(70 40 180)           # LCH colour space
+  p3_colour: color(display-p3 0.4 0.8 0.2)  # Display P3 gamut
+  rec2020: color(rec2020 0.42 0.85 0.31)    # Rec. 2020 colour space
+
+  # Mix and match freely
+  primary: oklch(0.6, 20, 220)
+  secondary: mix($(primary), lab(80 -20 40), 30)
+  accent: lighten(hwb(240 20% 10%), 15)
+```
+
+**The rule is simple:** Write any colour expression that Culori can parse, and
+Aunty Rose will handle it. No need to memorize function lists or check
+compatibility - if it's a valid colour, it works.
+
+> **Learn More:** Explore the full range of supported colour formats and
+functions in the [Culori documentation](https://culorijs.org/).
+
 ## Colour Functions
 
 Make colours that work together:
@@ -187,8 +220,31 @@ Make colours that work together:
 | `oklch(l=0-1, c=0-100, h=0-360)` | `oklch(0.7, 25, 180)` | OKLCH colour (70% lightness, 25 chroma, 180° hue) |
 | `oklcha(l=0-1, c=0-100, h=0-360, a=0-1)` | `oklcha(0.5, 30, 45, 0.8)` | OKLCH with 80% opacity |
 | || |
+| `css(name)` | `css(tomato)` | CSS named colour (tomato, skyblue, etc.) |
+| || |
 
-> **Note:** In all of these functions, `colour` can be a raw hex (`#ff66cc`), a variable (`$(accent)`), or another colour function (`rgba(255, 100, 200, 0.5)`, `darken($(bg), 20)`, `oklcha(0.7, 25, 180, 0.8)`).
+> **Note:** In all of these functions, `colour` can be a raw hex (`#ff66cc`),
+a variable (`$(accent)`), a CSS named colour (`css(tomato)`), or another colour
+function (`rgba(255, 100, 200, 0.5)`, `darken($(bg), 20)`,
+`oklcha(0.7, 25, 180, 0.8)`).
+
+### CSS Named Colours
+
+Use CSS colour names with the `css()` function:
+
+```yaml
+vars:
+  # CSS named colours
+  danger: css(crimson)
+  ocean: css(deepskyblue)
+  nature: css(forestgreen)
+
+  # Mix named colours with functions
+  muted_red: fade(css(tomato), 0.6)
+  light_blue: lighten(css(navy), 40)
+```
+
+> **Reference:** See the complete list of CSS named colours at [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color) or [Wikipedia](https://en.wikipedia.org/wiki/Web_colors#HTML_color_names).
 
 ## Variable Reference
 
