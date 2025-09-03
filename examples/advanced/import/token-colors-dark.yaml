@@ -1,7 +1,7 @@
 vars:
   colors:
     tc:
-      grey: oklch(0.765 0 89.9)
+      grey: oklch(0.765 0     89.9)
       green: oklch(0.679 0.092 138.1)
       blue: oklch(0.686 0.064 255.3)
       pink: oklch(0.703 0.071 332.1)

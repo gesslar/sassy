@@ -21,8 +21,6 @@ const _colourCache = new Map()
 // Cache for mixed colours to avoid recomputation
 const _mixCache = new Map()
 
-const _functionCache = new Map()
-const _conversionFunctionCache = new Map()
 
 /**
  * Parses a colour string into a colour object with caching.
@@ -125,6 +123,7 @@ export default class Colour {
 
   /**
    * Lightens or darkens a hex colour by a specified amount.
+   * Always uses OKLCH as the working color space for consistent perceptual results.
    *
    * @param {string} hex - The hex colour code (e.g., "#ff0000" or "#f00")
    * @param {number} amount - The amount to lighten (+) or darken (-) as a percentage
@@ -133,19 +132,54 @@ export default class Colour {
   static lightenOrDarken(hex, amount=0) {
     const extracted = Colour.parseHexColour(hex)
     const colour = parse(extracted.colour)
-    const change = clamp(Math.abs(amount/100), 0, 1)
 
-    // Manual lightness adjustment using LCH
-    const lch = converter("lch")(colour)
-    lch.l = amount >= 0
-      ? Math.min(100, lch.l + (change * 100))
-      : Math.max(0, lch.l - (change * 100))
-    const modifiedColour = formatHex(lch)
+    // Always convert to OKLCH for lightness math (perceptually uniform)
+    const oklchColor = converter("oklch")(colour)
 
-    const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
+    // Use multiplicative scaling for more natural results
+    const factor = 1 + (amount / 100)
+    oklchColor.l = clamp(oklchColor.l * factor, 0, 1)
 
+    const result = `${formatHex(oklchColor)}${extracted.alpha?.hex??""}`.toLowerCase()
     return result
   }
+
+  /**
+   * Lightens or darkens a color using OKLCH as working space for consistent results.
+   * Preserves original color information from tokens when available.
+   *
+   * @param {ThemeToken|object|string} tokenOrColor - ThemeToken, Culori color object, or hex string
+   * @param {number} amount - The amount to lighten (+) or darken (-) as a percentage
+   * @returns {string} The modified hex colour
+   */
+  static lightenOrDarkenWithToken(tokenOrColor, amount=0) {
+    let sourceColor
+
+    if(tokenOrColor?.getParsedColor) {
+      // It's a ThemeToken - use the parsed color
+      sourceColor = tokenOrColor.getParsedColor()
+    } else if(tokenOrColor?.mode) {
+      // It's already a parsed Culori color object
+      sourceColor = tokenOrColor
+    } else {
+      // Fallback to string parsing
+      sourceColor = parse(tokenOrColor)
+    }
+
+    if(!sourceColor) {
+      throw AuntyError.new(`Cannot parse color from: ${tokenOrColor}`)
+    }
+
+    // Always convert to OKLCH for lightness math (consistent perceptual results)
+    const oklchColor = converter("oklch")(sourceColor)
+
+    // Use multiplicative scaling
+    const factor = 1 + (amount / 100)
+    oklchColor.l = clamp(oklchColor.l * factor, 0, 1)
+
+    return formatHex(oklchColor).toLowerCase()
+  }
+
 
   /**
    * Inverts a hex colour by flipping its lightness value.

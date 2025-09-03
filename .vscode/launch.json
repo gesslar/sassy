@@ -18,7 +18,7 @@
         "--watch",
         "--output-dir",
         "./examples/output",
-        "./examples/simple/midnight-ocean.json5"
+        "./examples/simple/midnight-ocean-json5.json5"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -35,7 +35,7 @@
         "build",
         "--output-dir",
         "./examples/output",
-        "./examples/simple/midnight-ocean.yaml"
+        "./examples/simple/midnight-ocean-yaml.yaml"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -52,7 +52,7 @@
         "build",
         "--output-dir",
         "./examples/output",
-        "./examples/simple/midnight-ocean-mixed.yaml"
+        "./examples/simple/midnight-ocean-mixed-colour-spaces.yaml"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"

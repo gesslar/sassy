@@ -39,6 +39,7 @@ export default class ResolveCommand extends AuntyCommand {
     ansiColors.alias("line", ansiColors.yellow)
     ansiColors.alias("hex", ansiColors.redBright)
     ansiColors.alias("hexAlpha", ansiColors.yellow.italic)
+    ansiColors.alias("arrow", ansiColors.blueBright)
   }
 
   /**
@@ -102,96 +103,141 @@ export default class ResolveCommand extends AuntyCommand {
     const tokens = pool.getTokens
     const token = tokens.get(tokenName)
     const trail = token.getTrail()
-    const fullTrail = this.#getFullTrail(trail,pool)
-    const output = `\n${ansiColors.head(tokenName)}:\n${this.#formatOutput(fullTrail)}`
+    const fullTrail = this.#buildCompleteTrail(token, trail)
+    // Get the final resolved value
+    const finalValue = token.getValue()
+    const [formattedFinalValue] = this.#formatLeaf(finalValue)
+
+    const output = `\n${ansiColors.head(tokenName)}:\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
 
     Term.info(output)
   }
 
-  #getFullTrail(trail, pool) {
-    if(trail.length === 0)
-      return fullTrail
+  #buildCompleteTrail(rootToken, trail) {
+    const steps = []
+    const seen = new Set()
 
-    const fullTrail = []
+    // Add the root token's original expression
+    const rootRaw = rootToken.getRawValue()
+    if(rootRaw !== rootToken.getName()) {
+      steps.push({
+        value: rootRaw,
+        type: "expression",
+        level: 0
+      })
+    }
 
-    // Start with the original token's raw value (the full expression)
-    const originalToken = trail.at(-1)
-    const parentTokenKey = originalToken.getParentTokenKey()
+    // Build a flattened sequence showing the resolution process
+    const processToken = (token, level) => {
+      if(!token)
+        return
 
-    if(parentTokenKey) {
-      const parentToken = pool.getTokens.get(parentTokenKey)
-      if(parentToken) {
-        fullTrail.push(parentToken.getRawValue())
+      const id = `${token.getName()}-${token.getRawValue()}`
+      if(seen.has(id))
+        return
+
+      seen.add(id)
+
+      const rawValue = token.getRawValue()
+      const finalValue = token.getValue()
+      const dependency = token.getDependency()
+      const kind = token.getKind()
+
+      // Add the current step
+      if(!steps.some(s => s.value === rawValue)) {
+        steps.push({
+          value: rawValue,
+          type: kind === "function" ? "function" : "variable",
+          level
+        })
+      }
+
+      // For variables, show what they resolve to
+      if(dependency) {
+        const depRaw = dependency.getRawValue()
+        const depFinal = dependency.getValue()
+
+        // Add dependency's expression if it's a function call
+        if(depRaw !== dependency.getName() && !steps.some(s => s.value === depRaw)) {
+          steps.push({
+            value: depRaw,
+            type: "expression",
+            level: level + 1
+          })
+        }
+
+        // Process dependency's trail
+        const depTrail = dependency.getTrail()
+        if(depTrail && depTrail.length > 0) {
+          depTrail.forEach(depToken => processToken(depToken, level + 1))
+        }
+
+        // Add resolved color if different
+        if(depRaw !== depFinal && !steps.some(s => s.value === depFinal)) {
+          steps.push({
+            value: depFinal,
+            type: "result",
+            level: level + 1
+          })
+        }
+      }
+
+      // Add final result for this token
+      if(rawValue !== finalValue && !steps.some(s => s.value === finalValue)) {
+        steps.push({
+          value: finalValue,
+          type: "result",
+          level
+        })
       }
     }
 
-    // Process each step in the trail to recreate the entire trail with
-    // all intermediate steps.
-    trail.forEach(token => {
-      const rawValue = token.getRawValue()
-      const value = token.getValue()
-      const kind = token.getKind()
-      const dependency = token.getDependency()
+    trail.forEach(token => processToken(token, 1))
 
-      if(kind === "variable" && dependency) {
-        fullTrail.push(rawValue)
-        fullTrail.push(dependency.getValue())
-      } else if(kind === "function") {
-        fullTrail.push(rawValue)
-        if(rawValue !== value) {
-          fullTrail.push(value)
-        }
+    // Normalize levels to reduce excessive nesting
+    const maxLevel = Math.max(...steps.map(s => s.level))
+    const levelMap = new Map()
+    let normalizedLevel = 0
+
+    steps.forEach(step => {
+      if(!levelMap.has(step.level)) {
+        levelMap.set(step.level, Math.min(normalizedLevel++, 4)) // Cap at depth 4
       }
+
+      step.depth = levelMap.get(step.level)
     })
 
-    return fullTrail
+    return steps
   }
   /**
    * Formats a resolution trail Set into a tree-like visual output.
    * Creates indented tree structure showing dependency relationships.
    *
    * @param {Array<ThemeToken>} trail - The resolution trail from pool.getTrail()
+   * @param steps
    * @returns {string} Formatted structure as string
    */
-  #formatOutput(trail) {
-    if(trail.length === 0)
+  #formatOutput(steps) {
+    if(steps.length === 0)
       return ""
 
-    const spacers = {
-      elbow: ansiColors.line("└── "),
-      space: "    ",
-    }
-
     const out = []
-    const seen = []
 
-    let indent = 0, last = null
-    let lastIndent = indent
+    steps.forEach(step => {
+      const {value, depth, type} = step
+      const [line, kind] = this.#formatLeaf(value)
 
-    trail.forEach((item, index) => {
-      if(seen.includes(item))
-        return
-
-      let [line,kind] = this.#formatLeaf(item)
-      const wasFunction = last === "function"
-      const isHex = kind === "hex"
-
-      if(wasFunction)
-        indent++
-      else if(isHex)
-        indent++
-      else
-        indent = Math.max(0, indent - 1)
-
-      const prefix = spacers.space.repeat(indent)
-      const showElbow = index === 0 || indent > lastIndent
-      const connector = showElbow ? spacers.elbow : spacers.space
-
-      last = kind
-      lastIndent = indent
-
-      seen.push(item)
-      out.push(`${prefix}${connector}${line}`)
+      // Simple logic: only hex results get extra indentation with arrow, everything else is clean
+      if(type === "result" && kind === "hex") {
+        // Hex results are indented one extra level with just spaces and arrow
+        const prefix = "   ".repeat(depth + 1)
+        const arrow = ansiColors.arrow("→ ")
+        out.push(`${prefix}${arrow}${line}`)
+      } else {
+        // Everything else just gets clean indentation
+        const prefix = "   ".repeat(depth)
+        out.push(`${prefix}${line}`)
+      }
     })
 
     return out.join("\n")

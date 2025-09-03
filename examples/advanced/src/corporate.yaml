@@ -1,6 +1,6 @@
 # Theme Config
 config:
-  $schema: vscode://schemas/color-theme
+  schema: vscode://schemas/color-theme
   name: corporate
   type: dark
 
@@ -10,25 +10,27 @@ config:
     colors:
       - ../import/colors.yaml
     tokenColors:
-      - ../import/token-colors-$(type).yaml
+      - ../import/token-colors-${type}.yaml
 
   custom:
     semanticHighlighting: true
     colorSpaceName: sRGB
 
 vars:
-  white: oklch(0.92 0 0)
-  black: oklch(0.27 0.03 256)
-  main: $(colors.white)
-  inverse: invert($(main))
+  main: $colors.white
+  inverse:
+    invert($main)
 
-  std:
     # The following define primary basics that can be relied upon by the
     # variables definitions. Dark and light themes will define these
     # differently. Anything expressed here will override anything being
     # imported.
-    fg: $(main)
-    bg: $(inverse)
-    accent: fade($(colors.teal2), 0.25)
-    accent.secondary: $(colors.blue)
-    shadow: alpha($(std.accent), 0.25)
+  fg:
+    main: $main
+
+  theme:
+    fg: $main
+    bg: lighten($colors.black, 20)
+    accent: $colors.teal
+    accentSecondary: lighten($colors.blue, 15)
+    shadow: alpha($accent, 0.25)

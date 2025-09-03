@@ -16,6 +16,7 @@ import AuntyError from "./AuntyError.js"
 import * as _Data from "./DataUtil.js"
 import ThemePool from "./ThemePool.js"
 import ThemeToken from "./ThemeToken.js"
+import {parse} from "culori"
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.
@@ -200,11 +201,21 @@ export default class Evaluator {
   #resolveLiteral(value) {
     const existing = this.#pool.findToken(value)
 
-    return existing ??
-     new ThemeToken(value)
-       .setKind("literal")
-       .setRawValue(value)
-       .setValue(value)
+    if(existing)
+      return existing
+
+    const token = new ThemeToken(value)
+      .setKind("literal")
+      .setRawValue(value)
+      .setValue(value)
+
+    // Check if this is a color function (like oklch, rgb, hsl, etc.)
+    const parsedColor = parse(value)
+    if(parsedColor) {
+      token.setParsedColor(parsedColor)
+    }
+
+    return token
   }
 
   /**
@@ -257,7 +268,15 @@ export default class Evaluator {
   #resolveFunction(value) {
     const {captured,func,args} = Evaluator.func.exec(value).groups
     const split = args?.split(",").map(a => a.trim()) ?? []
-    const applied = this.#colourFunction(func, split, value)
+
+    // Look up source tokens for arguments to preserve color space
+    const sourceTokens = split.map(arg => {
+      return this.#pool.findToken(arg) ||
+             this.#pool.getTokens?.get?.(arg) ||
+             null
+    })
+
+    const applied = this.#colourFunction(func, split, value, sourceTokens)
 
     if(!applied)
       return null
@@ -276,17 +295,24 @@ export default class Evaluator {
    * @private
    * @param {string} func - Function name (lighten|darken|fade|alpha|mix|...)
    * @param {Array<string>} args - Raw argument strings (numbers still as text).
+   * @param sourceTokens
    * @param {string} raw - The raw input from the source file.
-   * @returns {string} Hex (or transformed string) result.
+   * @returns {object} Object with result and colorSpace info.
    */
-  #colourFunction(func, args, raw) {
+  #colourFunction(func, args, raw, sourceTokens = []) {
     return (() => {
       try {
+        const sourceToken = sourceTokens[0]
+
         switch(func) {
           case "lighten":
-            return Colour.lightenOrDarken(args[0], Number(args[1]))
+            return sourceToken
+              ? Colour.lightenOrDarkenWithToken(sourceToken, Number(args[1]))
+              : Colour.lightenOrDarken(args[0], Number(args[1]))
           case "darken":
-            return Colour.lightenOrDarken(args[0], -Number(args[1]))
+            return sourceToken
+              ? Colour.lightenOrDarkenWithToken(sourceToken, -Number(args[1]))
+              : Colour.lightenOrDarken(args[0], -Number(args[1]))
           case "fade":
             return Colour.addAlpha(args[0], -Number(args[1]))
           case "solidify":
