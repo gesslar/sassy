@@ -105,6 +105,7 @@ export default class Compiler {
     const tokenColors = this.#composeArray(evalTokenColors)
     const semanticTokenColors = evalSemanticTokenColors.reduce(reducer, {})
     const themeColours = {colors,semanticTokenColors,tokenColors}
+
     // Mix and maaatch all jumbly wumbly...
     const output = Data.mergeObject(
       {},

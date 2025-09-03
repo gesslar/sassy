@@ -1,6 +1,6 @@
 /**
- * @file Color manipulation utilities for theme processing.
- * Provides comprehensive color operations including lightening, darkening,
+ * @file Colour manipulation utilities for theme processing.
+ * Provides comprehensive colour operations including lightening, darkening,
  * mixing, alpha manipulation, and format conversions.
  */
 
@@ -15,23 +15,23 @@ import {
 import Util from "../Util.js"
 import AuntyError from "./AuntyError.js"
 
-// Cache for parsed colors to improve performance
-const _colorCache = new Map()
+// Cache for parsed colours to improve performance
+const _colourCache = new Map()
 
-// Cache for mixed colors to avoid recomputation
+// Cache for mixed colours to avoid recomputation
 const _mixCache = new Map()
 
 const _functionCache = new Map()
 const _conversionFunctionCache = new Map()
 
 /**
- * Parses a color string into a Color object with caching.
+ * Parses a colour string into a colour object with caching.
  *
- * @param {string} s - The color string to parse
- * @returns {object} The parsed color object
+ * @param {string} s - The colour string to parse
+ * @returns {object} The parsed colour object
  * @throws {AuntyError} If the input is null, undefined, or empty
  */
-const asColor = s => {
+const asColour = s => {
   // This is a comment explaining that 'x == null' will be true if the function
   // receives 'undefined' or 'null'. Some robot says that I need to document
   // the behaviour, despite it being IMMEDIATELY followed by the throw
@@ -55,30 +55,30 @@ const asColor = s => {
   //
   // snoochie boochies, with love, gesslar @ 2025-09-02
   if(s == null)
-    throw AuntyError.new("asColor(): received null/undefined")
+    throw AuntyError.new("asColour(): received null/undefined")
 
   const k = String(s).trim()
   if(!k)
-    throw AuntyError.new("asColor(): received empty string")
+    throw AuntyError.new("asColour(): received empty string")
 
-  let v = _colorCache.get(k)
+  let v = _colourCache.get(k)
   if(!v) {
     v = parse(k) // returns undefined if invalid
 
     if(!v)
-      throw AuntyError.new(`Unable to parse color: ${k}`)
+      throw AuntyError.new(`Unable to parse colour: ${k}`)
 
-    _colorCache.set(k, v)
+    _colourCache.set(k, v)
   }
 
   return v
 }
 
 /**
- * Generates a cache key for color mixing operations.
+ * Generates a cache key for colour mixing operations.
  *
- * @param {string} a - First color string
- * @param {string} b - Second color string
+ * @param {string} a - First colour string
+ * @param {string} b - Second colour string
  * @param {number} t - Mixing ratio (0-1)
  * @returns {string} Cache key
  */
@@ -101,15 +101,14 @@ const toUnit = r => Math.max(0, Math.min(100, r)) / 100
  * @returns {number} The clamped value
  */
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
-const unclamped = (num, min, max) => num < min || num > max
 
 /**
- * Color manipulation utility class providing static methods for color operations.
- * Handles hex color parsing, alpha manipulation, mixing, and format conversions.
+ * Colour manipulation utility class providing static methods for colour operations.
+ * Handles hex colour parsing, alpha manipulation, mixing, and format conversions.
  */
 export default class Colour {
   /**
-   * Regular expression for matching long hex color codes with optional alpha.
+   * Regular expression for matching long hex colour codes with optional alpha.
    * Matches patterns like #ff0000 or #ff0000ff
    *
    * @type {RegExp}
@@ -117,7 +116,7 @@ export default class Colour {
   static longHex = /^(?<colour>#[a-f0-9]{6})(?<alpha>[a-f0-9]{2})?$/i
 
   /**
-   * Regular expression for matching short hex color codes with optional alpha.
+   * Regular expression for matching short hex colour codes with optional alpha.
    * Matches patterns like #f00 or #f00f
    *
    * @type {RegExp}
@@ -125,11 +124,11 @@ export default class Colour {
   static shortHex = /^(?<colour>#[a-f0-9]{3})(?<alpha>[a-f0-9]{1})?$/i
 
   /**
-   * Lightens or darkens a hex color by a specified amount.
+   * Lightens or darkens a hex colour by a specified amount.
    *
-   * @param {string} hex - The hex color code (e.g., "#ff0000" or "#f00")
+   * @param {string} hex - The hex colour code (e.g., "#ff0000" or "#f00")
    * @param {number} amount - The amount to lighten (+) or darken (-) as a percentage
-   * @returns {string} The modified hex color with preserved alpha
+   * @returns {string} The modified hex colour with preserved alpha
    */
   static lightenOrDarken(hex, amount=0) {
     const extracted = Colour.parseHexColour(hex)
@@ -149,17 +148,17 @@ export default class Colour {
   }
 
   /**
-   * Inverts a hex color by flipping its lightness value.
+   * Inverts a hex colour by flipping its lightness value.
    * Preserves hue and saturation while inverting the lightness component.
    *
-   * @param {string} hex - The hex color code to invert
-   * @returns {string} The inverted hex color with preserved alpha
+   * @param {string} hex - The hex colour code to invert
+   * @returns {string} The inverted hex colour with preserved alpha
    */
   static invert(hex) {
     const extracted = Colour.parseHexColour(hex)
-    const hslColor = hsl(extracted.colour)
-    hslColor.l = 1 - hslColor.l  // culori uses 0-1 for lightness
-    const modifiedColour = formatHex(hslColor)
+    const hslColour = hsl(extracted.colour)
+    hslColour.l = 1 - hslColour.l  // culori uses 0-1 for lightness
+    const modifiedColour = formatHex(hslColour)
 
     const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
 
@@ -208,11 +207,11 @@ export default class Colour {
   }
 
   /**
-   * Normalises a short hex color code to a full 6-character format.
+   * Normalises a short hex colour code to a full 6-character format.
    * Converts 3-character hex codes like "#f00" to "#ff0000".
    *
-   * @param {string} code - The short hex color code
-   * @returns {string} The normalized 6-character hex color code
+   * @param {string} code - The short hex colour code
+   * @returns {string} The normalized 6-character hex colour code
    */
   static normaliseHex(code) {
     // did some rube give us a long hex?
@@ -231,11 +230,11 @@ export default class Colour {
   }
 
   /**
-   * Parses a hex color string and extracts color and alpha components.
+   * Parses a hex colour string and extracts colour and alpha components.
    * Supports both short (#f00) and long (#ff0000) formats with optional alpha.
    *
-   * @param {string} hex - The hex color string to parse
-   * @returns {object} Object containing color and optional alpha information
+   * @param {string} hex - The hex colour string to parse
+   * @returns {object} Object containing colour and optional alpha information
    * @throws {AuntyError} If the hex value is invalid or missing
    */
   static parseHexColour(hex) {
@@ -268,12 +267,12 @@ export default class Colour {
   }
 
   /**
-   * Sets the alpha transparency of a hex color to a specific value.
+   * Sets the alpha transparency of a hex colour to a specific value.
    * Replaces any existing alpha with the new value.
    *
-   * @param {string} hex - The hex color code
+   * @param {string} hex - The hex colour code
    * @param {number} amount - The alpha value (0-1, where 0 is transparent and 1 is opaque)
-   * @returns {string} The hex color with the new alpha value
+   * @returns {string} The hex colour with the new alpha value
    */
   static setAlpha(hex, amount) {
     const work = Colour.parseHexColour(hex)
@@ -285,12 +284,12 @@ export default class Colour {
   }
 
   /**
-   * Adjusts the alpha transparency of a hex color by a relative amount.
+   * Adjusts the alpha transparency of a hex colour by a relative amount.
    * Multiplies the current alpha by (1 + amount) and clamps the result.
    *
-   * @param {string} hex - The hex color code
+   * @param {string} hex - The hex colour code
    * @param {number} amount - The relative amount to adjust alpha (-1 to make transparent, positive to increase)
-   * @returns {string} The hex color with adjusted alpha
+   * @returns {string} The hex colour with adjusted alpha
    */
   static addAlpha(hex, amount) {
     const work = Colour.parseHexColour(hex)
@@ -302,38 +301,38 @@ export default class Colour {
   }
 
   /**
-   * Removes alpha channel from a hex color, returning only the solid color.
+   * Removes alpha channel from a hex colour, returning only the solid colour.
    *
-   * @param {string} hex - The hex color code with or without alpha
-   * @returns {string} The solid hex color without alpha
+   * @param {string} hex - The hex colour code with or without alpha
+   * @returns {string} The solid hex colour without alpha
    */
   static solid(hex) {
     return Colour.parseHexColour(hex).colour
   }
 
   /**
-   * Mixes two hex colors together in a specified ratio.
-   * Blends both the colors and their alpha channels if present.
+   * Mixes two hex colours together in a specified ratio.
+   * Blends both the colours and their alpha channels if present.
    *
-   * @param {string} colorA - The first hex color
-   * @param {string} colorB - The second hex color
+   * @param {string} colourA - The first hex colour
+   * @param {string} colourB - The second hex colour
    * @param {number} ratio - The mixing ratio as percentage (0-100, where 50 is equal mix)
-   * @returns {string} The mixed hex color with blended alpha
+   * @returns {string} The mixed hex colour with blended alpha
    */
-  static mix(colorA, colorB, ratio = 50) {
+  static mix(colourA, colourB, ratio = 50) {
     const t = toUnit(ratio)
 
     // memoize by raw inputs (strings) + normalized ratio
-    const key = mixKey(colorA, colorB, t)
+    const key = mixKey(colourA, colourB, t)
     if(_mixCache.has(key))
       return _mixCache.get(key)
 
-    const c1 = asColor(colorA)
-    const c2 = asColor(colorB)
+    const c1 = asColour(colourA)
+    const c2 = asColour(colourB)
 
-    // color-space mix using culori interpolation
-    const colorSpace = (c1.mode === "oklch" || c2.mode === "oklch") ? "oklch" : "rgb"
-    const interpolateFn = interpolate([c1, c2], colorSpace)
+    // colour-space mix using culori interpolation
+    const colourSpace = (c1.mode === "oklch" || c2.mode === "oklch") ? "oklch" : "rgb"
+    const interpolateFn = interpolate([c1, c2], colourSpace)
     const mixed = interpolateFn(t)
 
     // alpha blend too
@@ -357,11 +356,11 @@ export default class Colour {
   }
 
   /**
-   * Converts color values from various formats to hex.
-   * Supports RGB, RGBA, HSL, HSLA, OKLCH, and OKLCHA color modes, and MORE!
+   * Converts colour values from various formats to hex.
+   * Supports RGB, RGBA, HSL, HSLA, OKLCH, and OKLCHA colour modes, and MORE!
    *
    * @param {string} input - The colour expression
-   * @returns {string} The resulting hex color
+   * @returns {string} The resulting hex colour
    * @throws {AuntyError} If the wrong function or value is provided
    */
   static toHex(input) {

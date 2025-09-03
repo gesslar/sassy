@@ -181,10 +181,10 @@ export default class Evaluator {
   }
 
   /**
-   * Resolve a hex color value to a ThemeToken.
+   * Resolve a hex colour value to a ThemeToken.
    *
    * @private
-   * @param {string} value - The hex color value.
+   * @param {string} value - The hex colour value.
    * @returns {ThemeToken} The resolved token.
    */
   #resolveHex(value) {
