@@ -17,7 +17,8 @@
     "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
     "exec": "node ./src/cli.js",
     "lint": "eslint src/",
-    "submit": "npm publish --access public"
+    "submit": "npm publish --access public",
+    "examples": "node ./examples/validator.js"
   },
   "engines": {
     "node": ">=20.0.0"
