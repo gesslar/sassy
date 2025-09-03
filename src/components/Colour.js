@@ -12,6 +12,7 @@ import {
   interpolate,
   converter
 } from "culori"
+import Util from "../Util.js"
 import AuntyError from "./AuntyError.js"
 
 // Cache for parsed colors to improve performance
@@ -19,6 +20,9 @@ const _colorCache = new Map()
 
 // Cache for mixed colors to avoid recomputation
 const _mixCache = new Map()
+
+const _functionCache = new Map()
+const _conversionFunctionCache = new Map()
 
 /**
  * Parses a color string into a Color object with caching.
@@ -97,6 +101,7 @@ const toUnit = r => Math.max(0, Math.min(100, r)) / 100
  * @returns {number} The clamped value
  */
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
+const unclamped = (num, min, max) => num < min || num > max
 
 /**
  * Color manipulation utility class providing static methods for color operations.
@@ -342,68 +347,33 @@ export default class Colour {
     return out
   }
 
+  static async getColourParser(name) {
+    const culori = await import("culori")
+    const capped = Util.capitalize(name)
+    const parserName = `parse${capped}`
+    const fn = culori[parserName]
+
+    return typeof fn === "function" ? fn : null
+  }
 
   /**
    * Converts color values from various formats to hex.
-   * Supports RGB, RGBA, HSL, HSLA, HSV, and HSVA color modes.
+   * Supports RGB, RGBA, HSL, HSLA, OKLCH, and OKLCHA color modes, and MORE!
    *
-   * @param {string} mode - The color mode ("rgb", "rgba", "hsl", "hsla", "hsv", "hsva")
-   * @param {number} alpha - The alpha value (0-1) for non-alpha modes
-   * @param {...number} args - The color component values (depends on mode)
+   * @param {string} input - The colour expression
    * @returns {string} The resulting hex color
-   * @throws {AuntyError} If the wrong number of values is provided
+   * @throws {AuntyError} If the wrong function or value is provided
    */
-  static toHex(mode, alpha, ...args) {
-    const values = args
-      .filter(v => v != null)
-      .map((v, index) => {
-        if(mode === "rgb" || mode === "rgba")
-          return clamp(Number(v), 0, 255)
+  static toHex(input) {
+    const colourObj = parse(input)
 
-        if(index === 0 && mode.match(/^(hsl|hsv)/))
-          return clamp(Number(v), 0, 360)
+    if(!colourObj)
+      throw AuntyError.new(`Invalid colour function invocation: ${input}`)
 
-        if(mode === "oklch" || mode === "oklcha") {
-          // OKLCH: Lightness (0-1), Chroma (0-0.4), Hue (0-360)
-          if(index === 0)
-            return clamp(Number(v), 0, 1)       // L: 0-1
+    const formatter = "alpha" in colourObj
+      ? formatHex8
+      : formatHex
 
-          if(index === 1)
-            return clamp(Number(v), 0, 0.4)     // C: 0-0.4
-
-          if(index === 2)
-            return clamp(Number(v), 0, 360)     // H: 0-360
-        }
-
-        return clamp(Number(v), 0, 100)
-      })
-
-    if(values.length !== 3)
-      throw AuntyError.new(`${mode}() requires three number values.`)
-
-    if(alpha != null)
-      alpha = clamp(Number(alpha), 0, 1)
-
-    // Create color object based on mode
-    let colorObj
-    if(mode === "rgb" || mode === "rgba") {
-      colorObj = {mode: "rgb", r: values[0] / 255, g: values[1] / 255, b: values[2] / 255}
-    } else if(mode === "hsl" || mode === "hsla") {
-      colorObj = {mode: "hsl", h: values[0], s: values[1] / 100, l: values[2] / 100}
-    } else if(mode === "hsv" || mode === "hsva") {
-      colorObj = (values[1] === 0)
-        ? {mode: "oklch", l: values[0], c: values[1]}
-        : {mode: "oklch", l: values[0], c: values[1], h: values[2]}
-    } else {
-      throw AuntyError.new(`Unsupported color mode: ${mode}`)
-    }
-
-    if(mode.endsWith("a") && alpha != null) {
-      colorObj.alpha = alpha
-    }
-
-    return (colorObj.alpha != null && colorObj.alpha < 1)
-      ? formatHex8(colorObj).toLowerCase()
-      : formatHex(colorObj).toLowerCase()
+    return formatter(colourObj)
   }
 }

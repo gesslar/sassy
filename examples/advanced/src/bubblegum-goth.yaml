@@ -10,7 +10,7 @@ config:
     colors:
       - ../import/colors.yaml
     tokenColors:
-      - ../import/karyprocolors-$(type).tmLanguage.yaml
+      - ../import/token-colors-$(type).yaml
 
   custom:
     semanticHighlighting: true

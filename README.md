@@ -162,13 +162,32 @@ Make colors that work together:
 
 | Function | Example | Result |
 |----------|---------|--------|
-| `lighten(color, %)` | `lighten($(bg), 25)` | 25% lighter background |
-| `darken(color, %)` | `darken($(accent), 30)` | 30% darker accent |
-| `fade(color, alpha)` | `fade($(accent), 0.5)` | Set to 50% transparent |
-| `alpha(color, value)` | `alpha($(brand), 0.5)` | Set exact transparency |
-| `mix(color1, color2, %)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
+| `lighten(color, %=0-100)` | `lighten($(bg), 25)` | 25% lighter background |
+| `darken(color, %=0-100)` | `darken($(accent), 30)` | 30% darker accent |
+| || |
+| `alpha(color, alpha=0-1)` | `alpha($(brand), 0.5)` | Set exact transparency |
+| `fade(color, alpha=0-1)` | `fade($(accent), 0.5)` | Reduce opacity by 50% |
+| `solidify(color, alpha=0-1)` | `solidify($(bg.accent), 0.3)` | Increase opacity by 30% |
+| || |
+| `mix(color1, color2, %=0-100)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
+| `mix(color1, color2)` | `mix($(fg), $(accent))` | Blend 50% accent |
+| || |
 | `invert(color)` | `invert($(fg))` | Perfect opposite |
-| `solidify(color, alpha)` | `solidify($(bg.accent), 0.3)` | Increase opacity to 30% |
+| || |
+| `hsv(h=0-255, s=0-255, v=0-255)` | `hsv(50, 200, 180)` | HSV colour (hue 50, saturation 200, value 180) |
+| `hsva(h=0-255, s=0-255, v=0-255, a=0-1)` | `hsva(50, 200, 180, 0.5)` | HSV with 50% opacity |
+| || |
+| `hsl(h=0-360, s=0-100, l=0-100)` | `hsl(200, 50, 40)` | HSL colour (200° hue, 50% saturation, 40% lightness) |
+| `hsla(h=0-360, s=0-100, l=0-100, a=0-1)` | `hsla(200, 50, 40, 0.5)` | HSL with 50% opacity |
+| || |
+| `rgb(r=0-255, g=0-255, b=0-255)` | `rgb(139, 152, 255)` | RGB colour (139 red, 152 green, 255 blue) |
+| `rgba(r=0-255, g=0-255, b=0-255, a=0-1)` | `rgba(139, 152, 255, 0.5)` | RGB with 50% opacity |
+| || |
+| `oklch(l=0-1, c=0-100, h=0-360)` | `oklch(0.7, 25, 180)` | OKLCH color (70% lightness, 25 chroma, 180° hue) |
+| `oklcha(l=0-1, c=0-100, h=0-360, a=0-1)` | `oklcha(0.5, 30, 45, 0.8)` | OKLCH with 80% opacity |
+| || |
+
+> **Note:** In all of these functions, `color` can be a raw hex (`#ff66cc`), a variable (`$(accent)`), or another color function (`rgba(255, 100, 200, 0.5)`, `darken($(bg), 20)`, `oklcha(0.7, 25, 180, 0.8)`).
 
 ## Variable Reference
 
@@ -313,7 +332,9 @@ The merge happens in a precise order with each level overriding the previous:
 4. `semanticTokenColors` imports
 5. Your theme file's own definitions (final override)
 
-Within each section, if you import multiple files, they merge in array order. This layered approach gives you fine-grained control over which definitions take precedence.
+Within each section, if you import multiple files, they merge in array order.
+This layered approach gives you fine-grained control over which definitions
+take precedence.
 
 ### Watch Mode for Development
 
@@ -358,6 +379,13 @@ vars:
     darker: darken($(base), 20)
     complement: mix($(base), invert($(base)), 50)
     muted: mix($(base), "#808080", 30)
+
+  # OKLCH colors for perceptually uniform adjustments
+  oklch_palette:
+    primary: oklch(0.6, 20, 220)        # Blue with controlled chroma
+    accent: oklch(0.7, 25, 45)          # Warm orange complement
+    muted: oklch(0.5, 8, 220)           # Desaturated blue
+    bright: oklcha(0.8, 30, 220, 0.9)   # Bright blue with transparency
 ```
 
 ### Test with Real Code

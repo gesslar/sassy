@@ -180,7 +180,7 @@ Aunty Rose processes themes in phases:
 1. **Import Resolution** - Merge modular theme files using `config.imports`
 2. **Variable Decomposition** - Flatten nested object structures into dot-notation paths
 3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool system
-4. **Function Application** - Execute color manipulation functions (`lighten`, `darken`, etc.)
+4. **Function Application** - Execute color manipulation functions (`lighten`, `darken`, `oklch`, `oklcha`, etc.)
 5. **Dependency Resolution** - Build token dependency graph and resolve in correct order
 6. **Theme Assembly** - Compose final VS Code theme JSON with proper structure
 

@@ -230,7 +230,7 @@ export default class Evaluator {
   #resolveFunction(value) {
     const {captured,func,args} = Evaluator.func.exec(value).groups
     const split = args?.split(",").map(a => a.trim()) ?? []
-    const applied = this.#applyTransform(func, split)
+    const applied = this.#colourFunction(func, split, value)
 
     if(!applied)
       return null
@@ -249,11 +249,11 @@ export default class Evaluator {
    * @private
    * @param {string} func - Function name (lighten|darken|fade|alpha|mix|...)
    * @param {Array<string>} args - Raw argument strings (numbers still as text).
+   * @param {string} raw - The raw input from the source file.
    * @returns {string} Hex (or transformed string) result.
    */
-  #applyTransform(func, args) {
-    const result = (() => {
-      const def = `${func}(${args.join(", ")})`
+  #colourFunction(func, args, raw) {
+    return (() => {
       try {
         switch(func) {
           case "lighten":
@@ -274,23 +274,15 @@ export default class Evaluator {
               args[1],
               args[2] ? Number(args[2]) : undefined
             )
-          case "rgb": case "rgba":
-          case "hsl": case "hsla":
-          case "hsv": case "hsva":
-          case "oklch": case "oklcha":
-            return Colour.toHex(func, args[3], ...args.slice(0, 3))
+          case "css":
+            return Colour.toHex(args.toString())
           default:
-            return null
+            return Colour.toHex(raw)
         }
       } catch(e) {
-        const err = `Applying transform ${def}`
-        throw e instanceof AuntyError
-          ? e.addTrace(err)
-          : AuntyError.from(e, err)
+        throw AuntyError.new(`Performing colour function ${raw}`, e)
       }
     })()
-
-    return result
   }
 
   /**

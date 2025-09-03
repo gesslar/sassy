@@ -1,19 +1,19 @@
 # Variables for later substitution
 vars:
   colors:
-    black: hsv(0,0,10)
-    white: hsv(0,0,90)
-    blue: hsv(200,60,60)
-    red: hsv(0,70,100)
-    yellow: hsv(50,60,100)
-    orange: hsv(35,75,85)
-    green: hsv(160,60,80)
-    green2: hsv(100,60,80)
-    purple: hsv(300,60,80)
-    pink: hsv(320,40,100)
-    teal: hsv(200,50,50)
-    teal2: hsv(179,91,100)
-    gold: hsv(45,85,100)
+    black: oklch(0.216 0 89.9)
+    white: oklch(0.923 0 89.9)
+    blue: oklch(0.553 0.079 232.4)
+    red: oklch(0.672 0.215 25.1)
+    yellow: oklch(0.921 0.148 98.1)
+    orange: oklch(0.721 0.134 71.2)
+    green: oklch(0.765 0.125 167.8)
+    green2: oklch(0.767 0.177 136.6)
+    purple: oklch(0.641 0.21 327.7)
+    pink: oklch(0.809 0.146 340.6)
+    teal: oklch(0.503 0.058 231.3)
+    teal2: oklch(0.905 0.153 192.8)
+    gold: oklch(0.86 0.168 87.8)
 
   # The following define secondary basics that can be relied upon by the
   # theme's definition.
