@@ -203,13 +203,13 @@ export default class ResolveCommand extends AuntyCommand {
 
   /**
    * Formats a single ThemeToken for display in the theme resolution output,
-   * applying color and style based on its type.
+   * applying colour and style based on its type.
    *
    * @param {string} value - The man, the mystrery, the value.
-   * @returns {string} The formatted and colorized representation of the token.
+   * @returns {string} The formatted and colourised representation of the token.
    *
    * Uses the token's kind property to determine formatting instead of regex matching.
-   * Provides clear visual distinction between tokens, functions, colors, and variables.
+   * Provides clear visual distinction between tokens, functions, colours, and variables.
    */
   #formatLeaf(value) {
     if(this.#hex(value)) {

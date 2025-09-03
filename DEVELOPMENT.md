@@ -128,7 +128,7 @@ This command:
 1. Loads and compiles the theme to build the complete ThemePool
 2. Retrieves the requested token and its resolution trail
 3. Formats a tree-like visual output showing each resolution step
-4. Color-codes different token types (variables, functions, hex colors, literals)
+4. Colour-codes different token types (variables, functions, hex colours, literals)
 
 The output shows the complete dependency chain from the original expression to the final resolved value, making it easy to debug complex variable relationships.
 
@@ -180,7 +180,7 @@ Aunty Rose processes themes in phases:
 1. **Import Resolution** - Merge modular theme files using `config.imports`
 2. **Variable Decomposition** - Flatten nested object structures into dot-notation paths
 3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool system
-4. **Function Application** - Execute color manipulation functions (`lighten`, `darken`, `oklch`, `oklcha`, etc.)
+4. **Function Application** - Execute colour manipulation functions (`lighten`, `darken`, `oklch`, `oklcha`, etc.)
 5. **Dependency Resolution** - Build token dependency graph and resolve in correct order
 6. **Theme Assembly** - Compose final VS Code theme JSON with proper structure
 
@@ -237,24 +237,6 @@ Local CLI development:
 node ./src/cli.js build examples/simple/midnight-ocean.yaml -o ./examples/output \
   --watch
 ```
-
-## Kary Pro Colors
-
-To demonstrate the flexibility of incorporating multiple sources, included
-in this repo are two syntax highlighting files from [Kary Pro
-Colors](https://marketplace.visualstudio.com/items?itemName=karyfoundation.theme-karyfoundation-themes)
-by Pouya Kary. These files *are not* released under the Unlicense, but
-rather bear their own licensing terms. Using those files, you are bound by
-Pouya's very generous licensing.
-
-These files differ from the original source in that they have been modified
-to correspond to the DSL of this theming engine.
-
-A copy of the GPL3 license is included in the `examples/advanced/import`
-directory and applies specifically to:
-
-- `examples/advanced/import/karyprocolors-dark.tmLanguage.yaml`
-- `examples/advanced/import/karyprocolors-light.tmLanguage.yaml`
 
 ## Philosophy
 

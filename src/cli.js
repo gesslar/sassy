@@ -7,7 +7,7 @@
  *  - Parse CLI arguments (supports JSON5 / YAML theme entries, globs resolved externally by the shell)
  *  - Create Theme instances for compilation units
  *  - Delegate compilation to Theme.build() which internally uses Compiler.compile()
- *  - Write (or print with --dry-run) the resulting VS Code color theme JSON
+ *  - Write (or print with --dry-run) the resulting VS Code colour theme JSON
  *  - Prevent unnecessary writes by hashing previous output
  *  - (Optional) Watch all participating source + imported files and recompile on change
  *

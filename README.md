@@ -5,16 +5,15 @@
 **Transform VS Code theme development from tedious to delightful.**
 
 Stop wrestling with 800+ disconnected hex codes. Create beautiful,
-maintainable themes with semantic variables, color functions, and design
+maintainable themes with semantic variables, colour functions, and design
 systems that actually make sense.
 
 ## The Problem
 
 VS Code theme development is a nightmare:
 
-- 800+ flat color properties with zero relationships
-- Want to adjust contrast? Hunt through dozens of files for related
-  colors
+- 800+ flat colour properties with zero relationships
+- Want to adjust contrast? Hunt through dozens of files for related colours
 - Copy-paste hex codes everywhere and pray nothing breaks
 - No way to express design intent or maintain consistency
 
@@ -113,7 +112,9 @@ npx @gesslar/aunty build --nerd my-theme.yaml
 npx @gesslar/aunty resolve --token editor.background my-theme.yaml
 ```
 
-This shows you the complete resolution chain for any theme property, displaying each step of variable substitution and function evaluation with color-coded output.
+This shows you the complete resolution chain for any theme property, displaying
+each step of variable substitution and function evaluation with colour-coded
+output.
 
 ### Resolve Command Options
 
@@ -131,7 +132,7 @@ config:
   type: dark
 
 vars:
-  # Your color palette
+  # Your colour palette
   primary: "#4b8ebd"
   success: "#4ab792"
   error: "#b74a4a"
@@ -156,23 +157,23 @@ theme:
     "sideBar.background": $(std.bg)
 ```
 
-## Color Functions
+## Colour Functions
 
-Make colors that work together:
+Make colours that work together:
 
 | Function | Example | Result |
 |----------|---------|--------|
-| `lighten(color, %=0-100)` | `lighten($(bg), 25)` | 25% lighter background |
-| `darken(color, %=0-100)` | `darken($(accent), 30)` | 30% darker accent |
+| `lighten(colour, %=0-100)` | `lighten($(bg), 25)` | 25% lighter background |
+| `darken(colour, %=0-100)` | `darken($(accent), 30)` | 30% darker accent |
 | || |
-| `alpha(color, alpha=0-1)` | `alpha($(brand), 0.5)` | Set exact transparency |
-| `fade(color, alpha=0-1)` | `fade($(accent), 0.5)` | Reduce opacity by 50% |
-| `solidify(color, alpha=0-1)` | `solidify($(bg.accent), 0.3)` | Increase opacity by 30% |
+| `alpha(colour, alpha=0-1)` | `alpha($(brand), 0.5)` | Set exact transparency |
+| `fade(colour, alpha=0-1)` | `fade($(accent), 0.5)` | Reduce opacity by 50% |
+| `solidify(colour, alpha=0-1)` | `solidify($(bg.accent), 0.3)` | Increase opacity by 30% |
 | || |
-| `mix(color1, color2, %=0-100)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
-| `mix(color1, color2)` | `mix($(fg), $(accent))` | Blend 50% accent |
+| `mix(colour1, colour2, %=0-100)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
+| `mix(colour1, colour2)` | `mix($(fg), $(accent))` | Blend 50% accent |
 | || |
-| `invert(color)` | `invert($(fg))` | Perfect opposite |
+| `invert(colour)` | `invert($(fg))` | Perfect opposite |
 | || |
 | `hsv(h=0-255, s=0-255, v=0-255)` | `hsv(50, 200, 180)` | HSV colour (hue 50, saturation 200, value 180) |
 | `hsva(h=0-255, s=0-255, v=0-255, a=0-1)` | `hsva(50, 200, 180, 0.5)` | HSV with 50% opacity |
@@ -183,11 +184,11 @@ Make colors that work together:
 | `rgb(r=0-255, g=0-255, b=0-255)` | `rgb(139, 152, 255)` | RGB colour (139 red, 152 green, 255 blue) |
 | `rgba(r=0-255, g=0-255, b=0-255, a=0-1)` | `rgba(139, 152, 255, 0.5)` | RGB with 50% opacity |
 | || |
-| `oklch(l=0-1, c=0-100, h=0-360)` | `oklch(0.7, 25, 180)` | OKLCH color (70% lightness, 25 chroma, 180° hue) |
+| `oklch(l=0-1, c=0-100, h=0-360)` | `oklch(0.7, 25, 180)` | OKLCH colour (70% lightness, 25 chroma, 180° hue) |
 | `oklcha(l=0-1, c=0-100, h=0-360, a=0-1)` | `oklcha(0.5, 30, 45, 0.8)` | OKLCH with 80% opacity |
 | || |
 
-> **Note:** In all of these functions, `color` can be a raw hex (`#ff66cc`), a variable (`$(accent)`), or another color function (`rgba(255, 100, 200, 0.5)`, `darken($(bg), 20)`, `oklcha(0.7, 25, 180, 0.8)`).
+> **Note:** In all of these functions, `colour` can be a raw hex (`#ff66cc`), a variable (`$(accent)`), or another colour function (`rgba(255, 100, 200, 0.5)`, `darken($(bg), 20)`, `oklcha(0.7, 25, 180, 0.8)`).
 
 ## Variable Reference
 
@@ -250,7 +251,7 @@ extension.
 Break your themes into reusable components using the import system:
 
 ```yaml
-# colors.yaml
+# colours.yaml
 vars:
   palette:
     primary: "#4b8ebd"
@@ -266,10 +267,10 @@ config:
   type: dark
   imports:
     vars:
-      colors: "./colors.yaml"
+      colors: "./colours.yaml"
 
 vars:
-  # Use imported colors
+  # Use imported colours
   accent: $(colors.palette.primary)
 
   # Build your design system
@@ -295,7 +296,7 @@ config:
   imports:
     # Import variables (merged into your vars section)
     vars:
-      colors: "./shared/colors.yaml"
+      colors: "./shared/colours.yaml"
       # Can import multiple files
       typography: ["./shared/fonts.yaml", "./shared/sizes.yaml"]
 
@@ -303,15 +304,15 @@ config:
     global:
       base: "./shared/base-config.yaml"
 
-    # Import VS Code color definitions
+    # Import VS Code colour definitions
     colors:
-      ui: "./shared/ui-colors.yaml"
+      ui: "./shared/ui-colours.yaml"
 
     # Import syntax highlighting rules
     tokenColors:
       syntax: "./shared/syntax.yaml"
 
-    # Import semantic token colors
+    # Import semantic token colours
     semanticTokenColors:
       semantic: "./shared/semantic.yaml"
 ```
@@ -348,10 +349,10 @@ Now edit your YAML file and watch VS Code update automatically!
 
 ## Tips for Great Themes
 
-### Start with Meaning, Not Colors
+### Start with Meaning, Not Colours
 
 ```yaml
-# ❌ Don't start with random colors
+# ❌ Don't start with random colours
 vars:
   red: "#ff0000"
   blue: "#0000ff"
@@ -370,7 +371,7 @@ vars:
 ### Use Mathematical Relationships
 
 ```yaml
-# Colors that harmonize automatically
+# Colours that harmonize automatically
 vars:
   base: "#4b8ebd"
 
@@ -380,7 +381,7 @@ vars:
     complement: mix($(base), invert($(base)), 50)
     muted: mix($(base), "#808080", 30)
 
-  # OKLCH colors for perceptually uniform adjustments
+  # OKLCH colours for perceptually uniform adjustments
   oklch_palette:
     primary: oklch(0.6, 20, 220)        # Blue with controlled chroma
     accent: oklch(0.7, 25, 45)          # Warm orange complement
@@ -391,7 +392,7 @@ vars:
 ### Test with Real Code
 
 Always test your themes with actual code files to see how syntax
-highlighting looks with your color choices.
+highlighting looks with your colour choices.
 
 ## More Examples
 
@@ -438,8 +439,8 @@ npx @gesslar/aunty resolve --token problematic.variable my-theme.yaml
 
 ## License
 
-**The Unlicense** - Use this however you want! The idea of copyrighting
-color arrangements is absurd.
+**The Unlicense** - Use this however you want! The idea of copyrighting colour
+arrangements is absurd.
 
 ---
 
