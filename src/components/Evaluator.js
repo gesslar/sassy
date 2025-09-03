@@ -96,6 +96,7 @@ export default class Evaluator {
    *
    * @private
    * @param {Array<object>} target - Objects whose `value` properties are processed.
+   * @throws If we've reached maximum iterations.
    */
   #processScope(target) {
     let it = 0
@@ -128,6 +129,19 @@ export default class Evaluator {
       ++it < this.#maxIterations &&
       this.#hasUnresolvedTokens(target)
     )
+
+    if(it === this.#maxIterations) {
+      const unresolved = target
+        .filter(this.#tokenCheck)
+        .map(token => token.flatPath)
+
+      throw AuntyError.new(
+        "Luuuucyyyy! We tried to resolve your tokens, but there were just "+
+        "too many! Suspect maybe some circular references are interfering "+
+        "with your bliss. These are the ones that remain unresolved: " +
+        unresolved.toString()
+      )
+    }
   }
 
   /**
@@ -138,10 +152,13 @@ export default class Evaluator {
    * @param {Array<ThemeToken>} trail - Array to track resolution chain.
    * @param {string} parentTokenKeyString - Key string for parent token.
    * @param {string} value - Raw tokenised string to resolve.
-   * @returns {string} Fully resolved string.
+   * @returns {string?} Fully resolved string.
+   * @throws If we've reached maximum iterations.
    */
   #evaluateValue(trail, parentTokenKeyString, value) {
-    for(;;) {
+    let it = 0
+
+    do {
       let resolved
 
       if(Colour.isHex(value))
@@ -160,7 +177,17 @@ export default class Evaluator {
       this.#pool.addToken(resolved).setParentTokenKey(parentTokenKeyString)
       trail.push(resolved)
       value = resolved.getValue()
+    } while(++it < this.#maxIterations)
+
+    if(it === this.#maxIterations) {
+      throw AuntyError.new("HMMMMM! It looks like you might have some " +
+        "circular resolution happening. We tried to fix it up, but this " +
+        "doesn't seem to be working out. Trying to resolve: " +
+        `${parentTokenKeyString}, we got as far as ${value}, before we ` +
+        "called an end to this interminable game of Duck-Duck-Goose.")
     }
+
+    return // it'll never reach here, but the linter got mad so i gave it a tit
   }
 
   /**
