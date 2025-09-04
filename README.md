@@ -92,6 +92,9 @@ npx @gesslar/aunty build --silent my-theme.yaml
 
 # Debug mode (detailed error traces)
 npx @gesslar/aunty build --nerd my-theme.yaml
+
+# Lint themes for potential issues
+npx @gesslar/aunty lint my-theme.yaml
 ```
 
 ### Build Command Options
@@ -106,10 +109,22 @@ npx @gesslar/aunty build --nerd my-theme.yaml
 
 ### Debugging Your Themes
 
-**See what a variable resolves to:**
+**See what a color variable resolves to:**
 
 ```bash
-npx @gesslar/aunty resolve --token editor.background my-theme.yaml
+npx @gesslar/aunty resolve --color editor.background my-theme.yaml
+```
+
+**Debug tokenColors syntax highlighting:**
+
+```bash
+npx @gesslar/aunty resolve --tokenColor keyword.control my-theme.yaml
+```
+
+**Debug semantic token colors:**
+
+```bash
+npx @gesslar/aunty resolve --semanticTokenColor variable.readonly my-theme.yaml
 ```
 
 This shows you the complete resolution chain for any theme property, displaying
@@ -120,8 +135,97 @@ output.
 
 | Option | Description |
 |--------|-------------|
-| `-t, --token <key>` | Resolve a specific token/variable to its final value |
+| `-c, --color <key>` | Resolve a specific color property to its final value |
+| `-t, --tokenColor <scope>` | Resolve tokenColors for a specific scope |
+| `-s, --semanticTokenColor <token>` | Resolve semantic token colors for a specific token type |
 | `--nerd` | Show detailed error traces if resolution fails |
+
+### Theme Validation and Linting
+
+**Validate your theme for common issues:**
+
+```bash
+npx @gesslar/aunty lint my-theme.yaml
+```
+
+The lint command performs comprehensive validation of your theme files to catch
+common issues that could cause unexpected behavior or poor maintainability.
+
+### Lint Command Checks
+
+The linter performs four types of validation:
+
+#### 1. Duplicate Scopes
+
+Detects when the same syntax scope appears in multiple tokenColors rules:
+
+```yaml
+# ❌ This will trigger a warning
+theme:
+  tokenColors:
+    - name: "Keywords"
+      scope: "keyword.control, keyword.operator"
+      settings: { foreground: "$(accent)" }
+    - name: "Control Keywords"
+      scope: "keyword.control"  # Duplicate!
+      settings: { foreground: "$(primary)" }
+```
+
+**Why this matters:** The second rule will never be applied since the first rule
+already matches `keyword.control` tokens.
+
+#### 2. Undefined Variables
+
+Catches references to variables that don't exist:
+
+```yaml
+# ❌ This will trigger an error
+theme:
+  tokenColors:
+    - name: "Comments"
+      scope: "comment"
+      settings: { foreground: "$(nonexistent.variable)" }  # Error!
+```
+
+#### 3. Unused Variables
+
+Identifies variables defined but never used in tokenColors:
+
+```yaml
+# ⚠️ This will trigger a warning if never used
+vars:
+  scope:
+    unused_color: "#ff0000"  # Warning if not referenced anywhere
+```
+
+**Note:** Only checks variables under `scope.*` since other variables might be
+used in the colors section.
+
+#### 4. Precedence Issues
+
+Detects when broad scopes mask more specific ones due to rule ordering:
+
+```yaml
+# ❌ This will trigger a warning
+theme:
+  tokenColors:
+    - name: "All Keywords"
+      scope: "keyword"           # Broad scope
+      settings: { foreground: "$(primary)" }
+    - name: "Control Keywords"
+      scope: "keyword.control"   # More specific, but will never match!
+      settings: { foreground: "$(accent)" }
+```
+
+**Why this matters:** The second rule will never be applied because the first
+rule already matches all `keyword.*` tokens. Reorder rules from most specific
+to least specific.
+
+### Lint Command Options
+
+| Option | Description |
+|--------|-------------|
+| `--nerd` | Show detailed error traces if linting fails |
 
 ## Basic Theme Structure
 

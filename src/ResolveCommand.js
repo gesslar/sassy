@@ -6,7 +6,6 @@ import Colour from "./components/Colour.js"
 import Util from "./Util.js"
 import Theme from "./components/Theme.js"
 import Term from "./components/Term.js"
-import ThemeToken from "./components/ThemeToken.js"
 
 import ansiColors from "ansi-colors"
 import colorSupport from "color-support"
@@ -125,17 +124,17 @@ export default class ResolveCommand extends AuntyCommand {
    */
   async resolveTokenColor(theme, scopeName) {
     const tokenColors = theme.output?.tokenColors || []
-    
+
     // Check if this is a disambiguated scope (ends with .1, .2, etc.)
     const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
-    
-    if (disambiguatedMatch) {
+
+    if(disambiguatedMatch) {
       const [, baseScope, indexStr] = disambiguatedMatch
       const index = parseInt(indexStr) - 1 // Convert to 0-based index
-      
+
       const matches = this.#findScopeMatches(tokenColors, baseScope)
-      
-      if (index >= 0 && index < matches.length) {
+
+      if(index >= 0 && index < matches.length) {
         const match = matches[index]
         await this.#resolveScopeMatch(theme, match, `${baseScope}.${indexStr}`)
         return
@@ -143,15 +142,15 @@ export default class ResolveCommand extends AuntyCommand {
         return Term.info(`'${scopeName}' not found. Available: ${baseScope}.1 through ${baseScope}.${matches.length}`)
       }
     }
-    
+
     // Find all matching scopes
     const matches = this.#findScopeMatches(tokenColors, scopeName)
-    
-    if (matches.length === 0) {
+
+    if(matches.length === 0) {
       return Term.info(`No tokenColors entries found for scope '${scopeName}'`)
     }
-    
-    if (matches.length === 1) {
+
+    if(matches.length === 1) {
       // Single match - resolve directly
       await this.#resolveScopeMatch(theme, matches[0], scopeName)
     } else {
@@ -166,10 +165,11 @@ export default class ResolveCommand extends AuntyCommand {
 
   #findScopeMatches(tokenColors, targetScope) {
     return tokenColors.filter(entry => {
-      if (!entry.scope) return false
-      
+      if(!entry.scope)
+        return false
+
       // Handle comma-separated scopes
-      const scopes = entry.scope.split(',').map(s => s.trim())
+      const scopes = entry.scope.split(",").map(s => s.trim())
       return scopes.includes(targetScope)
     })
   }
@@ -177,54 +177,54 @@ export default class ResolveCommand extends AuntyCommand {
   async #resolveScopeMatch(theme, match, displayName) {
     const pool = theme.pool
     const settings = match.settings || {}
-    const name = match.name || 'Unnamed'
-    
+    const name = match.name || "Unnamed"
+
     // Look for the foreground property specifically
     const foreground = settings.foreground
-    if (!foreground) {
+    if(!foreground) {
       return Term.info(`${displayName} (${name})\n\n(no foreground property)`)
     }
-    
+
     // First, try to find the token by looking for variables that resolve to this value
     // but prioritize source variable names over computed results
     const tokens = pool ? pool.getTokens : new Map()
     let bestToken = null
-    
+
     // First try to find a scope.* token that matches
-    for (const [tokenName, token] of tokens) {
-      if (token.getValue() === foreground && tokenName.startsWith('scope.')) {
+    for(const [tokenName, token] of tokens) {
+      if(token.getValue() === foreground && tokenName.startsWith("scope.")) {
         bestToken = token
         break
       }
     }
-    
+
     // If no scope token found, look for other variable-like tokens
-    if (!bestToken) {
-      for (const [tokenName, token] of tokens) {
-        if (token.getValue() === foreground) {
+    if(!bestToken) {
+      for(const [tokenName, token] of tokens) {
+        if(token.getValue() === foreground) {
           // Prefer tokens that look like variable names (scope.*, colors.*, etc.)
           // over computed function results
-          if (tokenName.includes('.') && !tokenName.includes('(') && !tokenName.includes('#')) {
+          if(tokenName.includes(".") && !tokenName.includes("(") && !tokenName.includes("#")) {
             bestToken = token
             break
-          } else if (!bestToken) {
+          } else if(!bestToken) {
             bestToken = token // fallback to any matching token
           }
         }
       }
     }
-    
-    if (!bestToken) {
+
+    if(!bestToken) {
       return Term.info(`${displayName} (${name})\n\n(resolved to static value: ${foreground})`)
     }
-    
+
     const trail = bestToken.getTrail()
     const fullTrail = this.#buildCompleteTrail(bestToken, trail)
     const finalValue = bestToken.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
-    
+
     const output = `${ansiColors.head(displayName)} ${ansiColors.hex(`(${name})`)}\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
-    
+
     Term.info(output)
   }
 
@@ -240,16 +240,16 @@ export default class ResolveCommand extends AuntyCommand {
     // semanticTokenColors has the same structure as tokenColors, so we can reuse the logic
     // but we need to look at the semanticTokenColors array instead
     const originalTokenColors = theme.output?.tokenColors
-    
+
     // Temporarily replace tokenColors with semanticTokenColors for resolution
-    if (theme.output?.semanticTokenColors) {
+    if(theme.output?.semanticTokenColors) {
       theme.output.tokenColors = theme.output.semanticTokenColors
     }
-    
+
     await this.resolveTokenColor(theme, scopeName)
-    
+
     // Restore original tokenColors
-    if (originalTokenColors) {
+    if(originalTokenColors) {
       theme.output.tokenColors = originalTokenColors
     }
   }
@@ -336,7 +336,6 @@ export default class ResolveCommand extends AuntyCommand {
     trail.forEach(token => processToken(token, 1))
 
     // Normalize levels to reduce excessive nesting
-    const maxLevel = Math.max(...steps.map(s => s.level))
     const levelMap = new Map()
     let normalizedLevel = 0
 
@@ -351,12 +350,21 @@ export default class ResolveCommand extends AuntyCommand {
     return steps
   }
   /**
-   * Formats a resolution trail Set into a tree-like visual output.
-   * Creates indented tree structure showing dependency relationships.
+   * Formats a list of resolution steps into a visually indented tree structure for display.
    *
-   * @param {Array<ThemeToken>} trail - The resolution trail from pool.getTrail()
-   * @param steps
-   * @returns {string} Formatted structure as string
+   * Each step represents a part of the theme token resolution process, including variables,
+   * function calls, expressions, and final results. The output is colorized and indented
+   * according to the step's depth and type, making the dependency chain and resolution
+   * process easy to follow in terminal output.
+   *
+   * - Hex color results are indented one extra level and prefixed with an arrow for emphasis.
+   * - Other steps (variables, functions, literals) are indented according to their depth.
+   *
+   * @param {Array} steps - List of resolution steps, each with {value, depth, type}.
+   *   - value: The string value to display (token, expression, result, etc.)
+   *   - depth: Indentation level for the step
+   *   - type: The kind of step ("result", "variable", "function", "expression", etc.)
+   * @returns {string} Formatted, colorized, and indented output for terminal display.
    */
   #formatOutput(steps) {
     if(steps.length === 0)

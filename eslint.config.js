@@ -71,7 +71,7 @@ export default [
           var:     { before: true, after: true },
 
           // Exception handling
-          catch:   { before: true, after: false },
+          catch:   { before: true, after: true },
           finally: { before: true, after: true },
         }
       }],

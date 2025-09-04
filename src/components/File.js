@@ -282,10 +282,10 @@ async function loadDataFile(fileObject) {
 
   try {
     return JSON5.parse(content)
-  } catch{
+  } catch {
     try {
       return YAML.parse(content)
-    } catch{
+    } catch {
       throw AuntyError.new(`Content is neither valid JSON nor valid YAML:\n'${fileObject.path}'`)
     }
   }

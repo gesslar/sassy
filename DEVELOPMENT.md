@@ -13,6 +13,7 @@ Usage: aunty <command> [options] <args...>
 Commands:
   build <file...>          Compile theme files to VS Code format
   resolve <file>           Resolve and inspect theme variables/tokens
+  lint <file>              Validate theme files for potential issues
 
 Build Command Options:
   -w, --watch              File watching with chokidar
@@ -21,14 +22,20 @@ Build Command Options:
   -s, --silent             Suppress non-error output
 
 Resolve Command Options:
-  -t, --token <key>        Resolve specific token to final value
+  -c, --color <key>        Resolve specific color property to final value
+  -t, --tokenColor <scope> Resolve tokenColors for a specific scope
+  -s, --semanticTokenColor <token> Resolve semantic token colors
+
+Lint Command Options:
+  (No specific options beyond global --nerd)
 
 Global Options:
   --nerd                   Full error stack traces
 ```
 
-The CLI delegates to command classes (`BuildCommand`, `ResolveCommand`) that
-extend `AuntyCommand`. See README.md for complete CLI usage examples.
+The CLI delegates to command classes (`BuildCommand`, `ResolveCommand`,
+`LintCommand`) that extend `AuntyCommand`. See README.md for complete CLI
+usage examples.
 
 ## Error Handling Architecture
 
@@ -120,23 +127,97 @@ introspection into how any variable resolves to its final value.
 
 ### Resolve Command Implementation
 
-The `ResolveCommand` class provides theme debugging capabilities:
+The `ResolveCommand` class provides theme debugging capabilities with support
+for different types of theme properties:
 
 ```bash
-npx @gesslar/aunty resolve --token std.bg.accent.faint my-theme.yaml
+# Resolve color properties (flat object structure)
+npx @gesslar/aunty resolve --color editor.background my-theme.yaml
+
+# Resolve tokenColors (array structure with scope matching)
+npx @gesslar/aunty resolve --tokenColor keyword.control my-theme.yaml
+
+# Resolve semantic token colors
+npx @gesslar/aunty resolve --semanticTokenColor variable.readonly my-theme.yaml
 ```
 
-This command:
+**Architecture:**
 
-1. Loads and compiles the theme to build the complete ThemePool
-2. Retrieves the requested token and its resolution trail
-3. Formats a tree-like visual output showing each resolution step
-4. Colour-codes different token types (variables, functions, hex colours,
-   literals)
+The ResolveCommand uses a dynamic method resolution pattern based on CLI options:
+
+- `--color` → calls `resolveColor()` - handles flat color object properties
+- `--tokenColor` → calls `resolveTokenColor()` - matches scopes in tokenColors array
+- `--semanticTokenColor` → calls `resolveSemanticTokenColor()` - handles semantic tokens
+
+**Key Implementation Details:**
+
+1. **Color Resolution**: Direct lookup in the compiled theme's colors object,
+   showing variable dependency chains through the ThemePool system
+
+2. **TokenColor Resolution**: Searches tokenColors array for entries matching
+   the requested scope, prioritizing variables from `scope.*` namespace over
+   compiled hex values to show meaningful resolution trails
+
+3. **Semantic Token Resolution**: Handles semantic token color mappings with
+   proper scope hierarchy
+
+4. **Visual Output**: All resolution types produce tree-like visual output
+   showing each resolution step with color-coded token types (variables,
+   functions, hex colors, literals)
 
 The output shows the complete dependency chain from the original expression to
 the final resolved value, making it easy to debug complex variable
-relationships.
+relationships across different theme property types.
+
+### LintCommand Implementation
+
+The `LintCommand` class provides comprehensive theme validation capabilities:
+
+```bash
+npx @gesslar/aunty lint my-theme.yaml
+```
+
+**Architecture:**
+
+The LintCommand follows the same AuntyCommand pattern as BuildCommand and
+ResolveCommand, implementing four distinct validation passes:
+
+1. **Duplicate Scope Detection**: Analyzes tokenColors array to find scopes
+   that appear in multiple rules, which can cause unexpected precedence issues
+
+2. **Undefined Variable Detection**: Cross-references variable usage in
+   tokenColors against the compiled ThemePool to catch typos and missing
+   definitions
+
+3. **Unused Variable Analysis**: Identifies variables defined under `scope.*`
+   that are never referenced in tokenColors (other variables may be used in
+   colors section)
+
+4. **Precedence Issue Detection**: Detects rule ordering problems where broad
+   scopes appear before more specific ones, causing the specific rules to be
+   masked
+
+**Key Implementation Details:**
+
+- `getSourceTokenColors()`: Extracts pre-compilation tokenColors data from both
+  main theme file and imported dependencies for accurate variable analysis
+
+- Source vs Compiled Analysis: The linter analyzes source tokenColors (before
+  variable resolution) to catch undefined variables, but uses the compiled
+  ThemePool for variable existence checking
+
+- Professional Output: Uses ANSI color coding with ERROR:/WARN: prefixes
+  instead of emoji-based formatting for professional CLI appearance
+
+- Structured Issue Reporting: Each issue type has specific formatting that
+  includes context like rule names, indices, and variable paths for easy
+  debugging
+
+**Error Categories:**
+
+All issues are categorized as either 'error' (undefined variables) or 'warning'
+(duplicates, unused variables, precedence). The command exits cleanly regardless
+of findings, making it suitable for CI/CD integration.
 
 ## Imports
 

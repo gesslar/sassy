@@ -295,8 +295,8 @@ export default class Evaluator {
    * @private
    * @param {string} func - Function name (lighten|darken|fade|alpha|mix|...)
    * @param {Array<string>} args - Raw argument strings (numbers still as text).
-   * @param sourceTokens
    * @param {string} raw - The raw input from the source file.
+   * @param {Array<ThemeToken>} sourceTokens - The tokens to apply to.
    * @returns {object} Object with result and colorSpace info.
    */
   #colourFunction(func, args, raw, sourceTokens = []) {
