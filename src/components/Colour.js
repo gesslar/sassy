@@ -14,6 +14,7 @@ import {
 } from "culori"
 import Util from "../Util.js"
 import AuntyError from "./AuntyError.js"
+import ThemeToken from "./ThemeToken.js"
 
 // Cache for parsed colours to improve performance
 const _colourCache = new Map()

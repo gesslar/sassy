@@ -40,6 +40,7 @@ import DirectoryObject from "./components/DirectoryObject.js"
 import AuntyError from "./components/AuntyError.js"
 import BuildCommand from "./BuildCommand.js"
 import ResolveCommand from "./ResolveCommand.js"
+import LintCommand from "./LintCommand.js"
 import AuntyCache from "./components/AuntyCache.js"
 import Term from "./components/Term.js"
 
@@ -87,10 +88,17 @@ void (async function main() {
       .addCliOptions(alwaysAvailable, false)
 
     // Add the resolve subcommand
-    const resolvecommand = new ResolveCommand({cwd, packageJson: pkgJson})
-    resolvecommand.cache = cache
+    const resolveCommand = new ResolveCommand({cwd, packageJson: pkgJson})
+    resolveCommand.cache = cache
 
-    void(await resolvecommand.buildCli(program))
+    void(await resolveCommand.buildCli(program))
+      .addCliOptions(alwaysAvailable, false)
+
+    // Add the lint subcommand
+    const lintCommand = new LintCommand({cwd, packageJson: pkgJson})
+    lintCommand.cache = cache
+
+    void(await lintCommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)
 
     // Let'er rip, bitches! VROOM VROOM, motherfucker!!
