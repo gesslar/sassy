@@ -28,7 +28,9 @@ export default class ResolveCommand extends AuntyCommand {
 
     this.cliCommand = "resolve <file>"
     this.cliOptions = {
-      "token": ["-t, --token <key>", "resolve a key to its final evaluated value"],
+      "color": ["-c, --color <key>", "resolve a color key to its final evaluated value"],
+      "tokenColor": ["-t, --tokenColor <scope>", "resolve a tokenColors scope to its final evaluated value"],
+      "semanticTokenColor": ["-s, --semanticTokenColor <scope>", "resolve a semanticTokenColors scope to its final evaluated value"],
     }
 
     ansiColors.alias("head", ansiColors.yellowBright)
@@ -88,29 +90,168 @@ export default class ResolveCommand extends AuntyCommand {
   }
 
   /**
-   * Resolves a specific token to its final value and displays the resolution trail.
-   * Shows the complete dependency chain for the requested token.
+   * Resolves a specific color to its final value and displays the resolution trail.
+   * Shows the complete dependency chain for the requested color.
    *
    * @param {object} theme - The compiled theme object with pool
-   * @param {string} tokenName - The token key to resolve
+   * @param {string} colorName - The color key to resolve
    * @returns {void}
    */
-  async resolveToken(theme, tokenName) {
+  async resolveColor(theme, colorName) {
     const pool = theme.pool
-    if(!pool || !pool.has(tokenName))
-      return Term.info(`'${tokenName}' not found.`)
+    if(!pool || !pool.has(colorName))
+      return Term.info(`'${colorName}' not found.`)
 
     const tokens = pool.getTokens
-    const token = tokens.get(tokenName)
+    const token = tokens.get(colorName)
     const trail = token.getTrail()
     const fullTrail = this.#buildCompleteTrail(token, trail)
     // Get the final resolved value
     const finalValue = token.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
 
-    const output = `\n${ansiColors.head(tokenName)}:\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
+    const output = `\n${ansiColors.head(colorName)}:\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
 
     Term.info(output)
+  }
+
+  /**
+   * Resolves a specific tokenColors scope to its final value and displays the resolution trail.
+   * Shows all matching scopes with disambiguation when multiple matches are found.
+   *
+   * @param {object} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve (e.g., "entity.name.class" or "entity.name.class.1")
+   * @returns {void}
+   */
+  async resolveTokenColor(theme, scopeName) {
+    const tokenColors = theme.output?.tokenColors || []
+    
+    // Check if this is a disambiguated scope (ends with .1, .2, etc.)
+    const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
+    
+    if (disambiguatedMatch) {
+      const [, baseScope, indexStr] = disambiguatedMatch
+      const index = parseInt(indexStr) - 1 // Convert to 0-based index
+      
+      const matches = this.#findScopeMatches(tokenColors, baseScope)
+      
+      if (index >= 0 && index < matches.length) {
+        const match = matches[index]
+        await this.#resolveScopeMatch(theme, match, `${baseScope}.${indexStr}`)
+        return
+      } else {
+        return Term.info(`'${scopeName}' not found. Available: ${baseScope}.1 through ${baseScope}.${matches.length}`)
+      }
+    }
+    
+    // Find all matching scopes
+    const matches = this.#findScopeMatches(tokenColors, scopeName)
+    
+    if (matches.length === 0) {
+      return Term.info(`No tokenColors entries found for scope '${scopeName}'`)
+    }
+    
+    if (matches.length === 1) {
+      // Single match - resolve directly
+      await this.#resolveScopeMatch(theme, matches[0], scopeName)
+    } else {
+      // Multiple matches - show disambiguation options
+      Term.info(`Multiple entries found for '${scopeName}', please try again with the specific query:\n`)
+      matches.forEach((match, index) => {
+        const name = match.name || `Entry ${index + 1}`
+        Term.info(`${name}: ${scopeName}.${index + 1}`)
+      })
+    }
+  }
+
+  #findScopeMatches(tokenColors, targetScope) {
+    return tokenColors.filter(entry => {
+      if (!entry.scope) return false
+      
+      // Handle comma-separated scopes
+      const scopes = entry.scope.split(',').map(s => s.trim())
+      return scopes.includes(targetScope)
+    })
+  }
+
+  async #resolveScopeMatch(theme, match, displayName) {
+    const pool = theme.pool
+    const settings = match.settings || {}
+    const name = match.name || 'Unnamed'
+    
+    // Look for the foreground property specifically
+    const foreground = settings.foreground
+    if (!foreground) {
+      return Term.info(`${displayName} (${name})\n\n(no foreground property)`)
+    }
+    
+    // First, try to find the token by looking for variables that resolve to this value
+    // but prioritize source variable names over computed results
+    const tokens = pool ? pool.getTokens : new Map()
+    let bestToken = null
+    
+    // First try to find a scope.* token that matches
+    for (const [tokenName, token] of tokens) {
+      if (token.getValue() === foreground && tokenName.startsWith('scope.')) {
+        bestToken = token
+        break
+      }
+    }
+    
+    // If no scope token found, look for other variable-like tokens
+    if (!bestToken) {
+      for (const [tokenName, token] of tokens) {
+        if (token.getValue() === foreground) {
+          // Prefer tokens that look like variable names (scope.*, colors.*, etc.)
+          // over computed function results
+          if (tokenName.includes('.') && !tokenName.includes('(') && !tokenName.includes('#')) {
+            bestToken = token
+            break
+          } else if (!bestToken) {
+            bestToken = token // fallback to any matching token
+          }
+        }
+      }
+    }
+    
+    if (!bestToken) {
+      return Term.info(`${displayName} (${name})\n\n(resolved to static value: ${foreground})`)
+    }
+    
+    const trail = bestToken.getTrail()
+    const fullTrail = this.#buildCompleteTrail(bestToken, trail)
+    const finalValue = bestToken.getValue()
+    const [formattedFinalValue] = this.#formatLeaf(finalValue)
+    
+    const output = `${ansiColors.head(displayName)} ${ansiColors.hex(`(${name})`)}\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
+    
+    Term.info(output)
+  }
+
+  /**
+   * Resolves a specific semanticTokenColors scope to its final value.
+   * Uses the same logic as tokenColors since they have identical structure.
+   *
+   * @param {object} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve (e.g., "keyword" or "keyword.1")
+   * @returns {void}
+   */
+  async resolveSemanticTokenColor(theme, scopeName) {
+    // semanticTokenColors has the same structure as tokenColors, so we can reuse the logic
+    // but we need to look at the semanticTokenColors array instead
+    const originalTokenColors = theme.output?.tokenColors
+    
+    // Temporarily replace tokenColors with semanticTokenColors for resolution
+    if (theme.output?.semanticTokenColors) {
+      theme.output.tokenColors = theme.output.semanticTokenColors
+    }
+    
+    await this.resolveTokenColor(theme, scopeName)
+    
+    // Restore original tokenColors
+    if (originalTokenColors) {
+      theme.output.tokenColors = originalTokenColors
+    }
   }
 
   #buildCompleteTrail(rootToken, trail) {
