@@ -18,6 +18,7 @@ import Term from "./Term.js"
  */
 export default class AuntyError extends Error {
   #trace = []
+  #errorStack
 
   /**
    * Creates a new AuntyError instance.
@@ -62,10 +63,25 @@ export default class AuntyError extends Error {
   }
 
   /**
+   * Creates an AuntyError from an existing Error object with additional
+   * trace message.
+   *
+   * @param {Error} error - The original error object
+   * @returns {AuntyError} New AuntyError instance with stack from the original error
+   * @throws {AuntyError} If the first parameter is not an Error instance
+   */
+  copyErrorStack(error) {
+    if(!this.#errorStack && error.stack)
+      this.#errorStack = error.stack
+
+    return this
+  }
+
+  /**
    * Reports the error to the terminal with formatted output.
    * Optionally includes detailed stack trace information.
    *
-   * @param {boolean} nerdMode - Whether to include detailed stack trace
+   * @param {boolean?} [nerdMode] - Whether to include detailed stack trace
    */
   report(nerdMode=false) {
     Term.error(
@@ -92,19 +108,24 @@ export default class AuntyError extends Error {
    */
   #fullBodyMassage() {
     // Remove the first line, it's already been reported
-    const {rest} = this.stack.match(/^.*?\n(?<rest>[\s\S]+)$/m)?.groups ?? {}
+    return [this.stack,this.#errorStack].reduce((acc, stack) => {
+      const {rest} = stack?.match(/^.*?\n(?<rest>[\s\S]+)$/m)?.groups ?? {}
 
-    if(rest) {
-      return rest
-        .split("\n")
-        .map(line => {
-          const [_, at] = line.match(/^\s{4}at\s(.*)$/) ?? []
-          return at
-            ? `* ${at}`
-            : line
-        })
-        .join("\n")
-    }
+      if(rest) {
+        acc.push(
+          ...rest
+            .split("\n")
+            .map(line => {
+              const {at} = line.match(/^\s{4}at\s(?<at>.*)$/)?.groups ?? {}
+              return at
+                ? `* ${at}`
+                : line
+            })
+        )
+      }
+
+      return acc
+    }, []).filter(Boolean).join("\n")
   }
 
   /**
@@ -121,10 +142,9 @@ export default class AuntyError extends Error {
       throw new AuntyError("AuntyError.from must take an error object.")
 
     const oldMessage = error.message
-    const newError = new AuntyError(oldMessage)
-    newError.trace = message
-
-    return newError
+    return new AuntyError(oldMessage)
+      .addTrace(message)
+      .copyErrorStack(error)
   }
 
   /**
