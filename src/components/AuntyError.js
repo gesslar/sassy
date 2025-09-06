@@ -10,6 +10,7 @@
  * Used throughout the theme engine for structured error handling and
  * debugging.
  */
+
 import Term from "./Term.js"
 
 /**
@@ -18,7 +19,6 @@ import Term from "./Term.js"
  */
 export default class AuntyError extends Error {
   #trace = []
-  #errorStack
 
   /**
    * Creates a new AuntyError instance.
@@ -35,7 +35,7 @@ export default class AuntyError extends Error {
   /**
    * Gets the error trace array.
    *
-   * @returns {string[]} Array of trace messages
+   * @returns {Array<string>} Array of trace messages
    */
   get trace() {
     return this.#trace
@@ -63,21 +63,6 @@ export default class AuntyError extends Error {
   }
 
   /**
-   * Creates an AuntyError from an existing Error object with additional
-   * trace message.
-   *
-   * @param {Error} error - The original error object
-   * @returns {AuntyError} New AuntyError instance with stack from the original error
-   * @throws {AuntyError} If the first parameter is not an Error instance
-   */
-  copyErrorStack(error) {
-    if(!this.#errorStack && error.stack)
-      this.#errorStack = error.stack
-
-    return this
-  }
-
-  /**
    * Reports the error to the terminal with formatted output.
    * Optionally includes detailed stack trace information.
    *
@@ -93,7 +78,13 @@ export default class AuntyError extends Error {
       Term.error(
         "\n" +
         `${Term.terminalBracket(["error", "Nerd Vittles"])}\n` +
-        this.#fullBodyMassage()
+        this.#fullBodyMassage(this.stack)
+      )
+
+      this.cause?.stack && Term.error(
+        "\n" +
+        `${Term.terminalBracket(["error", "Rethrown From"])}\n` +
+        this.#fullBodyMassage(this.cause?.stack)
       )
     }
   }
@@ -104,28 +95,31 @@ export default class AuntyError extends Error {
    *
    * Note: Returns formatted stack trace or undefined if no stack available.
    *
+   * @param {string} stack - The error stack to massage.
    * @returns {string|undefined} Formatted stack trace or undefined
    */
-  #fullBodyMassage() {
+  #fullBodyMassage(stack) {
     // Remove the first line, it's already been reported
-    return [this.stack,this.#errorStack].reduce((acc, stack) => {
-      const {rest} = stack?.match(/^.*?\n(?<rest>[\s\S]+)$/m)?.groups ?? {}
 
-      if(rest) {
-        acc.push(
-          ...rest
-            .split("\n")
-            .map(line => {
-              const at = line.match(/^\s{4}at\s(?<at>.*)$/)?.groups?.at ?? {}
-              return at
-                ? `* ${at}`
-                : line
-            })
-        )
-      }
+    stack = stack ?? ""
 
-      return acc
-    }, []).filter(Boolean).join("\n")
+    const {rest} = stack.match(/^.*?\n(?<rest>[\s\S]+)$/m)?.groups ?? {}
+    const lines = []
+
+    if(rest) {
+      lines.push(
+        ...rest
+          .split("\n")
+          .map(line => {
+            const at = line.match(/^\s{4}at\s(?<at>.*)$/)?.groups?.at ?? {}
+            return at
+              ? `* ${at}`
+              : line
+          })
+      )
+    }
+
+    return lines.join("\n")
   }
 
   /**
@@ -139,12 +133,12 @@ export default class AuntyError extends Error {
    */
   static from(error, message) {
     if(!(error instanceof Error))
-      throw new AuntyError("AuntyError.from must take an error object.")
+      throw new AuntyError("AuntyError.from must take an Error object.")
 
     const oldMessage = error.message
-    return new AuntyError(oldMessage)
-      .addTrace(message)
-      .copyErrorStack(error)
+    const newError = new AuntyError(oldMessage, {cause: error}).addTrace(message)
+
+    return newError
   }
 
   /**
