@@ -224,12 +224,11 @@ export default class Theme {
    * Builds the theme by compiling source data into final output.
    * Main entry point for theme compilation process.
    *
-   * @param {object} [buildOptions] - Optional build configuration options
-   * @returns {Promise<void>} Resolves when build is complete
+   * @returns {Promise<void>} Resolves when build is complete.
    */
-  async build(buildOptions) {
+  async build() {
     const compiler = new Compiler()
-    await compiler.compile(this, buildOptions)
+    await compiler.compile(this.#sourceFile.directory, this)
   }
 
   /**

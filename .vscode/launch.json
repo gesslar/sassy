@@ -147,6 +147,36 @@
         "./examples/advanced/src/blackboard.yaml",
       ],
       "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Advanced (Corporate) (lint)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "lint",
+        "./examples/advanced/src/corporate.yaml",
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Advanced (Corporate) (build)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "build",
+        "./examples/advanced/src/corporate.yaml",
+      ],
+      "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
     }
   ]

@@ -15,6 +15,7 @@ import * as Data from "./DataUtil.js"
 import Evaluator from "./Evaluator.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
+import DirectoryObject from "./DirectoryObject.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -27,16 +28,16 @@ export default class Compiler {
    * Compiles a theme source file into a VS Code colour theme.
    * Processes configuration, variables, imports, and theme definitions.
    *
+   * @param {DirectoryObject} cwd - The project's current working directory
    * @param {object} theme - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
-  async compile(theme) {
+  async compile(cwd, theme) {
     this.#theme = theme
 
     await Promise.resolve()  // yielding control in the event loop or something
 
     const source = theme.source
-    const file = theme.sourceFile
     const {config: sourceConfig} = source ?? {}
     const {vars: sourceVars} = source
     const {theme: sourceTheme} = source
@@ -55,8 +56,7 @@ export default class Compiler {
 
     // Let's get all of the imports!
     const imports = recompConfig.import ?? {}
-    const {imported,importedFiles} =
-      await this.#import({file,imports})
+    const {imported,importedFiles} = await this.#import(cwd, imports)
 
     theme.dependencies = importedFiles
 
@@ -67,27 +67,23 @@ export default class Compiler {
     if(sourceTheme && Object.keys(sourceTheme).length > 0)
       sourceObj.theme = sourceTheme
 
-    const merged = Data.mergeObject({},
-      imported.global,
-      imported.colors,
-      imported.tokenColors,
-      imported.semanticTokenColors,
-      sourceObj
-    )
+    const merged = Data.mergeObject({}, imported, sourceObj)
 
     // Shred them up! Kinda.
     const decompVars =
       this.#decomposeObject(merged.vars)
     const decompColors =
-      this.#decomposeObject(merged.theme.colors)
+      this.#decomposeObject(merged.colors)
     const decompTokenColors =
-      this.#decomposeObject(merged.theme.tokenColors)
+      this.#decomposeObject(merged.tokenColors)
     const decompSemanticTokenColors =
-      this.#decomposeObject(merged.theme.semanticTokenColors)
+      this.#decomposeObject(merged.semanticTokenColors)
 
     // First let's evaluate the variables
     evaluate(decompVars) // but we don't need the return value, only the lookup
+
     theme.lookup = evaluator.lookup
+
     const evalColors =
       evaluate(decompColors, theme.lookup)
     const evalTokenColors =
@@ -100,6 +96,7 @@ export default class Compiler {
       acc[curr.flatPath] = curr.value
       return acc
     }
+
     // Assemble into one object with the proper keys
     const colors = evalColors.reduce(reducer, {})
     const tokenColors = this.#composeArray(evalTokenColors)
@@ -122,51 +119,48 @@ export default class Compiler {
    * Imports external theme files and merges their content.
    * Processes import specifications and loads referenced files.
    *
-   * @param {object} params - Object containing parameters for the importation.
-   * @param {FileObject} params.file - The file being imported into
-   * @param {object} params.imports - The imports specification object
+   * @param {DirectoryObject} cwd - The project's current working directory.
+   * @param {Array<string>|string} imports - The import filename(s)
    * @returns {Promise<object>} Object containing imported data and file references
    */
-  async #import({file, imports}) {
-    const imported = {}
+  async #import(cwd, imports) {
     const importedFiles = []
+    const imported = {
+      vars: {},
+      colors: {},
+      tokenColors: []
+    }
 
-    const importPromises = await Promise.allSettled(
-      Object.entries(imports).map(async([sectionName,target]) => {
-        if(!target)
-          return
+    imports = typeof imports === "string"
+      ? [imports]
+      : imports
 
-        const importing = typeof target === "string" ? [target] : target
+    if(!Data.isArrayUniform(imports, "string"))
+      throw new AuntyError(
+        `Imports must be a string or an array of strings. Got ${JSON.stringify(imports)}`
+      )
 
-        if(!Data.isArrayUniform(importing, "string"))
-          throw new AuntyError(
-            `Import '${sectionName}' must be a string or an array of strings.`
-          )
+    const loaded = (await Promise.all(imports.map(async importing => {
+      try {
+        const file = new FileObject(importing, cwd)
 
+        importedFiles.push(file)
 
-        const files = importing.map(f => new FileObject(f, file.directory))
+        // Get the cached version or a new version. Who knows? I don't know.
+        return await this.#theme.cache.loadCachedData(file)
+      } catch(error) {
+        throw AuntyError.new(`Attempting to import ${importing}`, error)
+      }
+    }))).filter(Boolean)
 
-        importedFiles.push(...files)
+    loaded.forEach(data => {
+      const {vars={}} = data ?? {}
+      const {colors={},tokenColors=[]} = data.theme ?? {}
 
-        const filePromises = await Promise.allSettled(files.map(file => this.#theme.cache.loadCachedData(file)))
-        const rejected = filePromises.filter(({status}) => status === "rejected")
-        if(rejected.length > 0)
-          throw AuntyError.new(`Unable to load file(s).\n${rejected.map(({reason}) => reason)}`)
-
-        const importedData = filePromises.map(({value}) => value)
-        const mergedData = Data.mergeObject({}, ...importedData)
-        const inner = Data.mergeObject(
-          {}, imported[sectionName] ?? {}, mergedData
-        )
-
-        imported[sectionName] = inner
-      })
-    )
-
-
-    const rejected = importPromises.filter((({status}) => status === "rejected"))
-    if(rejected.length > 0)
-      throw AuntyError.new(`Unable to import file(s).\n${rejected.map(({reason}) => reason)}`)
+      imported.vars = Data.mergeObject(imported.vars, vars)
+      imported.colors = Data.mergeObject(imported.colors, colors)
+      imported.tokenColors = Data.mergeArray(imported.tokenColors, tokenColors)
+    })
 
     return {imported,importedFiles}
   }

@@ -5,13 +5,14 @@ config:
   type: dark
 
   import:
-    global: ../import/variables.yaml
-    colors: ../import/colors.yaml
-    tokenColors: ../import/token-colors-${type}.yaml
+    - ../import/variables.yaml
+    - ../import/colors.yaml
+    - ../import/token-colors-$(type).yaml
+    - ../import/token-colors-$(type)-universal.yaml
 
   custom:
-    semanticHighlighting: true
-    colorSpaceName: sRGB
+    semanticHighlighting: false
+    colorSpaceName: oklch
 
 vars:
   main: $colors.white
