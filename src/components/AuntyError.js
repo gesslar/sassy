@@ -81,7 +81,7 @@ export default class AuntyError extends Error {
    * Reports the error to the terminal with formatted output.
    * Optionally includes detailed stack trace information.
    *
-   * @param {boolean?} [nerdMode] - Whether to include detailed stack trace
+   * @param {boolean} [nerdMode] - Whether to include detailed stack trace
    */
   report(nerdMode=false) {
     Term.error(
