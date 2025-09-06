@@ -19,7 +19,8 @@ export default class AuntyCache {
 
   /**
    * Removes cached data for a specific file from both time and data maps.
-   * Used when files are modified or when cache consistency needs to be maintained.
+   * Used when files are modified or when cache consistency needs to be
+   * maintained.
    *
    * @private
    * @param {FileObject} file - The file object to remove from cache
@@ -31,10 +32,13 @@ export default class AuntyCache {
   }
 
   /**
-   * Loads and caches parsed file data with automatic invalidation based on modification time.
-   * Implements a sophisticated caching strategy that checks file modification times to
-   * determine whether cached data is still valid, ensuring data freshness while optimizing
-   * performance for repeated file access during parallel theme compilation.
+   * Loads and caches parsed file data with automatic invalidation based on
+   * modification time.
+   *
+   * Implements a sophisticated caching strategy that checks file modification
+   * times to determine whether cached data is still valid, ensuring data
+   * freshness while optimizing performance for repeated file access during
+   * parallel theme compilation.
    *
    * @param {FileObject} fileObject - The file object to load and cache
    * @returns {Promise<object>} The parsed file data (JSON5 or YAML)
@@ -44,7 +48,7 @@ export default class AuntyCache {
     const lastModified = await File.fileModified(fileObject)
 
     if(lastModified === null)
-      throw AuntyError.new(`Unable to find file:\n${fileObject.path}`)
+      throw AuntyError.new(`Unable to find file '${fileObject.path}'`)
 
     if(this.#modifiedTimes.has(fileObject.path)) {
       const lastCached = this.#modifiedTimes.get(fileObject.path)
