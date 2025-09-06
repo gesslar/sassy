@@ -116,7 +116,7 @@ export default class AuntyError extends Error {
           ...rest
             .split("\n")
             .map(line => {
-              const {at} = line.match(/^\s{4}at\s(?<at>.*)$/)?.groups ?? {}
+              const {at} = line.match(/^\s{4}at\s(?<at>.*)$/)?.groups?.at ?? {}
               return at
                 ? `* ${at}`
                 : line
