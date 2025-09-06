@@ -1,6 +1,6 @@
 {
   "name": "@gesslar/aunty",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "displayName": "Aunty Rose",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
@@ -18,7 +18,8 @@
     "exec": "node ./src/cli.js",
     "lint": "eslint src/",
     "submit": "npm publish --access public",
-    "examples": "node ./examples/validator.js"
+    "examples": "node ./examples/validator.js",
+    "test": "echo 1, 2, 3."
   },
   "engines": {
     "node": ">=20.0.0"
