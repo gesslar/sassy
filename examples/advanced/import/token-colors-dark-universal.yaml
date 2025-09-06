@@ -1,0 +1,100 @@
+theme:
+  tokenColors:
+    - name: Universal Comments
+      scope: >-
+        comment, punctuation.definition.comment
+      settings:
+        foreground: $scope.comment
+        fontStyle: italic
+    - name: Universal Self References
+      scope: >-
+        variable.language.self,
+        variable.language.this,
+        variable.language.base,
+        variable.language.super
+      settings:
+        foreground: $scope.selfRef
+    - name: Universal Booleans
+      scope: >-
+        constant.language.boolean,
+        constant.language.null
+      settings:
+        foreground: $scope.boolean
+    - name: Universal String Interpolation
+      scope: >-
+        punctuation.definition.template-expression,
+        string.interpolated.expression,
+        punctuation.definition.variable,
+        punctuation.section.embedded.begin,
+        punctuation.section.embedded.end
+      settings:
+        foreground: $scope.interpolation
+    - name: Universal Punctuation
+      scope: >-
+        punctuation,
+        begin.brace,
+        end.brace,
+        punctuation.terminator.expression,
+        punctuation.separator.inheritance
+      settings:
+        foreground: $scope.punctuation
+    - name: Semantic Types Fallback
+      scope: >-
+        namespace,
+        class,
+        enum,
+        interface,
+        struct,
+        typeParameter,
+        type
+      settings:
+        foreground: $scope.types
+    - name: Semantic Callables Fallback
+      scope: >-
+        function,
+        method,
+        macro
+      settings:
+        foreground: $scope.function
+    - name: Semantic Identifiers Fallback
+      scope: >-
+        parameter,
+        variable,
+        property,
+        enumMember,
+        decorator,
+        event
+      settings:
+        foreground: $scope.variable
+    - name: Semantic Literals Fallback
+      scope: >-
+        number,
+        regexp
+      settings:
+        foreground: $scope.number
+    - name: Semantic Keywords Fallback
+      scope: >-
+        keyword.declaration,
+        label
+      settings:
+        foreground: $scope.keyword
+    - name: Final Fallback - Base Source
+      scope: >-
+        source
+      settings:
+        foreground: $scope.baseText
+    - name: Final Fallback - Generic Keyword
+      scope: >-
+        keyword
+      settings:
+        foreground: $scope.keyword
+    - name: Final Fallback - Generic Variable
+      scope: >-
+        variable
+      settings:
+        foreground: $scope.variable
+    - name: Final Fallback - Generic Constant
+      scope: >-
+        constant
+      settings:
+        foreground: $scope.constant

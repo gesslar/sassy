@@ -67,7 +67,8 @@ void (async function main() {
     const cr = new DirectoryObject(fileURLToPath(new URL("..", import.meta.url)))
     const cwd = new DirectoryObject(process.cwd())
     const packageJson = new FileObject("package.json", cr)
-    const pkgJson = await cache.loadCachedData(packageJson)
+    const pkgJsonResult = await cache.loadCachedData(packageJson)
+    const pkgJson = pkgJsonResult
 
     // These are available to all subcommands in addition to whatever they
     // provide.
@@ -102,11 +103,11 @@ void (async function main() {
       .addCliOptions(alwaysAvailable, false)
 
     // Let'er rip, bitches! VROOM VROOM, motherfucker!!
-    program.parse()
-  } catch(e) {
-    e instanceof AuntyError
-      ? e.report(auntyRoseOptions.nerd)
-      : AuntyError.from(e, "Starting Aunty Rose").report(auntyRoseOptions.nerd || true)
+    await program.parseAsync()
+
+  } catch(error) {
+    AuntyError.new("Starting Aunty Rose.", error)
+      .report(auntyRoseOptions.nerd || true)
 
     process.exit(1)
   }

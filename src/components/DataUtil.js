@@ -521,6 +521,29 @@ async function asyncFilter(arr, predicate) {
   return arr.filter((_, index) => results[index])
 }
 
+/**
+ * Shallowly merges multiple arrays, deduplicating while preserving order.
+ *
+ * @param {...any[]} sources - Arrays to merge
+ * @returns {Array} A new merged array
+ * @throws {Error} If the sources are not all arrays
+ */
+function mergeArray(...sources) {
+  if(sources.some(source => !Array.isArray(source)))
+    throw AuntyError.new("All sources to mergeArray must be arrays.")
+
+  return sources.reduce((acc, curr) => {
+    const accSet = new Set(acc)
+
+    curr.forEach(value => {
+      accSet.has(value) && accSet.delete(value)
+      accSet.add(value)
+    })
+
+    return Array.from(accSet)
+  }, [])
+}
+
 export {
   // Classes
   TypeSpec,
@@ -546,6 +569,7 @@ export {
   isType,
   isValidType,
   mapObject,
+  mergeArray,
   mergeObject,
   newTypeSpec,
   prependString,
