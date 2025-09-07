@@ -13,7 +13,7 @@ export default class AuntySession {
   #options = null
   #watcher = null
   #history = []
-  #stats = Object.seal({builds: 0, successes: 0, failures: 0})
+  #stats = Object.seal({builds: 0, failures: 0})
   #building = false
 
   get theme() {
@@ -39,11 +39,6 @@ export default class AuntySession {
   }
 
   async run() {
-    this.#building = true
-    await this.#command.asyncEmit("building")
-
-    await this.#buildPipeline()
-
     if(this.#options.watch) {
       this.#command.emitter.on("closeSession", async() =>
         await this.#handleCloseSession())
@@ -52,8 +47,18 @@ export default class AuntySession {
       this.#command.emitter.on("resetWatcher", async() =>
         await this.#resetWatcher())
 
+      this.#command.emitter.on("recordBuildStart", arg =>
+        this.#recordBuildStart(arg))
+      this.#command.emitter.on("recordBuildFail", arg =>
+        this.#recordBuildFail(arg))
+
       await this.#resetWatcher()
     }
+
+    this.#building = true
+    await this.#command.asyncEmit("building")
+    this.#command.asyncEmit("recordBuildStart", this.#theme)
+    await this.#buildPipeline()
   }
 
   /**
@@ -168,8 +173,7 @@ export default class AuntySession {
       Term.status(status, this.#options)
 
       // Track successful build
-      this.#stats.builds++
-      this.#stats.successes++
+      this.#command.asyncEmit("recordBuildSucceed", this.#theme)
       this.#history.push({
         timestamp: buildStart,
         loadTime: loadCost,
@@ -180,8 +184,7 @@ export default class AuntySession {
 
     } catch(error) {
       // Track failed build
-      this.#stats.builds++
-      this.#stats.failures++
+      this.#command.asyncEmit("recordBuildFail", this.#theme)
       this.#history.push({
         timestamp: buildStart,
         loadTime: loadCost || 0,
@@ -246,7 +249,8 @@ export default class AuntySession {
    * @returns {void}
    */
   showSummary() {
-    const {builds, successes, failures} = this.#stats
+    const {builds, failures} = this.#stats
+    const successes = builds-failures
     const successRate = builds > 0 ? ((successes / builds) * 100).toFixed(1) : "0.0"
 
     Term.info()
@@ -287,12 +291,14 @@ export default class AuntySession {
       return
 
     try {
+      this.#command.asyncEmit("recordBuildStart", this.#theme)
       this.#building = true
       await this.#resetWatcher()
       this.#command.asyncEmit("building")
       await this.#buildPipeline(true)
-    } catch(_) {
-      void _
+    } catch(error) {
+      this.#command.asyncEmit("recordBuildFail", this.#theme)
+      throw AuntyError.new("Handling rebuild request.", error)
     } finally {
       this.#building = false
     }
@@ -336,5 +342,19 @@ export default class AuntySession {
         void _
       }
     }
+  }
+
+  #recordBuildStart(theme) {
+    if(theme !== this.#theme)
+      return
+
+    this.#stats.builds++
+  }
+
+  #recordBuildFail(theme) {
+    if(theme !== this.#theme)
+      return
+
+    this.#stats.failures++
   }
 }

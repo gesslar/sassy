@@ -33,15 +33,15 @@
 
 import {program} from "commander"
 import process from "node:process"
-import {fileURLToPath,URL} from "node:url"
+import {fileURLToPath, URL} from "node:url"
 
-import FileObject from "./components/FileObject.js"
-import DirectoryObject from "./components/DirectoryObject.js"
 import AuntyError from "./components/AuntyError.js"
 import BuildCommand from "./BuildCommand.js"
-import ResolveCommand from "./ResolveCommand.js"
-import LintCommand from "./LintCommand.js"
 import AuntyCache from "./components/AuntyCache.js"
+import DirectoryObject from "./components/DirectoryObject.js"
+import FileObject from "./components/FileObject.js"
+import LintCommand from "./LintCommand.js"
+import ResolveCommand from "./ResolveCommand.js"
 import Term from "./components/Term.js"
 
 /**

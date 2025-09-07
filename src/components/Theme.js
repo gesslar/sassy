@@ -41,16 +41,20 @@ export default class Theme {
   #outputFileName = null
   #outputHash = null
 
+  #cwd = null
+
   /**
    * Creates a new Theme instance.
    *
    * @param {FileObject} themeFile - The source theme file object
+   * @param {DirectoryObject} cwd - The project's directory.
    * @param {object} options - Compilation options
    */
-  constructor(themeFile, options) {
+  constructor(themeFile, cwd, options) {
     this.#sourceFile = themeFile
     this.#outputFileName = `${themeFile.module}.color-theme.json`
     this.#options = options
+    this.#cwd = cwd
   }
 
   /**
@@ -63,6 +67,14 @@ export default class Theme {
     this.#outputHash = null
     this.#lookup = null
     this.#pool = null
+  }
+
+  get cwd() {
+    return this.#cwd
+  }
+
+  get options() {
+    return this.#options
   }
 
   set cache(cache) {
@@ -228,7 +240,7 @@ export default class Theme {
    */
   async build() {
     const compiler = new Compiler()
-    await compiler.compile(this.#sourceFile.directory, this)
+    await compiler.compile(this)
   }
 
   /**

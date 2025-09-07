@@ -165,6 +165,7 @@ export default class AuntyCommand {
    */
   async resolveThemeFileName(fileName, cwd) {
     const fileObject = new FileObject(fileName, cwd)
+
     if(!await fileObject.exists)
       throw AuntyError.new(`No such file 🤷: ${fileObject.path}`)
 
@@ -174,17 +175,32 @@ export default class AuntyCommand {
   /**
    * Emits an event asynchronously and waits for all listeners to complete.
    * Unlike the standard EventEmitter.emit() which is synchronous, this method
-   * properly handles async event listeners by waiting for all of them to resolve
-   * or reject using Promise.allSettled().
+   * properly handles async event listeners by waiting for all of them to
+   * resolve or reject using Promise.allSettled().
    *
    * @param {string} event - The event name to emit
    * @param {any[]} [arg] - Arguments to pass to event listeners
    * @returns {Promise<void>} Resolves when all listeners have completed
    */
   async asyncEmit(event, arg) {
-    arg = arg || new Array()
+    try {
+      arg = arg || new Array()
+      const listeners = this.emitter.listeners(event)
 
-    const listeners = this.emitter.listeners(event)
-    await Promise.allSettled(listeners.map(listener => listener(...arg)))
+      const settled = await Promise.allSettled(listeners.map(listener => listener(arg)))
+      const rejected = settled.filter(reject => reject.status === "rejected")
+
+      if(rejected.length > 0) {
+        if(rejected[0].reason instanceof Error)
+          throw rejected[0].reason
+        else
+          throw AuntyError.new(rejected[0].reason)
+      }
+    } catch(error) {
+      throw AuntyError.new(
+        `Processing '${event}' event with ${arg&&arg.length?`'${arg}'`:"no arguments"}.`,
+        error
+      )
+    }
   }
 }
