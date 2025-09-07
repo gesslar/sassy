@@ -57,6 +57,9 @@ export default class AuntyError extends Error {
    * @returns {this} This AuntyError instance for method chaining
    */
   addTrace(message) {
+    if(typeof message !== "string")
+      throw AuntyError.new(`AuntyError:addTrace expected string, got ${JSON.stringify(message)}`)
+
     this.trace = message
 
     return this
@@ -133,7 +136,7 @@ export default class AuntyError extends Error {
    */
   static from(error, message) {
     if(!(error instanceof Error))
-      throw new AuntyError("AuntyError.from must take an Error object.")
+      throw AuntyError.new("AuntyError.from must take an Error object.")
 
     const oldMessage = error.message
     const newError = new AuntyError(oldMessage, {cause: error}).addTrace(message)
