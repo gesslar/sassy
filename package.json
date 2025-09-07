@@ -19,7 +19,7 @@
     "lint": "eslint src/",
     "submit": "npm publish --access public",
     "examples": "node ./examples/validator.js",
-    "test": "echo 1, 2, 3."
+    "test": "node -p \"require('fs').readFileSync('TESTING.txt', 'utf8')\""
   },
   "engines": {
     "node": ">=20.0.0"
