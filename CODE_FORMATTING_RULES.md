@@ -45,6 +45,22 @@ right this time!"
 
 Well, this time wasn't this time. 😭
 
-## P.S
+## Post Scrotum
 
 Maybe next time.
+
+## Post Post Scrotum
+
+I just added Prettier to try to see how it might improve my formatting. I was
+correct. It did not.
+
+- ASI Erasure
+- Code bloat from unnecessary spacing
+- Turned a lovely, flourishing `c =>` into `(c) =>` which is basically the
+  male glyph and now I can't help but think that maybe Prettier is a little
+  sexist. It's _2025, Prettier!_ Time to acknowledge that maybe, MAYBE, that
+  parameter just wants to exist in its own best universe without you stomping
+  all over its private parts and assigning it something that doesn't belong
+  and maybe wasn't welcome. So, no. ~~Prettier~~ Boomer has been relegated to
+  the uninstalled bin for hypersexualising my parameters. _coos_ It's ok `c`,
+  you're safe now with my permissive `"@stylistic/arrow-parens": ["error", "as-needed"]`.
