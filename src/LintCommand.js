@@ -53,7 +53,7 @@ export default class LintCommand extends AuntyCommand {
     ansiColors.alias("success", ansiColors.green)
     ansiColors.alias("error", ansiColors.red)
     ansiColors.alias("warning", ansiColors.yellowBright)
-    ansiColors.alias("info", ansiColors.yellow)
+    ansiColors.alias("info", ansiColors.blackBright)
     ansiColors.alias("context", ansiColors.whiteBright)
   }
 
@@ -68,7 +68,7 @@ export default class LintCommand extends AuntyCommand {
   async execute(inputArg, options = {}) {
     const {cwd} = this
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
-    const theme = new Theme(fileObject, options)
+    const theme = new Theme(fileObject, cwd, options)
 
     theme.cache = this.cache
 

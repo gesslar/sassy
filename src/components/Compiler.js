@@ -15,115 +15,115 @@ import * as Data from "./DataUtil.js"
 import Evaluator from "./Evaluator.js"
 import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
-import DirectoryObject from "./DirectoryObject.js"
+import Term from "./Term.js"
+import Util from "../Util.js"
+import {relativeOrAbsolutePath} from "./File.js"
+import Theme from "./Theme.js"
 
 /**
  * Main compiler class for processing theme source files.
  * Handles the complete compilation pipeline from source to VS Code theme output.
  */
 export default class Compiler {
-  #theme
-
   /**
    * Compiles a theme source file into a VS Code colour theme.
    * Processes configuration, variables, imports, and theme definitions.
    *
-   * @param {DirectoryObject} cwd - The project's current working directory
    * @param {object} theme - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
-  async compile(cwd, theme) {
-    this.#theme = theme
+  async compile(theme) {
+    try {
+      const source = theme.source
+      const {config: sourceConfig} = source ?? {}
+      const {vars: sourceVars} = source
+      const {theme: sourceTheme} = source
 
-    await Promise.resolve()  // yielding control in the event loop or something
+      const evaluator = new Evaluator()
+      const evaluate = (...arg) => evaluator.evaluate(...arg)
+      const decompConfig = this.#decomposeObject(sourceConfig)
+      const resolvedConfig = evaluate(decompConfig)
+      const recompConfig = this.#composeObject(resolvedConfig)
 
-    const source = theme.source
-    const {config: sourceConfig} = source ?? {}
-    const {vars: sourceVars} = source
-    const {theme: sourceTheme} = source
+      const header = {
+        $schema: recompConfig.schema,
+        name: recompConfig.name,
+        type: recompConfig.type
+      }
 
-    const evaluator = new Evaluator()
-    const evaluate = (...arg) => evaluator.evaluate(...arg)
-    const decompConfig = this.#decomposeObject(sourceConfig)
-    const resolvedConfig = evaluate(decompConfig)
-    const recompConfig = this.#composeObject(resolvedConfig)
+      // Let's get all of the imports!
+      const imports = recompConfig.import ?? {}
+      const {imported,importedFiles} = await this.#import(imports, theme)
 
-    const header = {
-      $schema: recompConfig.schema,
-      name: recompConfig.name,
-      type: recompConfig.type
-    }
+      theme.dependencies = importedFiles
 
-    // Let's get all of the imports!
-    const imports = recompConfig.import ?? {}
-    const {imported,importedFiles} = await this.#import(cwd, imports)
+      const sourceObj = {}
+      if(sourceVars && Object.keys(sourceVars).length > 0)
+        sourceObj.vars = sourceVars
 
-    theme.dependencies = importedFiles
+      if(sourceTheme && Object.keys(sourceTheme).length > 0)
+        sourceObj.theme = sourceTheme
 
-    const sourceObj = {}
-    if(sourceVars && Object.keys(sourceVars).length > 0)
-      sourceObj.vars = sourceVars
+      const merged = Data.mergeObject({}, imported, sourceObj)
 
-    if(sourceTheme && Object.keys(sourceTheme).length > 0)
-      sourceObj.theme = sourceTheme
-
-    const merged = Data.mergeObject({}, imported, sourceObj)
-
-    // Shred them up! Kinda.
-    const decompVars =
+      // Shred them up! Kinda.
+      const decompVars =
       this.#decomposeObject(merged.vars)
-    const decompColors =
+      const decompColors =
       this.#decomposeObject(merged.colors)
-    const decompTokenColors =
+      const decompTokenColors =
       this.#decomposeObject(merged.tokenColors)
-    const decompSemanticTokenColors =
+      const decompSemanticTokenColors =
       this.#decomposeObject(merged.semanticTokenColors)
 
-    // First let's evaluate the variables
-    evaluate(decompVars) // but we don't need the return value, only the lookup
+      // First let's evaluate the variables
+      evaluate(decompVars) // but we don't need the return value, only the lookup
 
-    theme.lookup = evaluator.lookup
+      theme.lookup = evaluator.lookup
 
-    const evalColors =
+      const evalColors =
       evaluate(decompColors, theme.lookup)
-    const evalTokenColors =
+      const evalTokenColors =
       evaluate(decompTokenColors, theme.lookup)
-    const evalSemanticTokenColors =
+      const evalSemanticTokenColors =
       evaluate(decompSemanticTokenColors, theme.lookup)
 
-    // Now let's do some reducing... into a form that works for VS Code
-    const reducer = (acc,curr) => {
-      acc[curr.flatPath] = curr.value
-      return acc
+      // Now let's do some reducing... into a form that works for VS Code
+      const reducer = (acc,curr) => {
+        acc[curr.flatPath] = curr.value
+        return acc
+      }
+
+      // Assemble into one object with the proper keys
+      const colors = evalColors.reduce(reducer, {})
+      const tokenColors = this.#composeArray(evalTokenColors)
+      const semanticTokenColors = evalSemanticTokenColors.reduce(reducer, {})
+      const themeColours = {colors,semanticTokenColors,tokenColors}
+
+      // Mix and maaatch all jumbly wumbly...
+      const output = Data.mergeObject(
+        {},
+        header,
+        sourceConfig.custom ?? {},
+        themeColours
+      )
+      // Voilà!
+      theme.output = output
+      theme.pool = evaluator.pool
+    } catch(error) {
+      throw AuntyError.new(`Compiling ${theme.sourceFile.module}`, error)
     }
-
-    // Assemble into one object with the proper keys
-    const colors = evalColors.reduce(reducer, {})
-    const tokenColors = this.#composeArray(evalTokenColors)
-    const semanticTokenColors = evalSemanticTokenColors.reduce(reducer, {})
-    const themeColours = {colors,semanticTokenColors,tokenColors}
-
-    // Mix and maaatch all jumbly wumbly...
-    const output = Data.mergeObject(
-      {},
-      header,
-      sourceConfig.custom ?? {},
-      themeColours
-    )
-    // Voilà!
-    theme.output = output
-    theme.pool = evaluator.pool
   }
 
   /**
    * Imports external theme files and merges their content.
    * Processes import specifications and loads referenced files.
    *
-   * @param {DirectoryObject} cwd - The project's current working directory.
-   * @param {Array<string>|string} imports - The import filename(s)
+   * @param {Array<string>} imports - The import filenames.
+   * @param {Theme} theme - The theme object being compiled.
    * @returns {Promise<object>} Object containing imported data and file references
    */
-  async #import(cwd, imports) {
+  async #import(imports, theme) {
     const importedFiles = []
     const imported = {
       vars: {},
@@ -140,18 +140,35 @@ export default class Compiler {
         `All import entries must be strings. Got ${JSON.stringify(imports)}`
       )
 
-    const loaded = (await Promise.all(imports.map(async importing => {
+    const loaded = []
+
+    for(const importing of imports) {
       try {
-        const file = new FileObject(importing, cwd)
+        const file = new FileObject(importing, theme.sourceFile.directory)
 
         importedFiles.push(file)
 
         // Get the cached version or a new version. Who knows? I don't know.
-        return await this.#theme.cache.loadCachedData(file)
+        const {result, cost} = await Util.time(async() => {
+          return await theme.cache.loadCachedData(file)
+        })
+
+        if(theme.options.nerd) {
+          Term.status([
+            ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
+            "",
+            ["muted", `${relativeOrAbsolutePath(theme.cwd,file)}`],
+            ["muted", `${theme.sourceFile.module}`,["(",")"]],
+          ], theme.options)
+        }
+
+        if(result) {
+          loaded.push(result)
+        }
       } catch(error) {
         throw AuntyError.new(`Attempting to import ${importing}`, error)
       }
-    }))).filter(Boolean)
+    }
 
     loaded.forEach(data => {
       const {vars={}} = data ?? {}

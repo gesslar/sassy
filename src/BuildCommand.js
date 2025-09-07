@@ -5,6 +5,7 @@ import AuntySession from "./components/Session.js"
 
 import process from "node:process"
 import {EventEmitter} from "node:events"
+import AuntyError from "./components/AuntyError.js"
 
 /**
  * Command handler for building VS Code themes from source files.
@@ -67,7 +68,7 @@ export default class BuildCommand extends AuntyCommand {
     const sessionResults = await Promise.allSettled(
       fileNames.map(async fileName => {
         const fileObject = await this.resolveThemeFileName(fileName, cwd)
-        const theme = new Theme(fileObject, options)
+        const theme = new Theme(fileObject, cwd, options)
         theme.cache = this.cache
 
         return new AuntySession(this, theme, options)
@@ -122,17 +123,24 @@ export default class BuildCommand extends AuntyCommand {
     process.stdin.setRawMode(true)
     process.stdin.resume()
     process.stdin.setEncoding("utf8")
+
     process.stdin.on("data", async key => {
-      if(key === "q" || key === "\u0003") {   // Ctrl+C
-        await this.asyncEmit("quit")
-      } else if(key === "r" || key === "\x1b[15~") {  // F5
-        await this.asyncEmit("rebuild")
-      } else if(key === "\u0013") {  // Ctrl+S
-        await this.asyncEmit("saveCheckpoint")
-      } else if(key === "\u001a") {  // Ctrl+Z
-        await this.asyncEmit("revertCheckpoint")
+      try {
+        if(key === "q" || key === "\u0003") {   // Ctrl+C
+          await this.asyncEmit("quit")
+        } else if(key === "r" || key === "\x1b[15~") {  // F5
+          await this.asyncEmit("rebuild")
+        } else if(key === "\u0013") {  // Ctrl+S
+          await this.asyncEmit("saveCheckpoint")
+        } else if(key === "\u001a") {  // Ctrl+Z
+          await this.asyncEmit("revertCheckpoint")
+        }
+      } catch(error) {
+        AuntyError.new("Processing input.", error)
+          .report(true)
       }
     })
+
     await Term.directWrite("\x1b[?25l")
   }
 
