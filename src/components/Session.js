@@ -184,7 +184,7 @@ export default class AuntySession {
 
     } catch(error) {
       // Track failed build
-      this.#command.asyncEmit("recordBuildFail", this.#theme)
+      await this.#command.asyncEmit("recordBuildFail", this.#theme)
       this.#history.push({
         timestamp: buildStart,
         loadTime: loadCost || 0,
@@ -297,7 +297,7 @@ export default class AuntySession {
       this.#command.asyncEmit("building")
       await this.#buildPipeline(true)
     } catch(error) {
-      this.#command.asyncEmit("recordBuildFail", this.#theme)
+      await this.#command.asyncEmit("recordBuildFail", this.#theme)
       throw AuntyError.new("Handling rebuild request.", error)
     } finally {
       this.#building = false
