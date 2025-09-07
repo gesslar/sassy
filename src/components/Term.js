@@ -18,7 +18,7 @@ ansiColors.alias("error-bracket", ansiColors.red)
 ansiColors.alias("modified", ansiColors.magentaBright)
 ansiColors.alias("modified-bracket", ansiColors.magenta)
 ansiColors.alias("muted", ansiColors.white.dim.italic)
-ansiColors.alias("muted-bracket", ansiColors.blackBright.italic)
+ansiColors.alias("muted-bracket", ansiColors.blackBright)
 
 export default class Term {
   /**
@@ -108,28 +108,28 @@ export default class Term {
    * Recursion: array input is normalised into a single string then re-dispatched
    * through `status` to leverage the string branch (keeps logic DRY).
    *
-   * @param {string | Array<string, string> | Array<string, string, string>} args - Message spec.
+   * @param {string | Array<string, string> | Array<string, string, string>} argList - Message spec.
    * @returns {void}
    */
-  static terminalMessage(args) {
-    if(typeof args === "string")
-      return args
+  static terminalMessage(argList) {
+    if(typeof argList === "string")
+      return argList
 
-    if(Array.isArray(args)) {
-      const message = args
-        .map(curr => {
+    if(Array.isArray(argList)) {
+      const message = argList
+        .map(args => {
           // Bracketed
-          if(Array.isArray(curr))
+          if(Array.isArray(args))
 
-            if(curr.length === 3 && Array.isArray(curr[2]))
-              return Term.terminalBracket(curr)
+            if(args.length === 3 && Array.isArray(args[2]))
+              return Term.terminalBracket(args)
 
             else
-              return Term.terminalBracket([...curr, ["",""]])
+              return Term.terminalBracket([...args])
 
           // Plain string, no decoration
-          if(typeof curr === "string")
-            return curr
+          if(typeof args === "string")
+            return args
         })
         .join(" ")
 
