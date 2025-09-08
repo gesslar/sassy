@@ -209,7 +209,7 @@ export default class LintCommand extends AuntyCommand {
         if(issue.broadIndex === issue.specificIndex) {
           Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}' redundant in '${issue.broadRule}{/}'`)
         } else {
-          Term.info(`${indicator} Scope '{context}${issue.broadScope}{/}' in '${issue.broadRule}' masks more specific '{context}${issue.specificScope}{/}' in '${issue.specificRule}'`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '${issue.broadRule}' masks more specific '{context}${issue.specificScope}{/}' in '${issue.specificRule}'`)
         }
 
         break
