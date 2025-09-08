@@ -1,24 +1,9 @@
+import c from "@gesslar/colours"
+// import colorSupport from "color-support"
 import console from "node:console"
-import ansiColors from "ansi-colors"
-import colorSupport from "color-support"
 import process from "node:process"
 
 import AuntyError from "./AuntyError.js"
-
-// Required everywhere. Will modularise this kind of thing later.
-ansiColors.enabled = colorSupport.hasBasic
-ansiColors.alias("success", ansiColors.green)
-ansiColors.alias("success-bracket", ansiColors.greenBright)
-ansiColors.alias("info", ansiColors.cyan)
-ansiColors.alias("info-bracket", ansiColors.cyanBright)
-ansiColors.alias("warn", ansiColors.yellow)
-ansiColors.alias("warn-bracket", ansiColors.yellow.dim)
-ansiColors.alias("error", ansiColors.redBright)
-ansiColors.alias("error-bracket", ansiColors.red)
-ansiColors.alias("modified", ansiColors.magentaBright)
-ansiColors.alias("modified-bracket", ansiColors.magenta)
-ansiColors.alias("muted", ansiColors.white.dim.italic)
-ansiColors.alias("muted-bracket", ansiColors.blackBright)
 
 export default class Term {
   /**
@@ -168,9 +153,9 @@ export default class Term {
       throw AuntyError.new("Each element must be a string.")
 
     return "" +
-        ansiColors[`${level}-bracket`](brackets[0])
-      + ansiColors[level](text)
-      + ansiColors[`${level}-bracket`](brackets[1])
+        c`{${level}-bracket}${brackets[0]}{/}`
+      + c`{${level}}${text}{/}`
+      + c`{${level}-bracket}${brackets[1]}{/}`
   }
 
   static async resetTerminal() {

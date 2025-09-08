@@ -7,8 +7,8 @@
 import path from "node:path"
 import util from "node:util"
 
-import * as File from "./File.js"
 import DirectoryObject from "./DirectoryObject.js"
+import File from "./File.js"
 
 /**
  * FileObject encapsulates metadata and operations for a file, including path

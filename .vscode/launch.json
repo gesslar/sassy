@@ -142,7 +142,7 @@
         "--",
         "resolve",
         "--nerd",
-        "--token",
+        "--color",
         "editor.inactiveSelectionBackground",
         "./examples/advanced/src/blackboard.yaml",
       ],

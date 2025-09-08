@@ -11,14 +11,14 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import * as Data from "./DataUtil.js"
-import Evaluator from "./Evaluator.js"
-import FileObject from "./FileObject.js"
 import AuntyError from "./AuntyError.js"
+import Data from "./Data.js"
+import Evaluator from "./Evaluator.js"
+import File from "./File.js"
+import FileObject from "./FileObject.js"
 import Term from "./Term.js"
-import Util from "../Util.js"
-import {relativeOrAbsolutePath} from "./File.js"
 import Theme from "./Theme.js"
+import Util from "./Util.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -52,7 +52,7 @@ export default class Compiler {
       }
 
       // Let's get all of the imports!
-      const imports = recompConfig.import ?? {}
+      const imports = recompConfig.import ?? []
       const {imported,importedFiles} = await this.#import(imports, theme)
 
       theme.dependencies = importedFiles
@@ -67,14 +67,10 @@ export default class Compiler {
       const merged = Data.mergeObject({}, imported, sourceObj)
 
       // Shred them up! Kinda.
-      const decompVars =
-      this.#decomposeObject(merged.vars)
-      const decompColors =
-      this.#decomposeObject(merged.colors)
-      const decompTokenColors =
-      this.#decomposeObject(merged.tokenColors)
-      const decompSemanticTokenColors =
-      this.#decomposeObject(merged.semanticTokenColors)
+      const decompVars = this.#decomposeObject(merged.vars)
+      const decompColors = this.#decomposeObject(merged.colors)
+      const decompTokenColors = this.#decomposeObject(merged.tokenColors)
+      const decompSemanticTokenColors = this.#decomposeObject(merged.semanticTokenColors)
 
       // First let's evaluate the variables
       evaluate(decompVars) // but we don't need the return value, only the lookup
@@ -111,7 +107,7 @@ export default class Compiler {
       theme.output = output
       theme.pool = evaluator.pool
     } catch(error) {
-      throw AuntyError.new(`Compiling ${theme.sourceFile.module}`, error)
+      throw AuntyError.new(`Compiling ${theme.name}`, error)
     }
   }
 
@@ -135,6 +131,8 @@ export default class Compiler {
       ? [imports]
       : imports
 
+
+
     if(!Data.isArrayUniform(imports, "string"))
       throw new AuntyError(
         `All import entries must be strings. Got ${JSON.stringify(imports)}`
@@ -157,8 +155,8 @@ export default class Compiler {
           Term.status([
             ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
             "",
-            ["muted", `${relativeOrAbsolutePath(theme.cwd,file)}`],
-            ["muted", `${theme.sourceFile.module}`,["(",")"]],
+            ["muted", `${File.relativeOrAbsolutePath(theme.cwd,file)}`],
+            ["muted", `${theme.name}`,["(",")"]],
           ], theme.options)
         }
 

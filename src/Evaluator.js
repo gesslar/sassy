@@ -11,12 +11,12 @@
  * functions.
  */
 
-import Colour from "./Colour.js"
+import {parse} from "culori"
+
 import AuntyError from "./AuntyError.js"
-import * as _Data from "./DataUtil.js"
+import Colour from "./Colour.js"
 import ThemePool from "./ThemePool.js"
 import ThemeToken from "./ThemeToken.js"
-import {parse} from "culori"
 
 /**
  * Evaluator class for resolving variables and colour tokens in theme objects.

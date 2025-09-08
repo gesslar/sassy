@@ -5,9 +5,9 @@
  */
 
 import path from "node:path"
-
-import * as File from "./File.js"
 import util from "node:util"
+
+import File from "./File.js"
 
 /**
  * DirectoryObject encapsulates metadata and operations for a directory,

@@ -1,16 +1,17 @@
-import AuntyCommand from "./components/AuntyCommand.js"
-import AuntyError from "./components/AuntyError.js"
-import * as DataUtil from "./components/DataUtil.js"
-import Evaluator from "./components/Evaluator.js"
-import Colour from "./components/Colour.js"
+import c from "@gesslar/colours"
+// import colorSupport from "color-support"
+
+import AuntyCommand from "./AuntyCommand.js"
+import AuntyError from "./AuntyError.js"
+import Colour from "./Colour.js"
+import Evaluator from "./Evaluator.js"
+import Term from "./Term.js"
+import Theme from "./Theme.js"
 import Util from "./Util.js"
-import Theme from "./components/Theme.js"
-import Term from "./components/Term.js"
+import Data from "./Data.js"
 
-import ansiColors from "ansi-colors"
-import colorSupport from "color-support"
 
-ansiColors.enabled = colorSupport.hasBasic
+// ansiColors.enabled = colorSupport.hasBasic
 
 /**
  * Command handler for resolving theme tokens and variables to their final values.
@@ -31,16 +32,6 @@ export default class ResolveCommand extends AuntyCommand {
       "tokenColor": ["-t, --tokenColor <scope>", "resolve a tokenColors scope to its final evaluated value"],
       "semanticTokenColor": ["-s, --semanticTokenColor <scope>", "resolve a semanticTokenColors scope to its final evaluated value"],
     }
-
-    ansiColors.alias("head", ansiColors.yellowBright)
-    ansiColors.alias("leaf", ansiColors.green)
-    ansiColors.alias("seen", ansiColors.green.dim.italic)
-    ansiColors.alias("func", ansiColors.green.bold)
-    ansiColors.alias("parens", ansiColors.yellowBright.bold)
-    ansiColors.alias("line", ansiColors.yellow)
-    ansiColors.alias("hex", ansiColors.redBright)
-    ansiColors.alias("hexAlpha", ansiColors.yellow.italic)
-    ansiColors.alias("arrow", ansiColors.blueBright)
   }
 
   /**
@@ -53,7 +44,7 @@ export default class ResolveCommand extends AuntyCommand {
    */
   async execute(inputArg, options={}) {
     const intersection =
-      DataUtil.arrayIntersection(this.cliOptionNames, Object.keys(options))
+      Data.arrayIntersection(this.cliOptionNames, Object.keys(options))
 
     if(intersection.length > 1)
       throw AuntyError.new(
@@ -109,7 +100,7 @@ export default class ResolveCommand extends AuntyCommand {
     const finalValue = token.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
 
-    const output = `\n${ansiColors.head(colorName)}:\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
+    const output = c`\n{head}${colorName}{/}:\n\n${this.#formatOutput(fullTrail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
 
     Term.info(output)
   }
@@ -223,7 +214,7 @@ export default class ResolveCommand extends AuntyCommand {
     const finalValue = bestToken.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
 
-    const output = `${ansiColors.head(displayName)} ${ansiColors.hex(`(${name})`)}\n${this.#formatOutput(fullTrail)}\n\n${ansiColors.head("Resolution:")} ${formattedFinalValue}`
+    const output = c`{head}${displayName}{/} {hex}${(`${name}`)}{/}\n${this.#formatOutput(fullTrail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
 
     Term.info(output)
   }
@@ -380,7 +371,7 @@ export default class ResolveCommand extends AuntyCommand {
       if(type === "result" && kind === "hex") {
         // Hex results are indented one extra level with just spaces and arrow
         const prefix = "   ".repeat(depth + 1)
-        const arrow = ansiColors.arrow("→ ")
+        const arrow = c`{arrow}→{/} `
         out.push(`${prefix}${arrow}${line}`)
       } else {
         // Everything else just gets clean indentation
@@ -413,7 +404,7 @@ export default class ResolveCommand extends AuntyCommand {
         : Colour.shortHex.exec(value).groups
 
       return [
-        `${ansiColors.hex(colour)}${alpha?ansiColors.hexAlpha(alpha):""}`,
+        c`{hash}#{/}{hex}${colour.slice(1)}{/}${alpha?`{hexAlpha}${alpha}{/}`:""}`,
         "hex"
       ]
     }
@@ -421,7 +412,7 @@ export default class ResolveCommand extends AuntyCommand {
     if(this.#func.test(value)) {
       const {func,args} = this.#func.exec(value).groups
       return [
-        `${ansiColors.func(func)}${ansiColors.parens("(")}${ansiColors.leaf(args)}${ansiColors.parens(")")}`,
+        c`{func}${func}{/}{parens}${"("}{/}{leaf}${args}{/}{parens}${")"}{/}`,
         "function"
       ]
     }
@@ -432,11 +423,11 @@ export default class ResolveCommand extends AuntyCommand {
       const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
       const varValue = braces || parens || none || value
       return [
-        `${ansiColors.func("$")}${ansiColors.parens(style[0])}${ansiColors.leaf(varValue)}${ansiColors.parens(style[1])}`,
+        c`{func}{/}{parens}${style[0]}{/}{leaf}${varValue}{/}{parens}${style[1]}{/}`,
         "variable"
       ]
     }
 
-    return [ansiColors.leaf(value), "literal"]
+    return [c`{leaf}${value}{/}`, "literal"]
   }
 }

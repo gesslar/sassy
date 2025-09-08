@@ -4,10 +4,8 @@
  * including arrays, unions, and options.
  */
 
-import * as DataUtil from "./DataUtil.js"
 import AuntyError from "./AuntyError.js"
-
-const {isEmpty, typeOf, isArrayUniform, isValidType} = DataUtil
+import Data from "./Data.js"
 
 /**
  * Type specification class for parsing and validating complex type definitions.
@@ -140,17 +138,17 @@ export default class TypeSpec {
    */
   match(value, options) {
     const allowEmpty = options?.allowEmpty ?? true
-    const empty = isEmpty(value)
+    const empty = Data.isEmpty(value)
 
     // If we have a list of types, because the string was validly parsed,
     // we need to ensure that all of the types that were parsed are valid types
     // in JavaScript.
-    if(this.length && !this.every(t => isValidType(t.typeName)))
+    if(this.length && !this.every(t => Data.isValidType(t.typeName)))
       return false
 
     // Now, let's do some checking with the types, respecting the array flag
     // with the value
-    const valueType = typeOf(value)
+    const valueType = Data.typeOf(value)
     const isArray = valueType === "array"
 
     // We need to ensure that we match the type and the consistency of the types
@@ -170,7 +168,7 @@ export default class TypeSpec {
           if(allowEmpty)
             return true
 
-        return isArrayUniform(value, allowedType)
+        return Data.isArrayUniform(value, allowedType)
       }
     })
 
@@ -196,7 +194,7 @@ export default class TypeSpec {
       if(!typeMatches || typeMatches.length !== 3)
         throw AuntyError.new(`Invalid type: ${part}`)
 
-      if(!isValidType(typeMatches[1]))
+      if(!Data.isValidType(typeMatches[1]))
         throw AuntyError.new(`Invalid type: ${typeMatches[1]}`)
 
       return {

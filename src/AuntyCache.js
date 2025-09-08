@@ -1,6 +1,6 @@
 import AuntyError from "./AuntyError.js"
+import File from "./File.js"
 import FileObject from "./FileObject.js"
-import * as File from "./File.js"
 
 /**
  * File system cache for theme compilation data with automatic invalidation.

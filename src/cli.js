@@ -33,16 +33,17 @@
 
 import {program} from "commander"
 import process from "node:process"
-import {fileURLToPath, URL} from "node:url"
+import url from "node:url"
+import c from "@gesslar/colours"
 
-import AuntyError from "./components/AuntyError.js"
+import AuntyCache from "./AuntyCache.js"
+import AuntyError from "./AuntyError.js"
 import BuildCommand from "./BuildCommand.js"
-import AuntyCache from "./components/AuntyCache.js"
-import DirectoryObject from "./components/DirectoryObject.js"
-import FileObject from "./components/FileObject.js"
+import DirectoryObject from "./DirectoryObject.js"
+import FileObject from "./FileObject.js"
 import LintCommand from "./LintCommand.js"
 import ResolveCommand from "./ResolveCommand.js"
-import Term from "./components/Term.js"
+import Term from "./Term.js"
 
 /**
  * Main application entry point.
@@ -63,8 +64,35 @@ void (async function main() {
   setupAbortHandlers()
 
   try {
+    // setup the colour aliases
+    // Term status stuff
+    c.alias.set("success", "{F070}")
+    c.alias.set("success-bracket", "{F076}")
+    c.alias.set("info", "{F038}")
+    c.alias.set("info-bracket", "{F087}")
+    c.alias.set("warn", "{F215}")
+    c.alias.set("warn-bracket", "{F208}")
+    c.alias.set("error", "{F196}")
+    c.alias.set("error-bracket", "{F160}")
+    c.alias.set("modified", "{F127}")
+    c.alias.set("modified-bracket", "{F165}")
+    c.alias.set("muted", "{F240}")
+    c.alias.set("muted-bracket", "{F244}")
+    // Lint command
+    c.alias.set("context", "{F159}")
+    // Resolve command
+    c.alias.set("head", "{F220}")
+    c.alias.set("leaf", "{F151}")
+    c.alias.set("func", "{F111}")
+    c.alias.set("parens", "{F098}")
+    c.alias.set("line", "{F142}")
+    c.alias.set("hex", "{F140}")
+    c.alias.set("hash", "{F147}{<B}")
+    c.alias.set("hexAlpha", "{F127}{<I}")
+    c.alias.set("arrow", "{F033}")
+
     const cache = new AuntyCache()
-    const cr = new DirectoryObject(fileURLToPath(new URL("..", import.meta.url)))
+    const cr = new DirectoryObject(url.fileURLToPath(new url.URL("..", import.meta.url)))
     const cwd = new DirectoryObject(process.cwd())
     const packageJson = new FileObject("package.json", cr)
     const pkgJsonResult = await cache.loadCachedData(packageJson)

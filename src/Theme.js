@@ -13,14 +13,14 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import Compiler from "./Compiler.js"
 import AuntyError from "./AuntyError.js"
-import * as File from "./File.js"
-import Term from "./Term.js"
-import Util from "../Util.js"
-import FileObject from "./FileObject.js"
+import Compiler from "./Compiler.js"
 import DirectoryObject from "./DirectoryObject.js"
+import File from "./File.js"
+import FileObject from "./FileObject.js"
+import Term from "./Term.js"
 import ThemePool from "./ThemePool.js"
+import Util from "./Util.js"
 
 /**
  * Theme class: manages the lifecycle of a theme compilation unit.
@@ -34,6 +34,7 @@ export default class Theme {
   #lookup = null
   #pool = null
   #cache = null
+  #name = null
 
   // Write-related properties
   #output = null
@@ -52,7 +53,8 @@ export default class Theme {
    */
   constructor(themeFile, cwd, options) {
     this.#sourceFile = themeFile
-    this.#outputFileName = `${themeFile.module}.color-theme.json`
+    this.#name = themeFile.module
+    this.#outputFileName = `${this.#name}.color-theme.json`
     this.#options = options
     this.#cwd = cwd
   }
@@ -84,6 +86,10 @@ export default class Theme {
 
   get cache() {
     return this.#cache
+  }
+
+  get name() {
+    return this.#name
   }
 
   /**
