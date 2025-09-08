@@ -116,7 +116,7 @@ export default class AuntyCommand {
     this.#command = program.command(this.cliCommand)
     this.#command.action(async(...arg) => {
       try {
-        this.execute(...arg)
+        await this.execute(...arg)
       } catch(error) {
         throw AuntyError.new(`Trying to execute ${this.constructor.name} with ${arg}`, error)
       }
