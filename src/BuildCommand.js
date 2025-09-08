@@ -1,11 +1,11 @@
-import AuntyCommand from "./components/AuntyCommand.js"
-import Term from "./components/Term.js"
-import Theme from "./components/Theme.js"
-import AuntySession from "./components/Session.js"
-
-import process from "node:process"
 import {EventEmitter} from "node:events"
-import AuntyError from "./components/AuntyError.js"
+import process from "node:process"
+
+import AuntyCommand from "./AuntyCommand.js"
+import AuntyError from "./AuntyError.js"
+import AuntySession from "./Session.js"
+import Term from "./Term.js"
+import Theme from "./Theme.js"
 
 /**
  * Command handler for building VS Code themes from source files.

@@ -1,5 +1,5 @@
-import {performance} from "node:perf_hooks"
 import {createHash} from "node:crypto"
+import {performance} from "node:perf_hooks"
 
 /**
  * Utility class providing common helper functions for string manipulation,

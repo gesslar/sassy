@@ -15,16 +15,18 @@
  * colour-coded reporting for different severity levels.
  */
 
-import AuntyCommand from "./components/AuntyCommand.js"
-import Theme from "./components/Theme.js"
-import Term from "./components/Term.js"
-import ThemePool from "./components/ThemePool.js"
+import c from "@gesslar/colours"
+// import colorSupport from "color-support"
 
-import ansiColors from "ansi-colors"
-import colorSupport from "color-support"
-import Evaluator from "./components/Evaluator.js"
+import AuntyCommand from "./AuntyCommand.js"
+import Evaluator from "./Evaluator.js"
+import Term from "./Term.js"
+import Theme from "./Theme.js"
+import ThemePool from "./ThemePool.js"
 
-ansiColors.enabled = colorSupport.hasBasic
+
+// oops, need to have @gesslar/colours support this, too!
+// ansiColors.enabled = colorSupport.hasBasic
 
 /**
  * Command handler for linting theme files for potential issues.
@@ -48,13 +50,6 @@ export default class LintCommand extends AuntyCommand {
       // "strict": ["--strict", "treat warnings as errors"],
       // "format": ["--format <type>", "output format (text, json)", "text"],
     }
-
-    // Set up color aliases for minimal, clean output
-    ansiColors.alias("success", ansiColors.green)
-    ansiColors.alias("error", ansiColors.red)
-    ansiColors.alias("warning", ansiColors.yellowBright)
-    ansiColors.alias("info", ansiColors.blackBright)
-    ansiColors.alias("context", ansiColors.whiteBright)
   }
 
   /**
@@ -150,7 +145,7 @@ export default class LintCommand extends AuntyCommand {
    */
   reportIssues(issues) {
     if(issues.length === 0) {
-      Term.info(ansiColors.success("✓ No linting issues found"))
+      Term.info(c`{success}✓{/} No linting issues found`)
       return
     }
 
@@ -178,10 +173,10 @@ export default class LintCommand extends AuntyCommand {
 
   #getIndicator(severity) {
     switch(severity) {
-      case "high": return ansiColors.error("●")
-      case "medium": return ansiColors.warning("●")
-      case "low": return ansiColors.info("●")
-      default: return ansiColors.info("●")
+      case "high": return c`{error}●{/}`
+      case "medium": return c`{warn}●{/}`
+      case "low":
+      default: return c`{info}●{/}`
     }
   }
 
@@ -192,30 +187,29 @@ export default class LintCommand extends AuntyCommand {
    */
   reportSingleIssue(issue) {
     const indicator = this.#getIndicator(issue.severity)
-    const context = ansiColors.context
 
     switch(issue.type) {
       case "duplicate-scope": {
         const rules = issue.occurrences.map(occ => `'${occ.name}'`).join(", ")
-        Term.info(`${indicator} Scope '${context(issue.scope)}' is duplicated in ${rules}`)
+        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
         break
       }
 
       case "undefined-variable": {
-        Term.info(`${indicator} Variable '${context(issue.variable)}' is used but not defined in '${issue.rule}' (${issue.property} property)`)
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)`)
         break
       }
 
       case "unused-variable": {
-        Term.info(`${indicator} Variable '${context(issue.variable)}' is defined but never used`)
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined but never used`)
         break
       }
 
       case "precedence-issue": {
         if(issue.broadIndex === issue.specificIndex) {
-          Term.info(`${indicator} Scope '${context(issue.broadScope)}' makes more specific '${context(issue.specificScope)}' redundant in '${issue.broadRule}'`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}' redundant in '${issue.broadRule}{/}'`)
         } else {
-          Term.info(`${indicator} Scope '${context(issue.broadScope)}' in '${issue.broadRule}' masks more specific '${context(issue.specificScope)}' in '${issue.specificRule}'`)
+          Term.info(`${indicator} Scope '{context}${issue.broadScope}{/}' in '${issue.broadRule}' masks more specific '{context}${issue.specificScope}{/}' in '${issue.specificRule}'`)
         }
 
         break

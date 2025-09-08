@@ -114,7 +114,13 @@ export default class AuntyCommand {
       throw AuntyError.new("This command has no CLI options.")
 
     this.#command = program.command(this.cliCommand)
-    this.#command.action(async(...arg) => this.execute(...arg))
+    this.#command.action(async(...arg) => {
+      try {
+        this.execute(...arg)
+      } catch(error) {
+        throw AuntyError.new(`Trying to execute ${this.constructor.name} with ${arg}`, error)
+      }
+    })
 
     this.addCliOptions(this.cliOptions, true)
 

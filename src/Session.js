@@ -1,11 +1,11 @@
-import Util from "../Util.js"
-import Term from "./Term.js"
-import * as File from "./File.js"
-
 import chokidar from "chokidar"
-import AuntyError from "./AuntyError.js"
+
 import AuntyCommand from "./AuntyCommand.js"
+import AuntyError from "./AuntyError.js"
+import File from "./File.js"
+import Term from "./Term.js"
 import Theme from "./Theme.js"
+import Util from "./Util.js"
 
 export default class AuntySession {
   #theme = null
@@ -87,7 +87,7 @@ export default class AuntySession {
       const bytes = await File.fileSize(this.#theme.sourceFile)
       Term.status([
         ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10), ["[","]"]],
-        `${this.#theme.sourceFile.module} loaded`,
+        `${this.#theme.name} loaded`,
         ["info", `${bytes} bytes`, ["[","]"]]
       ], this.#options)
       /**
@@ -120,7 +120,7 @@ export default class AuntySession {
 
       Term.status([
         ["success", Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10), ["[","]"]],
-        `${this.#theme.sourceFile.module} compiled`,
+        `${this.#theme.name} compiled`,
         ["success", `${compileResult[0].value[1].toLocaleString()} bytes`, ["[","]"]],
         ["info", `${totalBytes.toLocaleString()} total bytes`, ["(",")"]],
       ], this.#options)
@@ -225,7 +225,7 @@ export default class AuntySession {
 
       const message = [
         ["info", "REBUILDING", ["[","]"]],
-        this.#theme.sourceFile.module,
+        this.#theme.name,
       ]
 
       if(this.#options.nerd)
@@ -257,7 +257,7 @@ export default class AuntySession {
 
     Term.status([
       [builds > 0 ? "success" : "error", "SESSION SUMMARY"],
-      [builds > 0 ? "info" : "error", this.#theme.sourceFile.module, ["[", "]"]]
+      [builds > 0 ? "info" : "error", this.#theme.name, ["[", "]"]]
     ], this.#options)
 
     Term.status([

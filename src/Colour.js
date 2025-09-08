@@ -5,16 +5,17 @@
  */
 
 import {
-  parse,
+  converter,
   formatHex,
   formatHex8,
   hsl,
   interpolate,
-  converter
+  parse
 } from "culori"
-import Util from "../Util.js"
+
 import AuntyError from "./AuntyError.js"
 import ThemeToken from "./ThemeToken.js"
+import Util from "./Util.js"
 
 // Cache for parsed colours to improve performance
 const _colourCache = new Map()
