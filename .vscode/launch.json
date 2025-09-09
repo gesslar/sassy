@@ -41,6 +41,25 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "Simple (YAML) (nerd) (dry-run)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "build",
+        "--nerd",
+        "--dry-run",
+        "--output-dir",
+        "./examples/output",
+        "./examples/simple/midnight-ocean-yaml.yaml"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Simple - Mixed (YAML)",
       "type": "node",
       "request": "launch",
