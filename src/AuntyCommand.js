@@ -118,7 +118,7 @@ export default class AuntyCommand {
       try {
         await this.execute(...arg)
       } catch(error) {
-        throw AuntyError.new(`Trying to execute ${this.constructor.name} with ${arg}`, error)
+        throw AuntyError.new(`Trying to execute ${this.constructor.name} with ${JSON.stringify(...arg)}`, error)
       }
     })
 
