@@ -41,12 +41,13 @@ export default class Compiler {
 
       const evaluator = new Evaluator()
       const evaluate = (...arg) => evaluator.evaluate(...arg)
-      const decompConfig = this.#decomposeObject(sourceConfig)
-      const resolvedConfig = evaluate(decompConfig)
-      const recompConfig = this.#composeObject(resolvedConfig)
+
+      const config = this.#decomposeObject(sourceConfig)
+      evaluate(config)
+      const recompConfig = this.#composeObject(config)
 
       const header = {
-        $schema: recompConfig.schema,
+        $schema: recompConfig.$schema,
         name: recompConfig.name,
         type: recompConfig.type
       }
@@ -57,32 +58,27 @@ export default class Compiler {
 
       theme.dependencies = importedFiles
 
-      const sourceObj = {}
-      if(sourceVars && Object.keys(sourceVars).length > 0)
-        sourceObj.vars = sourceVars
+      const merged = Data.mergeObject({},
+        imported,
+        {
+          vars: sourceVars ?? {},
+          colors: sourceTheme?.colors ?? {},
+          tokenColors: sourceTheme?.tokenColors ?? [],
+          semanticTokenColors: sourceTheme?.semanticTokenColors ?? {},
+        }
+      )
 
-      if(sourceTheme && Object.keys(sourceTheme).length > 0)
-        sourceObj.theme = sourceTheme
-
-      const merged = Data.mergeObject({}, imported, sourceObj)
-
-      // Shred them up! Kinda.
-      const decompVars = this.#decomposeObject(merged.vars)
-      const decompColors = this.#decomposeObject(merged.colors)
-      const decompTokenColors = this.#decomposeObject(merged.tokenColors)
-      const decompSemanticTokenColors = this.#decomposeObject(merged.semanticTokenColors)
-
-      // First let's evaluate the variables
-      evaluate(decompVars) // but we don't need the return value, only the lookup
+      // Shred them up! Kinda. And evaluate the variables in place
+      const vars = this.#decomposeObject(merged.vars)
+      evaluate(vars)
+      const workColors = this.#decomposeObject(merged.colors)
+      evaluate(workColors)
+      const workTokenColors = this.#decomposeObject(merged.tokenColors)
+      evaluate(workTokenColors)
+      const workSemanticTokenColors = this.#decomposeObject(merged.semanticTokenColors)
+      evaluate(workSemanticTokenColors)
 
       theme.lookup = evaluator.lookup
-
-      const evalColors =
-      evaluate(decompColors, theme.lookup)
-      const evalTokenColors =
-      evaluate(decompTokenColors, theme.lookup)
-      const evalSemanticTokenColors =
-      evaluate(decompSemanticTokenColors, theme.lookup)
 
       // Now let's do some reducing... into a form that works for VS Code
       const reducer = (acc,curr) => {
@@ -91,18 +87,22 @@ export default class Compiler {
       }
 
       // Assemble into one object with the proper keys
-      const colors = evalColors.reduce(reducer, {})
-      const tokenColors = this.#composeArray(evalTokenColors)
-      const semanticTokenColors = evalSemanticTokenColors.reduce(reducer, {})
-      const themeColours = {colors,semanticTokenColors,tokenColors}
+      const colors = workColors.reduce(reducer, {})
+      const tokenColors = this.#composeArray(workTokenColors)
+      const semanticTokenColors = workSemanticTokenColors.reduce(reducer, {})
 
       // Mix and maaatch all jumbly wumbly...
       const output = Data.mergeObject(
         {},
         header,
         sourceConfig.custom ?? {},
-        themeColours
+        {
+          colors,
+          semanticTokenColors,
+          tokenColors
+        }
       )
+
       // Voilà!
       theme.output = output
       theme.pool = evaluator.pool
