@@ -79,8 +79,8 @@ export default class Evaluator {
    *  - The internal lookup map persists for the lifetime of this instance; new
    *    entries overwrite prior values (last write wins) so previously resolved
    *    data can seed later evaluations without a rebuild.
-   *  - Both input arrays are mutated in-place (their `value` fields change).
-   *  - Returned value is the (now resolved) theme entries array for chaining.
+   *  - Input array is mutated in-place (`value` fields change).
+   *  - No return value. Evident by the absence of a return statement.
    *
    * @param {Array<{flatPath:string,value:any}>} decomposed - Variable entries to resolve.
    */
