@@ -83,26 +83,11 @@ export default class Evaluator {
    *  - Returned value is the (now resolved) theme entries array for chaining.
    *
    * @param {Array<{flatPath:string,value:any}>} decomposed - Variable entries to resolve.
-   * @returns {Array<object>} The mutated & fully resolved theme entry array.
    */
   evaluate(decomposed) {
-    this.#processScope(decomposed)
-
-    return decomposed
-  }
-
-  /**
-   * Iteratively resolves tokens within a single scope until either no
-   * unresolved tokens remain or the iteration cap is reached.
-   *
-   * @private
-   * @param {Array<object>} target - Objects whose `value` properties are processed.
-   * @throws If we've reached maximum iterations.
-   */
-  #processScope(target) {
     let it = 0
     do {
-      target.forEach(item => {
+      decomposed.forEach(item => {
         const trail = new Array()
 
         if(typeof item.value === "string") {
@@ -128,11 +113,11 @@ export default class Evaluator {
       })
     } while(
       ++it < this.#maxIterations &&
-      this.#hasUnresolvedTokens(target)
+      this.#hasUnresolvedTokens(decomposed)
     )
 
     if(it === this.#maxIterations) {
-      const unresolved = target
+      const unresolved = decomposed
         .filter(this.#tokenCheck)
         .map(token => token.flatPath)
 
