@@ -12,7 +12,7 @@ vars:
     purple: oklch(0.641 0.21 327.7)
     pink: oklch(0.809 0.146 340.6)
     teal: oklch(0.431 0.049 231.1)
-    gold: oklch(0.86  0.168 87.8)
+    gold: oklch(0.86 0.168 87.8)
 
   # The following define secondary basics that can be relied upon by the
   # theme's definition.
