@@ -79,9 +79,10 @@ this.#watcher = chokidar.watch(dependencies, {
 
 **Change handling:**
 
-1. Bundle reload if entry file changed
-2. Pause existing watchers during recompilation
-3. Hash-based output skipping for unchanged themes
+1. **Entry file changes**: Full bundle reload and dependency re-scan
+2. **Import file changes**: Recompile affected themes only
+3. **During compilation**: Temporarily pause watchers to prevent cascade triggers
+4. **Output optimization**: Skip file writes if compiled output hash is unchanged
 
 ## Theme Class Structure
 
@@ -99,11 +100,11 @@ interface Theme {
   outputFileName: string            // computed output file path
 
   // Methods
-  load(): Promise<Theme>            // loads and parses the source file
-  build(options?): Promise<Theme>   // compiles via Compiler
-  write(forceWrite?): Promise<object> // outputs to file or stdout with hash checking
-  addDependency(file): Theme        // adds a file dependency
-  reset(): void                     // clears compilation state
+  load(): Promise<Theme>            // Loads and parses the source YAML/JSON5 file
+  build(options?): Promise<Theme>   // Runs complete compilation pipeline via Compiler class
+  write(forceWrite?): Promise<object> // Writes to .color-theme.json or stdout, skips if hash unchanged
+  addDependency(file): Theme        // Tracks import files for watch mode dependency tracking
+  reset(): void                     // Clears compilation state for fresh rebuild
 }
 ```
 
@@ -154,16 +155,17 @@ The ResolveCommand uses a dynamic method resolution pattern based on CLI options
 1. **Color Resolution**: Direct lookup in the compiled theme's colors object,
    showing variable dependency chains through the ThemePool system
 
-2. **TokenColor Resolution**: Searches tokenColors array for entries matching
-   the requested scope, prioritizing variables from `scope.*` namespace over
-   compiled hex values to show meaningful resolution trails
+2. **TokenColor Resolution**: Searches the tokenColors array for rules whose
+   scopes match the requested token. Shows variable resolution chains when
+   possible, preferring uncompiled variables over final hex values for
+   debugging clarity
 
-3. **Semantic Token Resolution**: Handles semantic token color mappings with
+3. **Semantic Token Resolution**: Handles semantic token colour mappings with
    proper scope hierarchy
 
 4. **Visual Output**: All resolution types produce tree-like visual output
-   showing each resolution step with color-coded token types (variables,
-   functions, hex colors, literals)
+   showing each resolution step with colour-coded token types (variables,
+   functions, hex colours, literals)
 
 The output shows the complete dependency chain from the original expression to
 the final resolved value, making it easy to debug complex variable
@@ -193,9 +195,9 @@ ResolveCommand, implementing four distinct validation passes:
    that are never referenced in tokenColors (other variables may be used in
    colors section)
 
-4. **Precedence Issue Detection**: Detects rule ordering problems where broad
-   scopes appear before more specific ones, causing the specific rules to be
-   masked
+4. **Precedence Issue Detection**: Detects when broad scopes (like `keyword`)
+   appear before specific ones (like `keyword.control`), causing the specific
+   rules to never match since VS Code stops at the first match
 
 **Key Implementation Details:**
 
@@ -206,7 +208,7 @@ ResolveCommand, implementing four distinct validation passes:
   variable resolution) to catch undefined variables, but uses the compiled
   ThemePool for variable existence checking
 
-- Professional Output: Uses ANSI color coding with ERROR:/WARN: prefixes
+- Professional Output: Uses ANSI colour coding with ERROR:/WARN: prefixes
   instead of emoji-based formatting for professional CLI appearance
 
 - Structured Issue Reporting: Each issue type has specific formatting that
@@ -221,10 +223,14 @@ of findings, making it suitable for CI/CD integration.
 
 ## Imports
 
-Imports live under `config.imports` (e.g.
-`config.imports.vars.<alias>: ./file.yaml`). Imported variable trees merge
-into your namespace; you can then reference them like
-`$(alias.palette.primary)`.
+Imports live under `config.import` as an array (e.g. `config.import: ["./vars.yaml", "./colors.yaml"]`).
+
+**Merge Behaviour:**
+
+- **Objects** (`vars`, `colors`, `semanticTokenColors`): Deep merge with later sources overriding earlier ones
+- **Arrays** (`tokenColors`): Append-only concatenation maintaining import order
+
+This distinction exists because `tokenColors` relies on sequential VS Code processing (first match wins), making composition semantically meaningless. Instead, imports provide base rules while the main source file provides catch-all/sentinel rules.
 
 ## Skipped Writes & Dry Runs
 
@@ -264,7 +270,9 @@ await theme.write()
 
 Sassy processes themes in phases:
 
-1. **Import Resolution** - Merge modular theme files using `config.imports`
+1. **Import Resolution** - Merge modular theme files using `config.import`
+   - Objects (`vars`, `colors`, `semanticTokenColors`): Deep merge with override semantics
+   - Arrays (`tokenColors`): Append-only concatenation maintaining import order
 2. **Variable Decomposition** - Flatten nested object structures into dot-
    notation paths
 3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool
