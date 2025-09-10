@@ -7,8 +7,7 @@ config:
   import:
     - ../import/variables.yaml
     - ../import/colors.yaml
-    - ../import/token-colors-$(type).yaml
-    - ../import/token-colors-$(type)-universal.yaml
+    - ../../../karyprocolors-dark.tmLanguage.yaml
 
   custom:
     semanticHighlighting: false
