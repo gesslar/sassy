@@ -1,11 +1,11 @@
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import FileObject from "./FileObject.js"
 
 /**
  * Base class for command-line interface commands.
  * Provides common functionality for CLI option handling and file resolution.
  */
-export default class AuntyCommand {
+export default class Command {
   #cliCommand = null
   #cliOptions = null
   #optionNames = []
@@ -16,7 +16,7 @@ export default class AuntyCommand {
   #cache
 
   /**
-   * Creates a new AuntyCommand instance.
+   * Creates a new Command instance.
    *
    * @param {object} config - Configuration object
    * @param {object} config.cwd - Current working directory object
@@ -108,17 +108,17 @@ export default class AuntyCommand {
    */
   async buildCli(program) {
     if(!this.cliCommand)
-      throw AuntyError.new("This command has no CLI command string.")
+      throw Sass.new("This command has no CLI command string.")
 
     if(!this.cliOptions)
-      throw AuntyError.new("This command has no CLI options.")
+      throw Sass.new("This command has no CLI options.")
 
     this.#command = program.command(this.cliCommand)
     this.#command.action(async(...arg) => {
       try {
         await this.execute(...arg)
       } catch(error) {
-        throw AuntyError.new(`Trying to execute ${this.constructor.name} with ${JSON.stringify(...arg)}`, error)
+        throw Sass.new(`Trying to execute ${this.constructor.name} with ${JSON.stringify(...arg)}`, error)
       }
     })
 
@@ -137,7 +137,7 @@ export default class AuntyCommand {
    */
   addCliOption(name, options, preserve) {
     if(!this.#command)
-      throw new Error("Unitialised AuntyCommand")
+      throw new Error("Unitialised Command")
 
     this.#command.option(...options)
 
@@ -167,13 +167,13 @@ export default class AuntyCommand {
    * @param {string} fileName - The theme file name or path
    * @param {object} cwd - The current working directory object
    * @returns {Promise<FileObject>} The resolved and validated FileObject
-   * @throws {AuntyError} If the file does not exist
+   * @throws {Sass} If the file does not exist
    */
   async resolveThemeFileName(fileName, cwd) {
     const fileObject = new FileObject(fileName, cwd)
 
     if(!await fileObject.exists)
-      throw AuntyError.new(`No such file 🤷: ${fileObject.path}`)
+      throw Sass.new(`No such file 🤷: ${fileObject.path}`)
 
     return fileObject
   }
@@ -200,10 +200,10 @@ export default class AuntyCommand {
         if(rejected[0].reason instanceof Error)
           throw rejected[0].reason
         else
-          throw AuntyError.new(rejected[0].reason)
+          throw Sass.new(rejected[0].reason)
       }
     } catch(error) {
-      throw AuntyError.new(
+      throw Sass.new(
         `Processing '${event}' event with ${arg&&arg.length?`'${arg}'`:"no arguments"}.`,
         error
       )

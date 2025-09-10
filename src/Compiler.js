@@ -11,7 +11,7 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Data from "./Data.js"
 import Evaluator from "./Evaluator.js"
 import File from "./File.js"
@@ -107,7 +107,7 @@ export default class Compiler {
       theme.output = output
       theme.pool = evaluator.pool
     } catch(error) {
-      throw AuntyError.new(`Compiling ${theme.name}`, error)
+      throw Sass.new(`Compiling ${theme.name}`, error)
     }
   }
 
@@ -133,7 +133,7 @@ export default class Compiler {
 
 
     if(!Data.isArrayUniform(imports, "string"))
-      throw new AuntyError(
+      throw new Sass(
         `All import entries must be strings. Got ${JSON.stringify(imports)}`
       )
 
@@ -163,7 +163,7 @@ export default class Compiler {
           loaded.push(result)
         }
       } catch(error) {
-        throw AuntyError.new(`Attempting to import ${importing}`, error)
+        throw Sass.new(`Attempting to import ${importing}`, error)
       }
     }
 

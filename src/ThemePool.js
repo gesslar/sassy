@@ -6,7 +6,7 @@
  * Manages resolved values, raw resolutions, and token relationships during theme compilation.
  */
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import ThemeToken from "./ThemeToken.js"
 
 /**
@@ -98,10 +98,10 @@ export default class ThemePool {
    */
   addToken(token, dependency=null) {
     if(!(token instanceof ThemeToken))
-      throw AuntyError.new("Token must be of type ThemeToken.")
+      throw Sass.new("Token must be of type ThemeToken.")
 
     if(!(dependency === null || dependency instanceof ThemeToken))
-      throw AuntyError.new("Token must be null or of type ThemeToken.")
+      throw Sass.new("Token must be null or of type ThemeToken.")
 
     this.#tokens.set(token.getName(), token)
 

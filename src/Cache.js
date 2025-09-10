@@ -1,4 +1,4 @@
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import File from "./File.js"
 import FileObject from "./FileObject.js"
 
@@ -11,7 +11,7 @@ import FileObject from "./FileObject.js"
  * import the same dependency files, while ensuring data freshness through
  * modification time checking.
  */
-export default class AuntyCache {
+export default class Cache {
   /** @type {Map<string, Date>} Map of file paths to last modification times */
   #modifiedTimes = new Map()
   /** @type {Map<string, object>} Map of file paths to parsed file data */
@@ -42,13 +42,13 @@ export default class AuntyCache {
    *
    * @param {FileObject} fileObject - The file object to load and cache
    * @returns {Promise<object>} The parsed file data (JSON5 or YAML)
-   * @throws {AuntyError} If the file cannot be found or accessed
+   * @throws {Sass} If the file cannot be found or accessed
    */
   async loadCachedData(fileObject) {
     const lastModified = await File.fileModified(fileObject)
 
     if(lastModified === null)
-      throw AuntyError.new(`Unable to find file '${fileObject.path}'`)
+      throw Sass.new(`Unable to find file '${fileObject.path}'`)
 
     if(this.#modifiedTimes.has(fileObject.path)) {
       const lastCached = this.#modifiedTimes.get(fileObject.path)

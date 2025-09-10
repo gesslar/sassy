@@ -4,7 +4,7 @@
  * including arrays, unions, and options.
  */
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Data from "./Data.js"
 
 /**
@@ -192,10 +192,10 @@ export default class TypeSpec {
     this.#specs = parts.map(part => {
       const typeMatches = /(\w+)(\[\])?/.exec(part)
       if(!typeMatches || typeMatches.length !== 3)
-        throw AuntyError.new(`Invalid type: ${part}`)
+        throw Sass.new(`Invalid type: ${part}`)
 
       if(!Data.isValidType(typeMatches[1]))
-        throw AuntyError.new(`Invalid type: ${typeMatches[1]}`)
+        throw Sass.new(`Invalid type: ${typeMatches[1]}`)
 
       return {
         typeName: typeMatches[1],

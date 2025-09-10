@@ -1,9 +1,9 @@
 import {EventEmitter} from "node:events"
 import process from "node:process"
 
-import AuntyCommand from "./AuntyCommand.js"
-import AuntyError from "./AuntyError.js"
-import AuntySession from "./Session.js"
+import Command from "./Command.js"
+import Sass from "./Sass.js"
+import Session from "./Session.js"
 import Term from "./Term.js"
 import Theme from "./Theme.js"
 
@@ -11,7 +11,7 @@ import Theme from "./Theme.js"
  * Command handler for building VS Code themes from source files.
  * Handles compilation, watching for changes, and output generation.
  */
-export default class BuildCommand extends AuntyCommand {
+export default class BuildCommand extends Command {
   /** @type {EventEmitter} Internal event emitter for watch mode coordination */
   emitter = new EventEmitter()
 
@@ -71,7 +71,7 @@ export default class BuildCommand extends AuntyCommand {
         const theme = new Theme(fileObject, cwd, options)
         theme.cache = this.cache
 
-        return new AuntySession(this, theme, options)
+        return new Session(this, theme, options)
       })
     )
 
@@ -136,7 +136,7 @@ export default class BuildCommand extends AuntyCommand {
           await this.asyncEmit("revertCheckpoint")
         }
       } catch(error) {
-        AuntyError.new("Processing input.", error)
+        Sass.new("Processing input.", error)
           .report(true)
       }
     })

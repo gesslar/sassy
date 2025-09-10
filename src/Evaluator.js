@@ -13,7 +13,7 @@
 
 import {parse} from "culori"
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Colour from "./Colour.js"
 import ThemePool from "./ThemePool.js"
 import ThemeToken from "./ThemeToken.js"
@@ -119,7 +119,7 @@ export default class Evaluator {
         .filter(this.#tokenCheck)
         .map(token => token.flatPath)
 
-      throw AuntyError.new(
+      throw Sass.new(
         "Luuuucyyyy! We tried to resolve your tokens, but there were just "+
         "too many! Suspect maybe some circular references are interfering "+
         "with your bliss. These are the ones that remain unresolved: " +
@@ -164,7 +164,7 @@ export default class Evaluator {
     } while(++it < this.#maxIterations)
 
     if(it === this.#maxIterations) {
-      throw AuntyError.new("HMMMMM! It looks like you might have some " +
+      throw Sass.new("HMMMMM! It looks like you might have some " +
         "circular resolution happening. We tried to fix it up, but this " +
         "doesn't seem to be working out. Trying to resolve: " +
         `${parentTokenKeyString}, we got as far as ${value}, before we ` +
@@ -316,7 +316,7 @@ export default class Evaluator {
             return Colour.toHex(raw)
         }
       } catch(e) {
-        throw AuntyError.new(`Performing colour function ${raw}`, e)
+        throw Sass.new(`Performing colour function ${raw}`, e)
       }
     })()
   }

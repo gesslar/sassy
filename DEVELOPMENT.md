@@ -1,14 +1,14 @@
-# Aunty Rose - Development Documentation
+# Sassy - Development Documentation
 
 This document contains technical information for developers working on or
-extending Aunty Rose.
+extending Sassy.
 
 ## CLI Implementation
 
 The CLI is built with Commander.js using a subcommand architecture:
 
 ```text
-Usage: aunty <command> [options] <args...>
+Usage: sassy <command> [options] <args...>
 
 Commands:
   build <file...>          Compile theme files to VS Code format
@@ -34,18 +34,18 @@ Global Options:
 ```
 
 The CLI delegates to command classes (`BuildCommand`, `ResolveCommand`,
-`LintCommand`) that extend `AuntyCommand`. See README.md for complete CLI
+`LintCommand`) that extend `Command`. See README.md for complete CLI
 usage examples.
 
 ## Error Handling Architecture
 
-### AuntyError Class
+### Sass Error Class
 
-The `AuntyError` class provides structured error reporting with context chains:
+The `Sass` class provides structured error reporting with context chains:
 
 ```javascript
 // Friendly causal chain collection
-AuntyError.new("Variable not found")
+Sass.new("Variable not found")
   .trace("evaluating $(unknown.var)")
   .trace("in theme.colors['editor.background']")
   .trace("compiling ocean-theme.yaml")
@@ -58,7 +58,7 @@ AuntyError.new("Variable not found")
 
 **Key methods:**
 
-- `AuntyError.new(message)` - Create new error
+- `Sass.new(message)` - Create new error
 - `error.trace(context)` - Add context layer
 - `error.report()` - Format for output
 
@@ -132,13 +132,13 @@ for different types of theme properties:
 
 ```bash
 # Resolve color properties (flat object structure)
-npx @gesslar/aunty resolve --color editor.background my-theme.yaml
+npx @gesslar/sassy resolve --color editor.background my-theme.yaml
 
 # Resolve tokenColors (array structure with scope matching)
-npx @gesslar/aunty resolve --tokenColor keyword.control my-theme.yaml
+npx @gesslar/sassy resolve --tokenColor keyword.control my-theme.yaml
 
 # Resolve semantic token colors
-npx @gesslar/aunty resolve --semanticTokenColor variable.readonly my-theme.yaml
+npx @gesslar/sassy resolve --semanticTokenColor variable.readonly my-theme.yaml
 ```
 
 **Architecture:**
@@ -174,12 +174,12 @@ relationships across different theme property types.
 The `LintCommand` class provides comprehensive theme validation capabilities:
 
 ```bash
-npx @gesslar/aunty lint my-theme.yaml
+npx @gesslar/sassy lint my-theme.yaml
 ```
 
 **Architecture:**
 
-The LintCommand follows the same AuntyCommand pattern as BuildCommand and
+The LintCommand follows the same Command pattern as BuildCommand and
 ResolveCommand, implementing four distinct validation passes:
 
 1. **Duplicate Scope Detection**: Analyzes tokenColors array to find scopes
@@ -244,12 +244,12 @@ or profiling output.
 ### Compiler
 
 ```bash
-npm install @gesslar/aunty
+npm install @gesslar/sassy
 ```
 
 ```javascript
-import Theme from '@gesslar/aunty/src/components/Theme.js'
-import FileObject from '@gesslar/aunty/src/components/FileObject.js'
+import Theme from '@gesslar/sassy/src/components/Theme.js'
+import FileObject from '@gesslar/sassy/src/components/FileObject.js'
 
 const fileObject = new FileObject('my-theme.yaml')
 const theme = new Theme(fileObject, process.cwd(), {})
@@ -262,7 +262,7 @@ await theme.write()
 
 ## Architecture
 
-Aunty Rose processes themes in phases:
+Sassy processes themes in phases:
 
 1. **Import Resolution** - Merge modular theme files using `config.imports`
 2. **Variable Decomposition** - Flatten nested object structures into dot-
@@ -308,7 +308,7 @@ theme keys layer atop a stable semantic base.
 
 ## Culori Integration
 
-Aunty Rose leverages [Culori](https://culorijs.org/) for colour parsing and
+Sassy leverages [Culori](https://culorijs.org/) for colour parsing and
 manipulation. The Evaluator's colour function system works as follows:
 
 **Architecture:**
@@ -350,8 +350,8 @@ If you build something neat, consider opening a PR or sharing a gist.
 ## Development Setup
 
 ```bash
-git clone https://github.com/gesslar/aunty
-cd aunty
+git clone https://github.com/gesslar/sassy
+cd sassy
 npm install
 ```
 
@@ -364,7 +364,7 @@ node ./src/cli.js build examples/simple/midnight-ocean.yaml -o ./examples/output
 
 ## Philosophy
 
-Aunty Rose embraces **parametric design** principles:
+Sassy embraces **parametric design** principles:
 
 - **Semantic over literal** - `$(std.accent)` tells you *what* it is
 - **Relationships over isolation** - Colours that belong together, stay

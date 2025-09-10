@@ -11,7 +11,7 @@ import path from "node:path"
 import url from "node:url"
 import YAML from "yaml"
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Data from "./Data.js"
 import DirectoryObject from "./DirectoryObject.js"
 import FileObject from "./FileObject.js"
@@ -174,8 +174,8 @@ export default class File {
    *
    * @param {string|string[]} glob - The glob pattern(s) to search.
    * @returns {Promise<Array<FileObject>>} A promise that resolves to an array of file objects
-   * @throws {AuntyError} If the input is not a string or array of strings.
-   * @throws {AuntyError} If the glob pattern array is empty or for other search failures.
+   * @throws {Sass} If the input is not a string or array of strings.
+   * @throws {Sass} If the glob pattern array is empty or for other search failures.
    */
   static async getFiles(glob) {
     Valid.assert(
@@ -199,7 +199,7 @@ export default class File {
       Data.uniformStringArray(globbyArray) &&
       !globbyArray.length
     )
-      throw AuntyError.new(
+      throw Sass.new(
         `Invalid glob pattern: Array must contain only strings. Got ${JSON.stringify(glob)}`,
       )
 
@@ -250,10 +250,10 @@ export default class File {
     const filePath = fileObject.path
 
     if(!(await fileObject.exists))
-      throw AuntyError.new(`No such file '${filePath}'`)
+      throw Sass.new(`No such file '${filePath}'`)
 
     if(!filePath)
-      throw AuntyError.new("No absolute path in file map")
+      throw Sass.new("No absolute path in file map")
 
     return await fs.readFile(filePath, "utf8")
   }
@@ -266,7 +266,7 @@ export default class File {
    */
   static async writeFile(fileObject, content) {
     if(!fileObject.path)
-      throw AuntyError.new("No absolute path in file")
+      throw Sass.new("No absolute path in file")
 
     await fs.writeFile(fileObject.path, content, "utf8")
   }
@@ -287,7 +287,7 @@ export default class File {
       try {
         return YAML.parse(content)
       } catch {
-        throw AuntyError.new(`Content is neither valid JSON nor valid YAML:\n'${fileObject.path}'`)
+        throw Sass.new(`Content is neither valid JSON nor valid YAML:\n'${fileObject.path}'`)
       }
     }
   }
@@ -299,7 +299,7 @@ export default class File {
    * @param {DirectoryObject} dirObject - The path or DirMap of the directory to assure exists
    * @param {object} [options] - Any options to pass to mkdir
    * @returns {Promise<boolean>} True if directory exists, false otherwise
-   * @throws {AuntyError} If directory creation fails
+   * @throws {Sass} If directory creation fails
    */
   static async assureDirectory(dirObject, options = {}) {
     if(await dirObject.exists)
@@ -308,7 +308,7 @@ export default class File {
     try {
       await fs.mkdir(dirObject.path, options)
     } catch(e) {
-      throw AuntyError.new(`Unable to create directory '${dirObject.path}': ${e.message}`)
+      throw Sass.new(`Unable to create directory '${dirObject.path}': ${e.message}`)
     }
 
     return dirObject.exists
