@@ -44,7 +44,6 @@ export default class Evaluator {
    * of wrapping style. The pattern captures (entireMatch, posix, legacy,
    * braced).
    *
-   * @private
    * @type {RegExp}
    */
   static sub = /(?<captured>\$\((?<parens>[^()]+)\)|\$(?<none>[\w]+(?:\.[\w]+)*)|\$\{(?<braces>[^()]+)\})/
@@ -53,7 +52,6 @@ export default class Evaluator {
    * Regular expression for matching colour / transformation function calls
    * within token strings, e.g. `darken($(std.accent), 10)`.
    *
-   * @private
    * @type {RegExp}
    */
   static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
