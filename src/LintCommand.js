@@ -20,6 +20,8 @@ import c from "@gesslar/colours"
 
 import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
+import File from "./File.js"
+import FileObject from "./FileObject.js"
 import Term from "./Term.js"
 import Theme from "./Theme.js"
 import ThemePool from "./ThemePool.js"
@@ -190,7 +192,7 @@ export default class LintCommand extends Command {
 
     switch(issue.type) {
       case "duplicate-scope": {
-        const rules = issue.occurrences.map(occ => `'${occ.name}'`).join(", ")
+        const rules = issue.occurrences.map(occ => `{loc}'${occ.name}{/}'`).join(", ")
         Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
         break
       }
@@ -201,15 +203,15 @@ export default class LintCommand extends Command {
       }
 
       case "unused-variable": {
-        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined but never used`)
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined in '{loc}${issue.occurence}{/}', but is never used`)
         break
       }
 
       case "precedence-issue": {
         if(issue.broadIndex === issue.specificIndex) {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}' redundant in '${issue.broadRule}{/}'`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'`)
         } else {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '${issue.broadRule}' masks more specific '{context}${issue.specificScope}{/}' in '${issue.specificRule}'`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'`)
         }
 
         break
@@ -314,8 +316,11 @@ export default class LintCommand extends Command {
       return issues
 
     // Get variables defined in the vars section only
-    const definedVars = new Set()
-    this.collectVarsDefinitions(theme.source.vars, definedVars)
+    const definedVars = new Map()
+    const {cwd} = this
+    const mainFile = new FileObject(theme.sourceFile.path)
+    const relativeMainPath = File.relativeOrAbsolutePath(cwd, mainFile)
+    this.collectVarsDefinitions(theme.source.vars, definedVars, "", relativeMainPath)
 
     // Also check dependencies for vars definitions
     if(theme.dependencies) {
@@ -323,7 +328,9 @@ export default class LintCommand extends Command {
         try {
           const depData = theme.cache?.loadCachedDataSync?.(dependency)
           if(depData?.vars) {
-            this.collectVarsDefinitions(depData.vars, definedVars)
+            const depFile = new FileObject(dependency.path)
+            const relativeDependencyPath = File.relativeOrAbsolutePath(cwd, depFile)
+            this.collectVarsDefinitions(depData.vars, definedVars, "", relativeDependencyPath)
           }
         } catch {
           // Ignore cache errors
@@ -368,12 +375,13 @@ export default class LintCommand extends Command {
     }
 
     // Find vars-defined variables that are never used in content sections
-    for(const varName of definedVars) {
+    for(const [varName, filename] of definedVars) {
       if(!usedVars.has(varName)) {
         issues.push({
           type: "unused-variable",
           severity: "low",
-          variable: `$${varName}`
+          variable: `$${varName}`,
+          occurence: filename,
         })
       }
     }
@@ -383,23 +391,24 @@ export default class LintCommand extends Command {
 
   /**
    * Recursively collects variable names defined in the vars section.
-   * Adds found variable names to the definedVars set.
+   * Adds found variable names to the definedVars map.
    *
    * @param {any} vars - The vars data structure to search
-   * @param {Set} definedVars - Set to add found variable names to
+   * @param {Map} definedVars - Map to add found variable names and filenames to
    * @param {string} prefix - Current prefix for nested vars
+   * @param {string} filename - The filename where this variable is defined
    */
-  collectVarsDefinitions(vars, definedVars, prefix = "") {
+  collectVarsDefinitions(vars, definedVars, prefix = "", filename = "") {
     if(!vars || typeof vars !== "object")
       return
 
     for(const [key, value] of Object.entries(vars)) {
       const varName = prefix ? `${prefix}.${key}` : key
-      definedVars.add(varName)
+      definedVars.set(varName, filename)
 
       // If the value is an object, recurse for nested definitions
       if(value && typeof value === "object" && !Array.isArray(value)) {
-        this.collectVarsDefinitions(value, definedVars, varName)
+        this.collectVarsDefinitions(value, definedVars, varName, filename)
       }
     }
   }

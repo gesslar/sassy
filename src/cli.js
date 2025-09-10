@@ -80,6 +80,7 @@ void (async function main() {
     c.alias.set("muted-bracket", "{F244}")
     // Lint command
     c.alias.set("context", "{F159}")
+    c.alias.set("loc", "{F148}")
     // Resolve command
     c.alias.set("head", "{F220}")
     c.alias.set("leaf", "{F151}")
