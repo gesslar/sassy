@@ -107,7 +107,7 @@ npx @gesslar/sassy lint my-theme.yaml
 
 ### Debugging Your Themes
 
-**See what a color variable resolves to:**
+**See what a colour variable resolves to:**
 
 ```bash
 npx @gesslar/sassy resolve --color editor.background my-theme.yaml
@@ -119,7 +119,7 @@ npx @gesslar/sassy resolve --color editor.background my-theme.yaml
 npx @gesslar/sassy resolve --tokenColor keyword.control my-theme.yaml
 ```
 
-**Debug semantic token colors:**
+**Debug semantic token colours:**
 
 ```bash
 npx @gesslar/sassy resolve --semanticTokenColor variable.readonly my-theme.yaml
@@ -147,7 +147,7 @@ npx @gesslar/sassy lint my-theme.yaml
 ```
 
 The lint command performs comprehensive validation of your theme files to catch
-common issues that could cause unexpected behavior or poor maintainability.
+common issues that could cause unexpected behaviour or poor maintainability.
 
 ### Lint Command Checks
 
@@ -423,13 +423,12 @@ vars:
 config:
   name: "My Theme"
   type: dark
-  imports:
-    vars:
-      colors: "./colours.yaml"
+  import:
+    - "./colours.yaml"
 
 vars:
   # Use imported colours
-  accent: $(colors.palette.primary)
+  accent: $(palette.primary)
 
   # Build your design system
   std:
@@ -451,49 +450,48 @@ Sassy supports importing different types of theme components:
 
 ```yaml
 config:
-  imports:
-    # Import variables (merged into your vars section)
-    vars:
-      colors: "./shared/colours.yaml"
-      # Can import multiple files
-      typography: ["./shared/fonts.yaml", "./shared/sizes.yaml"]
-
-    # Import global configuration
-    global:
-      base: "./shared/base-config.yaml"
-
-    # Import VS Code colour definitions
-    colors:
-      ui: "./shared/ui-colours.yaml"
-
-    # Import syntax highlighting rules
-    tokenColors:
-      syntax: "./shared/syntax.yaml"
-
-    # Import semantic token colours
-    semanticTokenColors:
-      semantic: "./shared/semantic.yaml"
+  import:
+    - "./shared/colours.yaml"        # Variables and base config
+    - "./shared/ui-colours.yaml"     # VS Code color definitions  
+    - "./shared/syntax.yaml"         # Syntax highlighting rules
+    - "./shared/semantic.yaml"       # Semantic token colours
 ```
 
-**Import Format Options:**
+**Import Format:**
 
-- **Single file:** `"./path/to/file.yaml"`
-- **Multiple files:** `["./file1.yaml", "./file2.yaml"]`
+Imports are a simple array of file paths. Each file gets merged into your theme:
+
+- **Files:** `["./file1.yaml", "./file2.yaml", "./file3.yaml"]`
 - **File types:** Both `.yaml` and `.json5` are supported
 
 **Merge Order:**
 
-The merge happens in a precise order with each level overriding the previous:
+The merge behaviour depends on the type of theme content:
 
-1. `global` imports (merged first)
-2. `colors` imports
-3. `tokenColors` imports
-4. `semanticTokenColors` imports
-5. Your theme file's own definitions (final override)
+**Objects (composable):** `colors`, `semanticTokenColors`, `vars`, `config`
 
-Within each section, if you import multiple files, they merge in array order.
-This layered approach gives you fine-grained control over which definitions
-take precedence.
+1. Imported files (merged in import order)
+2. Your theme file's own definitions (final override)
+
+Later sources override earlier ones using deep object merging.
+
+**Arrays (append-only):** `tokenColors`
+
+1. All imported `tokenColors` (in import order)
+2. Your theme file's `tokenColors` (appended last)
+
+**Why different?** VS Code reads `tokenColors` from top to bottom and stops at the first matching rule. This means:
+
+- **Imported rules** = specific styling (e.g., "make function names blue")
+- **Your main file rules** = fallbacks (e.g., "if nothing else matched, make it white")
+
+**Examples:**
+
+- If an import defines `keyword.control` and your main file also defines `keyword.control`, VS Code will use the imported version because it appears first in the final array.
+
+- If your import has a broad rule like `storage` and your main file has a specific rule like `storage.type`, the broad `storage` rule will match first and your specific `storage.type` rule will never be used.
+
+> **Tip:** If you're unsure about rule precedence or conflicts, run `npx @gesslar/sassy lint your-theme.yaml` to see exactly what's happening with your `tokenColors`.
 
 ### Watch Mode for Development
 
@@ -574,7 +572,7 @@ different approaches and techniques.
 npx @gesslar/sassy build --nerd my-theme.yaml
 
 # Check what a specific variable resolves to
-npx @gesslar/sassy resolve --token problematic.variable my-theme.yaml
+npx @gesslar/sassy resolve --color problematic.variable my-theme.yaml
 ```
 
 **Variables not resolving:**
@@ -585,9 +583,10 @@ npx @gesslar/sassy resolve --token problematic.variable my-theme.yaml
 
 **Watch mode not updating:**
 
-- Check that files aren't being saved outside the watched directory
-- Try restarting watch mode
-- Verify file permissions
+- Ensure you're editing the original `.yaml` file (not the compiled `.color-theme.json`)
+- Check that imported files are in the same directory tree as your main theme
+- Try restarting watch mode if it seems stuck
+- Verify file permissions allow reading your theme files
 
 ## Getting Help
 

@@ -58,15 +58,27 @@ export default class Compiler {
 
       theme.dependencies = importedFiles
 
+      // Handle tokenColors separately - imports first, then main source
+      // (append-only)
+      const mergedTokenColors = [
+        ...(imported.tokenColors ?? []),
+        ...(sourceTheme?.tokenColors ?? [])
+      ]
+
       const merged = Data.mergeObject({},
         imported,
         {
           vars: sourceVars ?? {},
           colors: sourceTheme?.colors ?? {},
-          tokenColors: sourceTheme?.tokenColors ?? [],
           semanticTokenColors: sourceTheme?.semanticTokenColors ?? {},
         }
       )
+
+      // Add tokenColors after merging to avoid mergeObject processing
+      merged.tokenColors = mergedTokenColors
+
+      Term.debug(JSON.stringify(merged))
+
 
       // Shred them up! Kinda. And evaluate the variables in place
       const vars = this.#decomposeObject(merged.vars)
@@ -173,7 +185,7 @@ export default class Compiler {
 
       imported.vars = Data.mergeObject(imported.vars, vars)
       imported.colors = Data.mergeObject(imported.colors, colors)
-      imported.tokenColors = Data.mergeArray(imported.tokenColors, tokenColors)
+      imported.tokenColors = [...imported.tokenColors, ...tokenColors]
     })
 
     return {imported,importedFiles}
