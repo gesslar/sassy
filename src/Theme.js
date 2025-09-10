@@ -13,7 +13,7 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Compiler from "./Compiler.js"
 import DirectoryObject from "./DirectoryObject.js"
 import File from "./File.js"
@@ -190,7 +190,7 @@ export default class Theme {
    */
   set pool(pool) {
     if(this.#pool)
-      throw AuntyError.new("Cannot override existing pool.")
+      throw Sass.new("Cannot override existing pool.")
 
     this.#pool = pool
   }
@@ -209,13 +209,13 @@ export default class Theme {
    * Validates that the source contains required configuration.
    *
    * @returns {Promise<this>} Returns this instance for method chaining
-   * @throws {AuntyError} If source file lacks required 'config' property
+   * @throws {Sass} If source file lacks required 'config' property
    */
   async load() {
     const source = await this.#cache.loadCachedData(this.#sourceFile)
 
     if(!source.config)
-      throw AuntyError.new(
+      throw Sass.new(
         `Source file does not contain 'config' property: ${this.#sourceFile.path}`
       )
 
@@ -227,11 +227,11 @@ export default class Theme {
    *
    * @param {FileObject} file - The file to add as a dependency
    * @returns {this} Returns this instance for method chaining
-   * @throws {AuntyError} If the file parameter is not a valid file
+   * @throws {Sass} If the file parameter is not a valid file
    */
   addDependency(file) {
     if(!file.isFile)
-      throw AuntyError.new("File must be a dependency.")
+      throw Sass.new("File must be a dependency.")
 
     this.#dependencies.push(file)
 

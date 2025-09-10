@@ -3,7 +3,7 @@ import c from "@gesslar/colours"
 import console from "node:console"
 import process from "node:process"
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 
 export default class Term {
   /**
@@ -121,7 +121,7 @@ export default class Term {
       return Term.terminalMessage(message)
     }
 
-    throw AuntyError.new("Invalid arguments passed to terminalMessage")
+    throw Sass.new("Invalid arguments passed to terminalMessage")
   }
 
   /**
@@ -133,7 +133,7 @@ export default class Term {
    * element is the raw text to display.
    *
    * Input validation: every element of `parts` must be a string; otherwise
-   * an `AuntyError` is thrown. (Additional elements beyond the first two are
+   * an `Sass` error is thrown. (Additional elements beyond the first two are
    * ignored – the method destructures only the first pair.)
    *
    * Example:
@@ -146,11 +146,11 @@ export default class Term {
    *
    * @param {string[]} parts - Tuple: [level, text]. Additional entries ignored.
    * @returns {string} Colourised bracketed segment (e.g. "[TEXT]").
-   * @throws {AuntyError} If any element of `parts` is not a string.
+   * @throws {Sass} If any element of `parts` is not a string.
    */
   static terminalBracket([level, text, brackets=["",""]]) {
     if(!(typeof level === "string" && typeof text === "string"))
-      throw AuntyError.new("Each element must be a string.")
+      throw Sass.new("Each element must be a string.")
 
     return "" +
         c`{${level}-bracket}${brackets[0]}{/}`

@@ -4,7 +4,7 @@
  */
 
 import TypeSpec from "./Type.js"
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Valid from "./Valid.js"
 
 export default class Data {
@@ -173,7 +173,7 @@ export default class Data {
     // append
       return arr.concat(padding) // somewhere in the middle - THAT IS ILLEGAL
     else
-      throw AuntyError.new("Invalid position")
+      throw Sass.new("Invalid position")
   }
 
   /**
@@ -210,7 +210,7 @@ export default class Data {
       result = {}
 
     if(!Data.isType(source, "array", {allowEmpty: false}))
-      throw AuntyError.new("Source must be an array.")
+      throw Sass.new("Source must be an array.")
 
     workSource.push(...source)
 
@@ -218,13 +218,13 @@ export default class Data {
       !Data.isType(spec, "array", {allowEmpty: false}) &&
       !Data.isType(spec, "function")
     )
-      throw AuntyError.new("Spec must be an array or a function.")
+      throw Sass.new("Spec must be an array or a function.")
 
     if(Data.isType(spec, "function")) {
       const specResult = await spec(workSource)
 
       if(!Data.isType(specResult, "array"))
-        throw AuntyError.new("Spec resulting from function must be an array.")
+        throw Sass.new("Spec resulting from function must be an array.")
 
       workSpec.push(...specResult)
     } else if(Data.isType(spec, "array", {allowEmpty: false})) {
@@ -232,14 +232,14 @@ export default class Data {
     }
 
     if(workSource.length !== workSpec.length)
-      throw AuntyError.new("Source and spec must have the same number of elements.")
+      throw Sass.new("Source and spec must have the same number of elements.")
 
     // Objects must always be indexed by strings.
     workSource.map((element, index, arr) => (arr[index] = String(element)))
 
     // Check that all keys are strings
     if(!Data.isArrayUniform(workSource, "string"))
-      throw AuntyError.new("Indices of an Object must be of type string.")
+      throw Sass.new("Indices of an Object must be of type string.")
 
     workSource.forEach((element, index) => (result[element] = workSpec[index]))
 
@@ -529,7 +529,7 @@ export default class Data {
    */
   static mergeArray(...sources) {
     if(sources.some(source => !Array.isArray(source)))
-      throw AuntyError.new("All sources to mergeArray must be arrays.")
+      throw Sass.new("All sources to mergeArray must be arrays.")
 
     return sources.reduce((acc, curr) => {
       const accSet = new Set(acc)

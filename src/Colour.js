@@ -13,7 +13,7 @@ import {
   parse
 } from "culori"
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import ThemeToken from "./ThemeToken.js"
 import Util from "./Util.js"
 
@@ -29,7 +29,7 @@ const _mixCache = new Map()
  *
  * @param {string} s - The colour string to parse
  * @returns {object} The parsed colour object
- * @throws {AuntyError} If the input is null, undefined, or empty
+ * @throws {Sass} If the input is null, undefined, or empty
  */
 const asColour = s => {
   // This is a comment explaining that 'x == null' will be true if the function
@@ -55,18 +55,18 @@ const asColour = s => {
   //
   // snoochie boochies, with love, gesslar @ 2025-09-02
   if(s == null)
-    throw AuntyError.new("asColour(): received null/undefined")
+    throw Sass.new("asColour(): received null/undefined")
 
   const k = String(s).trim()
   if(!k)
-    throw AuntyError.new("asColour(): received empty string")
+    throw Sass.new("asColour(): received empty string")
 
   let v = _colourCache.get(k)
   if(!v) {
     v = parse(k) // returns undefined if invalid
 
     if(!v)
-      throw AuntyError.new(`Unable to parse colour: ${k}`)
+      throw Sass.new(`Unable to parse colour: ${k}`)
 
     _colourCache.set(k, v)
   }
@@ -169,7 +169,7 @@ export default class Colour {
     }
 
     if(!sourceColor) {
-      throw AuntyError.new(`Cannot parse color from: ${tokenOrColor}`)
+      throw Sass.new(`Cannot parse color from: ${tokenOrColor}`)
     }
 
     // Always convert to OKLCH for lightness math (consistent perceptual results)
@@ -258,7 +258,7 @@ export default class Colour {
     const matches = code.match(Colour.shortHex)
 
     if(!matches)
-      throw AuntyError.new(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
+      throw Sass.new(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
 
     const [_,hex] = matches
 
@@ -271,7 +271,7 @@ export default class Colour {
    *
    * @param {string} hex - The hex colour string to parse
    * @returns {object} Object containing colour and optional alpha information
-   * @throws {AuntyError} If the hex value is invalid or missing
+   * @throws {Sass} If the hex value is invalid or missing
    */
   static parseHexColour(hex) {
     const parsed =
@@ -280,7 +280,7 @@ export default class Colour {
       null
 
     if(!parsed)
-      throw AuntyError.new(`Missing or invalid hex colour: ${hex}`)
+      throw Sass.new(`Missing or invalid hex colour: ${hex}`)
 
     const result = {}
 
@@ -397,13 +397,13 @@ export default class Colour {
    *
    * @param {string} input - The colour expression
    * @returns {string} The resulting hex colour
-   * @throws {AuntyError} If the wrong function or value is provided
+   * @throws {Sass} If the wrong function or value is provided
    */
   static toHex(input) {
     const colourObj = parse(input)
 
     if(!colourObj)
-      throw AuntyError.new(`Invalid colour function invocation: ${input}`)
+      throw Sass.new(`Invalid colour function invocation: ${input}`)
 
     const formatter = "alpha" in colourObj
       ? formatHex8

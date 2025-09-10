@@ -1,7 +1,7 @@
 /**
- * @file AuntyError.js
+ * @file Sass.js
  *
- * Defines the AuntyError class, a custom error type for theme compilation
+ * Defines the Sass class, a custom error type for theme compilation
  * errors.
  *
  * Supports error chaining, trace management, and formatted reporting for both
@@ -14,14 +14,14 @@
 import Term from "./Term.js"
 
 /**
- * Custom error class for Aunty Rose theme compilation errors.
+ * Custom error class for Sassy theme compilation errors.
  * Provides error chaining, trace management, and formatted error reporting.
  */
-export default class AuntyError extends Error {
+export default class Sass extends Error {
   #trace = []
 
   /**
-   * Creates a new AuntyError instance.
+   * Creates a new Sass instance.
    *
    * @param {string} message - The error message
    * @param {...any} arg - Additional arguments passed to parent Error constructor
@@ -54,11 +54,11 @@ export default class AuntyError extends Error {
    * Adds a trace message and returns this instance for chaining.
    *
    * @param {string} message - The trace message to add
-   * @returns {this} This AuntyError instance for method chaining
+   * @returns {this} This Sass instance for method chaining
    */
   addTrace(message) {
     if(typeof message !== "string")
-      throw AuntyError.new(`AuntyError:addTrace expected string, got ${JSON.stringify(message)}`)
+      throw Sass.new(`Sass.addTrace expected string, got ${JSON.stringify(message)}`)
 
     this.trace = message
 
@@ -126,40 +126,40 @@ export default class AuntyError extends Error {
   }
 
   /**
-   * Creates an AuntyError from an existing Error object with additional
+   * Creates an Sass from an existing Error object with additional
    * trace message.
    *
    * @param {Error} error - The original error object
    * @param {string} message - Additional trace message to add
-   * @returns {AuntyError} New AuntyError instance with trace from the original error
-   * @throws {AuntyError} If the first parameter is not an Error instance
+   * @returns {Sass} New Sass instance with trace from the original error
+   * @throws {Sass} If the first parameter is not an Error instance
    */
   static from(error, message) {
     if(!(error instanceof Error))
-      throw AuntyError.new("AuntyError.from must take an Error object.")
+      throw Sass.new("Sass.from must take an Error object.")
 
     const oldMessage = error.message
-    const newError = new AuntyError(oldMessage, {cause: error}).addTrace(message)
+    const newError = new Sass(oldMessage, {cause: error}).addTrace(message)
 
     return newError
   }
 
   /**
-   * Factory method to create or enhance AuntyError instances.
-   * If error parameter is provided, enhances existing AuntyError or wraps
-   * other errors. Otherwise creates a new AuntyError instance.
+   * Factory method to create or enhance Sass instances.
+   * If error parameter is provided, enhances existing Sass or wraps
+   * other errors. Otherwise creates a new Sass instance.
    *
    * @param {string} message - The error message
-   * @param {Error|AuntyError} [error] - Optional existing error to wrap or enhance
-   * @returns {AuntyError} New or enhanced AuntyError instance
+   * @param {Error|Sass} [error] - Optional existing error to wrap or enhance
+   * @returns {Sass} New or enhanced Sass instance
    */
   static new(message, error) {
     if(error) {
-      return error instanceof AuntyError
+      return error instanceof Sass
         ? error.addTrace(message)
-        : AuntyError.from(error, message)
+        : Sass.from(error, message)
     } else {
-      return new AuntyError(message)
+      return new Sass(message)
     }
   }
 }

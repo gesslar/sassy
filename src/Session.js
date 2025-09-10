@@ -1,13 +1,13 @@
 import chokidar from "chokidar"
 
-import AuntyCommand from "./AuntyCommand.js"
-import AuntyError from "./AuntyError.js"
+import Command from "./Command.js"
+import Sass from "./Sass.js"
 import File from "./File.js"
 import Term from "./Term.js"
 import Theme from "./Theme.js"
 import Util from "./Util.js"
 
-export default class AuntySession {
+export default class Session {
   #theme = null
   #command = null
   #options = null
@@ -21,11 +21,11 @@ export default class AuntySession {
   }
 
   /**
-   * Creates a new AuntySession instance for managing theme compilation lifecycle.
+   * Creates a new Session instance for managing theme compilation lifecycle.
    * Sessions provide persistent state across rebuilds, error tracking, and
    * individual theme management within the build system.
    *
-   * @param {AuntyCommand} command - The parent build command instance
+   * @param {Command} command - The parent build command instance
    * @param {Theme} theme - The theme instance to manage
    * @param {object} options - Build configuration options
    * @param {boolean} [options.watch] - Whether to enable file watching
@@ -194,7 +194,7 @@ export default class AuntySession {
         error: error.message
       })
 
-      if(error instanceof AuntyError)
+      if(error instanceof Sass)
         error.report(this.#options.nerd)
     } finally {
       this.#building = false
@@ -298,7 +298,7 @@ export default class AuntySession {
       await this.#buildPipeline(true)
     } catch(error) {
       await this.#command.asyncEmit("recordBuildFail", this.#theme)
-      throw AuntyError.new("Handling rebuild request.", error)
+      throw Sass.new("Handling rebuild request.", error)
     } finally {
       this.#building = false
     }

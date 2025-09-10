@@ -18,7 +18,7 @@
 import c from "@gesslar/colours"
 // import colorSupport from "color-support"
 
-import AuntyCommand from "./AuntyCommand.js"
+import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
 import Term from "./Term.js"
 import Theme from "./Theme.js"
@@ -34,7 +34,7 @@ import ThemePool from "./ThemePool.js"
  * variables, and precedence issues that could cause unexpected theme
  * behaviour.
  */
-export default class LintCommand extends AuntyCommand {
+export default class LintCommand extends Command {
   /**
    * Creates a new LintCommand instance.
    *

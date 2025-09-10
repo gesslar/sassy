@@ -1,8 +1,8 @@
 import c from "@gesslar/colours"
 // import colorSupport from "color-support"
 
-import AuntyCommand from "./AuntyCommand.js"
-import AuntyError from "./AuntyError.js"
+import Command from "./Command.js"
+import Sass from "./Sass.js"
 import Colour from "./Colour.js"
 import Evaluator from "./Evaluator.js"
 import Term from "./Term.js"
@@ -17,7 +17,7 @@ import Data from "./Data.js"
  * Command handler for resolving theme tokens and variables to their final values.
  * Provides introspection into the theme resolution process and variable dependencies.
  */
-export default class ResolveCommand extends AuntyCommand {
+export default class ResolveCommand extends Command {
   /**
    * Creates a new ResolveCommand instance.
    *
@@ -47,7 +47,7 @@ export default class ResolveCommand extends AuntyCommand {
       Data.arrayIntersection(this.cliOptionNames, Object.keys(options))
 
     if(intersection.length > 1)
-      throw AuntyError.new(
+      throw Sass.new(
         `The options ${this.cliOptionNames.join(", ")} are ` +
         `mutually exclusive and may only have one expressed in the request.`
       )
@@ -57,7 +57,7 @@ export default class ResolveCommand extends AuntyCommand {
       .find(o => this.cliOptionNames.includes(o))
 
     if(!optionName) {
-      throw AuntyError.new(
+      throw Sass.new(
         `No valid option provided. Please specify one of: ${this.cliOptionNames.join(", ")}.`
       )
     }
@@ -67,7 +67,7 @@ export default class ResolveCommand extends AuntyCommand {
     const resolverFunction = this[resolveFunctionName]
 
     if(!(resolverFunction && typeof resolverFunction === "function"))
-      throw AuntyError.new(`No such function ${resolveFunctionName}`)
+      throw Sass.new(`No such function ${resolveFunctionName}`)
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
     const theme = new Theme(fileObject, cwd, options)

@@ -1,6 +1,6 @@
 import _assert from "node:assert/strict"
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import Data from "./Data.js"
 
 export default class Valid {
@@ -44,7 +44,7 @@ export default class Valid {
     )
 
     if(!condition)
-      throw AuntyError.new(`${message}${arg ? `: ${arg}` : ""}`)
+      throw Sass.new(`${message}${arg ? `: ${arg}` : ""}`)
   }
 
 }

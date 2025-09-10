@@ -7,7 +7,7 @@
  * management, pool integration, and serialization during theme compilation.
  */
 
-import AuntyError from "./AuntyError.js"
+import Sass from "./Sass.js"
 import ThemePool from "./ThemePool.js"
 
 /**
@@ -38,7 +38,7 @@ export default class ThemeToken {
    */
   constructor(name) {
     if(typeof name !== "string")
-      throw AuntyError.new("Token name must be a bare string.")
+      throw Sass.new("Token name must be a bare string.")
 
     this.setName(name)
   }
@@ -52,13 +52,13 @@ export default class ThemeToken {
    */
   addToPool(pool=null, dependency) {
     if(!(pool instanceof ThemePool))
-      throw AuntyError.new("Pool must be a ThemePool instance.")
+      throw Sass.new("Pool must be a ThemePool instance.")
 
     if(this.#pool)
       return this
 
     if(!(dependency == null || dependency instanceof ThemeToken))
-      throw AuntyError.new("Dependency must be null or of type ThemeToken.")
+      throw Sass.new("Dependency must be null or of type ThemeToken.")
 
     this.#pool = pool
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @file Aunty Rose theme compiler CLI.
+ * @file Sassy theme compiler CLI.
  *
  * Responsibilities:
  *  - Parse CLI arguments (supports JSON5 / YAML theme entries, globs resolved externally by the shell)
@@ -36,8 +36,8 @@ import process from "node:process"
 import url from "node:url"
 import c from "@gesslar/colours"
 
-import AuntyCache from "./AuntyCache.js"
-import AuntyError from "./AuntyError.js"
+import Cache from "./Cache.js"
+import Sass from "./Sass.js"
 import BuildCommand from "./BuildCommand.js"
 import DirectoryObject from "./DirectoryObject.js"
 import FileObject from "./FileObject.js"
@@ -59,7 +59,7 @@ import Term from "./Term.js"
 
 void (async function main() {
   // we need nerd mode info here so that it's available in 'catch'
-  const auntyRoseOptions = {}
+  const sassyOptions = {}
 
   setupAbortHandlers()
 
@@ -91,7 +91,7 @@ void (async function main() {
     c.alias.set("hexAlpha", "{F127}{<I}")
     c.alias.set("arrow", "{F033}")
 
-    const cache = new AuntyCache()
+    const cache = new Cache()
     const cr = new DirectoryObject(url.fileURLToPath(new url.URL("..", import.meta.url)))
     const cwd = new DirectoryObject(process.cwd())
     const packageJson = new FileObject("package.json", cr)
@@ -134,8 +134,8 @@ void (async function main() {
     await program.parseAsync()
 
   } catch(error) {
-    AuntyError.new("Starting Aunty Rose.", error)
-      .report(auntyRoseOptions.nerd || true)
+    Sass.new("Starting Sassy.", error)
+      .report(sassyOptions.nerd || true)
 
     process.exit(1)
   }

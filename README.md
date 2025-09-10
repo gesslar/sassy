@@ -1,6 +1,4 @@
-# Aunty Rose - SCSS-Style Theme Engine for VS Code
-
-![Aunty Rose](media/drawing2.png)
+# Sassy - SCSS-Style Theme Engine for VS Code
 
 **Transform VS Code theme development from tedious to delightful.**
 
@@ -32,7 +30,7 @@ Write themes like a human, compile for VS Code:
 }
 ```
 
-**After (Aunty Rose):**
+**After (Sassy):**
 
 ```yaml
 vars:
@@ -60,41 +58,41 @@ No installation needed - use with npx:
 
 ```bash
 # Create your first theme
-npx @gesslar/aunty build my-theme.yaml
+npx @gesslar/sassy build my-theme.yaml
 
 # Watch mode for development
-npx @gesslar/aunty build my-theme.yaml --watch
+npx @gesslar/sassy build my-theme.yaml --watch
 
 # Custom output location
-npx @gesslar/aunty build -o ./themes my-theme.yaml
+npx @gesslar/sassy build -o ./themes my-theme.yaml
 ```
 
 ## CLI Usage
 
 ```bash
 # Basic compilation
-npx @gesslar/aunty build <theme-file>
+npx @gesslar/sassy build <theme-file>
 
 # Multiple files at once
-npx @gesslar/aunty build theme1.yaml theme2.yaml theme3.yaml
+npx @gesslar/sassy build theme1.yaml theme2.yaml theme3.yaml
 
 # Watch for changes (rebuilds automatically)
-npx @gesslar/aunty build --watch my-theme.yaml
+npx @gesslar/sassy build --watch my-theme.yaml
 
 # Custom output directory
-npx @gesslar/aunty build --output-dir ./my-themes my-theme.yaml
+npx @gesslar/sassy build --output-dir ./my-themes my-theme.yaml
 
 # See the compiled JSON without writing files
-npx @gesslar/aunty build --dry-run my-theme.yaml
+npx @gesslar/sassy build --dry-run my-theme.yaml
 
 # Silent mode (only show errors)
-npx @gesslar/aunty build --silent my-theme.yaml
+npx @gesslar/sassy build --silent my-theme.yaml
 
 # Debug mode (detailed error traces)
-npx @gesslar/aunty build --nerd my-theme.yaml
+npx @gesslar/sassy build --nerd my-theme.yaml
 
 # Lint themes for potential issues
-npx @gesslar/aunty lint my-theme.yaml
+npx @gesslar/sassy lint my-theme.yaml
 ```
 
 ### Build Command Options
@@ -112,19 +110,19 @@ npx @gesslar/aunty lint my-theme.yaml
 **See what a color variable resolves to:**
 
 ```bash
-npx @gesslar/aunty resolve --color editor.background my-theme.yaml
+npx @gesslar/sassy resolve --color editor.background my-theme.yaml
 ```
 
 **Debug tokenColors syntax highlighting:**
 
 ```bash
-npx @gesslar/aunty resolve --tokenColor keyword.control my-theme.yaml
+npx @gesslar/sassy resolve --tokenColor keyword.control my-theme.yaml
 ```
 
 **Debug semantic token colors:**
 
 ```bash
-npx @gesslar/aunty resolve --semanticTokenColor variable.readonly my-theme.yaml
+npx @gesslar/sassy resolve --semanticTokenColor variable.readonly my-theme.yaml
 ```
 
 This shows you the complete resolution chain for any theme property, displaying
@@ -145,7 +143,7 @@ output.
 **Validate your theme for common issues:**
 
 ```bash
-npx @gesslar/aunty lint my-theme.yaml
+npx @gesslar/sassy lint my-theme.yaml
 ```
 
 The lint command performs comprehensive validation of your theme files to catch
@@ -263,13 +261,13 @@ theme:
 
 ## Unlimited Colour Freedom
 
-Aunty Rose is built on [Culori](https://culorijs.org/), a comprehensive colour
-manipulation library. This means **if Culori supports it, Aunty Rose supports
+Sassy is built on [Culori](https://culorijs.org/), a comprehensive colour
+manipulation library. This means **if Culori supports it, Sassy supports
 it automatically** - no configuration needed.
 
 ### Beyond the Built-ins
 
-While Aunty Rose provides common functions like `lighten()`, `darken()`, and
+While Sassy provides common functions like `lighten()`, `darken()`, and
 `mix()`, you have access to the entire spectrum of colour formats:
 
 ```yaml
@@ -288,7 +286,7 @@ vars:
 ```
 
 **The rule is simple:** Write any colour expression that Culori can parse, and
-Aunty Rose will handle it. No need to memorize function lists or check
+Sassy will handle it. No need to memorize function lists or check
 compatibility - if it's a valid colour, it works.
 
 > **Learn More:** Explore the full range of supported colour formats and
@@ -377,7 +375,7 @@ touch ocean-theme.yaml
 
 ```bash
 # Start watching for changes
-npx @gesslar/aunty build --watch ocean-theme.yaml
+npx @gesslar/sassy build --watch ocean-theme.yaml
 ```
 
 ### 3. Install Your Theme
@@ -395,7 +393,7 @@ automatically reload your theme changes.
 
 ### Output Files
 
-Aunty Rose generates standard VS Code theme files:
+Sassy generates standard VS Code theme files:
 
 ```bash
 my-theme.yaml  →  my-theme.color-theme.json
@@ -449,7 +447,7 @@ theme:
 
 ### Import System
 
-Aunty Rose supports importing different types of theme components:
+Sassy supports importing different types of theme components:
 
 ```yaml
 config:
@@ -502,7 +500,7 @@ take precedence.
 Perfect for theme development - see changes instantly:
 
 ```bash
-npx @gesslar/aunty build my-theme.yaml --watch
+npx @gesslar/sassy build my-theme.yaml --watch
 ```
 
 Now edit your YAML file and watch VS Code update automatically!
@@ -573,10 +571,10 @@ different approaches and techniques.
 
 ```bash
 # See detailed error information
-npx @gesslar/aunty build --nerd my-theme.yaml
+npx @gesslar/sassy build --nerd my-theme.yaml
 
 # Check what a specific variable resolves to
-npx @gesslar/aunty resolve --token problematic.variable my-theme.yaml
+npx @gesslar/sassy resolve --token problematic.variable my-theme.yaml
 ```
 
 **Variables not resolving:**
@@ -604,4 +602,4 @@ arrangements is absurd.
 
 ---
 
-*Aunty Rose: Because your themes deserve better than hex codes.*
+*Make gorgeous themes that speak as boldly as you do.*

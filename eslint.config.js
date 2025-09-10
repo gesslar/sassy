@@ -5,10 +5,10 @@ import stylistic from "@stylistic/eslint-plugin"
 export default [
   js.configs.recommended,
   jsdoc.configs['flat/recommended'], {
-    name: "gesslar/aunty/ignores",
+    name: "gesslar/sassy/ignores",
     ignores: [],
   }, {
-    name: "gesslar/aunty/languageOptions",
+    name: "gesslar/sassy/languageOptions",
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -19,7 +19,7 @@ export default [
     },
   },
   {
-    name: "gesslar/aunty/lints-js",
+    name: "gesslar/sassy/lints-js",
     files: ["src/**/*.{mjs,cjs,js}"],
     plugins: {
       "@stylistic": stylistic,
@@ -113,7 +113,7 @@ export default [
     }
   },
   {
-    name: "gesslar/aunty/lints-jsdoc",
+    name: "gesslar/sassy/lints-jsdoc",
     files: ["src/**/*.{mjs,cjs,js}"],
     plugins: {
       jsdoc,
