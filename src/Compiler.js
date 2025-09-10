@@ -77,9 +77,6 @@ export default class Compiler {
       // Add tokenColors after merging to avoid mergeObject processing
       merged.tokenColors = mergedTokenColors
 
-      Term.debug(JSON.stringify(merged))
-
-
       // Shred them up! Kinda. And evaluate the variables in place
       const vars = this.#decomposeObject(merged.vars)
       evaluate(vars)
