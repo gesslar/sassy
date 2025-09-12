@@ -19,7 +19,8 @@
     "lint": "eslint src/",
     "submit": "npm publish --access public",
     "examples": "node ./examples/validator.js",
-    "test": "node -p \"require('fs').readFileSync('TESTING.txt', 'utf8')\""
+    "test": "node -p \"require('fs').readFileSync('TESTING.txt', 'utf8')\"",
+    "update": "npx npm-check-updates -u && npm install"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -44,17 +45,17 @@
     "@gesslar/colours": "^0.0.1",
     "chokidar": "^4.0.3",
     "color-support": "^1.1.3",
-    "commander": "^14.0.0",
+    "commander": "^14.0.1",
     "culori": "^4.0.2",
     "globby": "^14.1.0",
     "json5": "^2.2.3",
     "yaml": "^2.8.1"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^5.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.33.0",
-    "@typescript-eslint/parser": "^8.33.0",
-    "eslint": "^9.28.0",
-    "eslint-plugin-jsdoc": "^50.6.17"
+    "@stylistic/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.43.0",
+    "@typescript-eslint/parser": "^8.43.0",
+    "eslint": "^9.35.0",
+    "eslint-plugin-jsdoc": "^56.1.2"
   }
 }
