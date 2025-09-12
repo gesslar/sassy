@@ -329,7 +329,7 @@ export default class Session {
       }
     })
 
-    this.#watcher.on("change", await this.#handleFileChange.bind(this))
+    this.#watcher.on("change", this.#handleFileChange.bind(this))
   }
 
   /**
