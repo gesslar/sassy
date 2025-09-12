@@ -39,6 +39,15 @@ export default class Session {
   }
 
   async run() {
+
+    this.#building = true
+    await this.#command.asyncEmit("building")
+    this.#command.asyncEmit("recordBuildStart", this.#theme)
+    await this.#buildPipeline()
+
+    // This must come after, or you will fuck up the watching!
+    // Themes won't have their dependencies yet unless you build them
+    // at least once. - Samwise Gamgee
     if(this.#options.watch) {
       this.#command.emitter.on("closeSession", async() =>
         await this.#handleCloseSession())
@@ -54,11 +63,6 @@ export default class Session {
 
       await this.#resetWatcher()
     }
-
-    this.#building = true
-    await this.#command.asyncEmit("building")
-    this.#command.asyncEmit("recordBuildStart", this.#theme)
-    await this.#buildPipeline()
   }
 
   /**
@@ -206,9 +210,10 @@ export default class Session {
    * Handles a file change event and triggers a rebuild for the theme.
    *
    * @param {string} changed - Path to the changed file
+   * @param {object} _stats - OS-level file stat information
    * @returns {Promise<void>}
    */
-  async #handleFileChange(changed) {
+  async #handleFileChange(changed, _stats) {
     try {
       if(this.#building)
         return
@@ -324,7 +329,7 @@ export default class Session {
       }
     })
 
-    this.#watcher.on("change", this.#handleFileChange.bind(this))
+    this.#watcher.on("change", await this.#handleFileChange.bind(this))
   }
 
   /**
