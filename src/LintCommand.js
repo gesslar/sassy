@@ -67,7 +67,7 @@ export default class LintCommand extends Command {
     const theme = new Theme(fileObject, cwd, options)
 
     await theme
-      .setCache(this.cache)
+      .setCache(this.getCache())
       .load()
       .build()
 
@@ -91,7 +91,7 @@ export default class LintCommand extends Command {
       variables: []
     }
 
-    const pool = theme.pool
+    const pool = theme.getPool()
 
     // Always perform structural linting (works with or without pool)
     if(theme.output?.tokenColors)
@@ -451,7 +451,7 @@ export default class LintCommand extends Command {
    */
   #checkUndefinedVariables(themeData, pool, section = "tokenColors") {
     const issues = []
-    const definedVars = pool ? new Set(pool.getTokens.keys()) : new Set()
+    const definedVars = pool ? new Set(pool.getTokens().keys()) : new Set()
 
     if(section === "tokenColors" && Array.isArray(themeData)) {
       themeData.forEach((entry, index) => {
