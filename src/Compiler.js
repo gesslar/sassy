@@ -88,7 +88,8 @@ export default class Compiler {
       const workTokenColors = this.#decomposeObject(merged.tokenColors)
 
       evaluate(workTokenColors)
-      const workSemanticTokenColors = this.#decomposeObject(merged.semanticTokenColors)
+      const workSemanticTokenColors =
+        this.#decomposeObject(merged.semanticTokenColors)
 
       evaluate(workSemanticTokenColors)
 
