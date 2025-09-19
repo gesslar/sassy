@@ -23,7 +23,6 @@ const _colourCache = new Map()
 // Cache for mixed colours to avoid recomputation
 const _mixCache = new Map()
 
-
 /**
  * Parses a colour string into a colour object with caching.
  *
@@ -58,10 +57,12 @@ const asColour = s => {
     throw Sass.new("asColour(): received null/undefined")
 
   const k = String(s).trim()
+
   if(!k)
     throw Sass.new("asColour(): received empty string")
 
   let v = _colourCache.get(k)
+
   if(!v) {
     v = parse(k) // returns undefined if invalid
 
@@ -140,9 +141,11 @@ export default class Colour {
 
     // Use multiplicative scaling for more natural results
     const factor = 1 + (amount / 100)
+
     oklchColor.l = clamp(oklchColor.l * factor, 0, 1)
 
     const result = `${formatHex(oklchColor)}${extracted.alpha?.hex??""}`.toLowerCase()
+
     return result
   }
 
@@ -177,11 +180,11 @@ export default class Colour {
 
     // Use multiplicative scaling
     const factor = 1 + (amount / 100)
+
     oklchColor.l = clamp(oklchColor.l * factor, 0, 1)
 
     return formatHex(oklchColor).toLowerCase()
   }
-
 
   /**
    * Inverts a hex colour by flipping its lightness value.
@@ -193,6 +196,7 @@ export default class Colour {
   static invert(hex) {
     const extracted = Colour.parseHexColour(hex)
     const hslColour = hsl(extracted.colour)
+
     hslColour.l = 1 - hslColour.l  // culori uses 0-1 for lightness
     const modifiedColour = formatHex(hslColour)
 
@@ -360,6 +364,7 @@ export default class Colour {
 
     // memoize by raw inputs (strings) + normalized ratio
     const key = mixKey(colourA, colourB, t)
+
     if(_mixCache.has(key))
       return _mixCache.get(key)
 
@@ -379,6 +384,7 @@ export default class Colour {
     const out = (a < 1 ? formatHex8(withAlpha) : formatHex(mixed)).toLowerCase()
 
     _mixCache.set(key, out)
+
     return out
   }
 

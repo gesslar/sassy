@@ -1,6 +1,6 @@
 {
   "name": "@gesslar/sassy",
-  "version": "0.20.2",
+  "version": "0.21.0",
   "displayName": "Sassy",
   "description": "Make gorgeous themes that speak as boldly as you do.",
   "publisher": "gesslar",
@@ -53,9 +53,12 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.3.1",
-    "@typescript-eslint/eslint-plugin": "^8.43.0",
-    "@typescript-eslint/parser": "^8.43.0",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "esbuild": "^0.25.10",
     "eslint": "^9.35.0",
-    "eslint-plugin-jsdoc": "^56.1.2"
+    "eslint-plugin-jsdoc": "^59.0.1",
+    "typescript": "^5.9.2"
   }
 }

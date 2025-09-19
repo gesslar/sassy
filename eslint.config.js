@@ -1,25 +1,45 @@
 import js from "@eslint/js"
-import jsdoc from "eslint-plugin-jsdoc";
+import jsdoc from "eslint-plugin-jsdoc"
 import stylistic from "@stylistic/eslint-plugin"
+import globals from "globals"
 
 export default [
   js.configs.recommended,
   jsdoc.configs['flat/recommended'], {
-    name: "gesslar/sassy/ignores",
+    name: "gesslar/uglier/ignores",
     ignores: [],
   }, {
-    name: "gesslar/sassy/languageOptions",
+    name: "gesslar/uglier/languageOptions",
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
       globals: {
+        ...globals.node,
         fetch: "readonly",
         Headers: "readonly",
       },
     },
   },
+  // Add override for .cjs files to treat as CommonJS
   {
-    name: "gesslar/sassy/lints-js",
+    name: "gesslar/uglier/cjs-override",
+    files: ["src/**/*.cjs"],
+    languageOptions: {
+      sourceType: "script",
+      ecmaVersion: 2021
+    },
+  },
+  // Add override for .mjs files to treat as ES modules
+  {
+    name: "gesslar/uglier/mjs-override",
+    files: ["src/**/*.mjs"],
+    languageOptions: {
+      sourceType: "module",
+      ecmaVersion: 2021
+    }
+  },
+  {
+    name: "gesslar/uglier/lints-js",
     files: ["src/**/*.{mjs,cjs,js}"],
     plugins: {
       "@stylistic": stylistic,
@@ -27,17 +47,20 @@ export default [
     rules: {
       "@stylistic/arrow-parens": ["error", "as-needed"],
       "@stylistic/arrow-spacing": ["error", { before: true, after: true }],
-      // Ensure control statements and their bodies are not on the same line
       "@stylistic/brace-style": ["error", "1tbs", {allowSingleLine: false}],
-      // Same, but for non bracy ones.
       "@stylistic/nonblock-statement-body-position": ["error", "below"],
       "@stylistic/padding-line-between-statements": [
         "error",
-        {blankLine: "always", prev: "if", next: "*"},
-        {blankLine: "always", prev: "for", next: "*"},
-        {blankLine: "always", prev: "while", next: "*"},
-        {blankLine: "always", prev: "do", next: "*"},
-        {blankLine: "always", prev: "switch", next: "*"}
+        {blankLine: "always",   prev: "if", next: "*"},
+        {blankLine: "always",   prev: "*", next: "return"},
+        {blankLine: "always",   prev: "while", next: "*"},
+        {blankLine: "always",   prev: "for", next: "*"},
+        {blankLine: "always",   prev: "switch", next: "*"},
+        {blankLine: "always",   prev: "do", next: "*"},
+        {blankLine: "always",   prev: ["const", "let", "var"], next: "*"},
+        {blankLine: "any",      prev: ["const", "let", "var"], next: ["const", "let", "var"]},
+        {blankLine: "always",   prev: "directive", next: "*" },
+        {blankLine: "any",      prev: "directive", next: "directive" },
       ],
       "@stylistic/eol-last": ["error", "always"],
       "@stylistic/indent": ["error", 2, {
@@ -77,16 +100,15 @@ export default [
       }],
       // Blocks
       "@stylistic/space-before-blocks": ["error", "always"],
-
-      // "@stylistic/max-len": ["warn", {
-      //   code: 80,
-      //   ignoreComments: true,
-      //   ignoreUrls: true,
-      //   ignoreStrings: true,
-      //   ignoreTemplateLiterals: true,
-      //   ignoreRegExpLiterals: true,
-      //   tabWidth: 2
-      // }],
+      "@stylistic/max-len": ["warn", {
+        code: 80,
+        ignoreComments: true,
+        ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+        ignoreRegExpLiterals: true,
+        tabWidth: 2
+      }],
       "@stylistic/no-tabs": "error",
       "@stylistic/no-trailing-spaces": ["error"],
       "@stylistic/object-curly-spacing": ["error", "never", {
@@ -110,17 +132,25 @@ export default [
         varsIgnorePattern: "^_+"
       }],
       "no-useless-assignment": "error",
+      "prefer-const": "error",
+      "@stylistic/no-multiple-empty-lines": ["error", { max: 1 }],
+      "@stylistic/array-bracket-spacing": ["error", "never"],
     }
   },
   {
-    name: "gesslar/sassy/lints-jsdoc",
+    name: "gesslar/uglier/lints-jsdoc",
     files: ["src/**/*.{mjs,cjs,js}"],
     plugins: {
       jsdoc,
     },
     rules: {
       "jsdoc/require-description": "error",
-      "jsdoc/tag-lines": ["error", "any", {"startLines":1}]
+      "jsdoc/tag-lines": ["error", "any", {"startLines":1}],
+      "jsdoc/require-jsdoc": ["error", { publicOnly: true }],
+      "jsdoc/check-tag-names": "error",
+      "jsdoc/check-types": "error",
+      "jsdoc/require-param-type": "error",
+      "jsdoc/require-returns-type": "error"
     }
   }
 ]

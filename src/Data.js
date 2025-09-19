@@ -59,7 +59,10 @@ export default class Data {
    *
    * @type {string[]}
    */
-  static dataTypes = Object.freeze([...Data.primitives, ...Data.constructors.map(c => c.toLowerCase())])
+  static dataTypes = Object.freeze([
+    ...Data.primitives,
+    ...Data.constructors.map(c => c.toLowerCase())
+  ])
 
   /**
    * Array of type names that can be checked for emptiness.
@@ -161,6 +164,7 @@ export default class Data {
    */
   static arrayPad(arr, length, value, position = 0) {
     const diff = length - arr.length
+
     if(diff <= 0)
       return arr
 
@@ -300,7 +304,9 @@ export default class Data {
    * @returns {boolean} Whether the value is of the specified type
    */
   static isType(value, type, options = {}) {
-    const typeSpec = type instanceof TypeSpec ? type : Data.newTypeSpec(type, options)
+    const typeSpec = type instanceof TypeSpec
+      ? type
+      : Data.newTypeSpec(type, options)
 
     return typeSpec.match(value, options)
   }
@@ -442,8 +448,10 @@ export default class Data {
   static assureObjectPath(obj, keys) {
     let current = obj  // a moving reference to internal objects within obj
     const len = keys.length
+
     for(let i = 0; i < len; i++) {
       const elem = keys[i]
+
       if(!current[elem])
         current[elem] = {}
 
@@ -476,6 +484,7 @@ export default class Data {
    */
   static mergeObject(...sources) {
     const isObject = obj => obj && typeof obj === "object" && !Array.isArray(obj)
+
     return sources.reduce((acc, obj) => {
       if(!isObject(obj))
         return acc
@@ -517,6 +526,7 @@ export default class Data {
    */
   static async asyncFilter(arr, predicate) {
     const results = await Promise.all(arr.map(predicate))
+
     return arr.filter((_, index) => results[index])
   }
 

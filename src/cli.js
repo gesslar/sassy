@@ -112,6 +112,7 @@ void (async function main() {
 
     // Add the build subcommand
     const buildCommand = new BuildCommand({cwd, packageJson: pkgJson})
+
     buildCommand.cache = cache
 
     void(await buildCommand.buildCli(program))
@@ -119,6 +120,7 @@ void (async function main() {
 
     // Add the resolve subcommand
     const resolveCommand = new ResolveCommand({cwd, packageJson: pkgJson})
+
     resolveCommand.cache = cache
 
     void(await resolveCommand.buildCli(program))
@@ -126,6 +128,7 @@ void (async function main() {
 
     // Add the lint subcommand
     const lintCommand = new LintCommand({cwd, packageJson: pkgJson})
+
     lintCommand.cache = cache
 
     void(await lintCommand.buildCli(program))

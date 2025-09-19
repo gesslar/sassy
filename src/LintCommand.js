@@ -26,7 +26,6 @@ import Term from "./Term.js"
 import Theme from "./Theme.js"
 import ThemePool from "./ThemePool.js"
 
-
 // oops, need to have @gesslar/colours support this, too!
 // ansiColors.enabled = colorSupport.hasBasic
 
@@ -63,18 +62,130 @@ export default class LintCommand extends Command {
    * @returns {Promise<void>} Resolves when linting is complete
    */
   async execute(inputArg, options = {}) {
-    const {cwd} = this
+    const cwd = this.getCwd()
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
     const theme = new Theme(fileObject, cwd, options)
 
-    theme.cache = this.cache
+    await theme
+      .setCache(this.cache)
+      .load()
+      .build()
 
-    await theme.load()
-    await theme.build()
+    const issues = await this.#lintTheme(theme)
 
-    const issues = await this.lintTheme(theme)
+    this.#reportIssues(issues)
+  }
 
-    this.reportIssues(issues)
+  /**
+   * Public method to lint a theme and return structured results for external consumption.
+   * Returns categorized lint results for tokenColors, semanticTokenColors, and colors.
+   *
+   * @param {Theme} theme - The compiled theme object
+   * @returns {Promise<object>} Object containing categorized lint results
+   */
+  async lint(theme) {
+    const results = {
+      tokenColors: [],
+      semanticTokenColors: [],
+      colors: [],
+      variables: []
+    }
+
+    const pool = theme.pool
+
+    // Always perform structural linting (works with or without pool)
+    if(theme.output?.tokenColors)
+      results.tokenColors.push(
+        ...this.#lintTokenColorsStructure(theme.output.tokenColors)
+      )
+
+    // Only perform variable-dependent linting if pool exists
+    if(pool) {
+      // Get source data for variable analysis
+      const colors = await this.getColors(theme)
+      const tokenColors = await this.#getTokenColors(theme)
+      const semanticTokenColors = await this.getSemanticTokenColors(theme)
+
+      // Variable-dependent linting
+      results.colors.push(...this.#lintColors(colors, pool))
+      results.tokenColors.push(...this.lintTokenColors(tokenColors, pool))
+      results.semanticTokenColors.push(...this.#lintSemanticTokenColors(semanticTokenColors, pool))
+      results.variables.push(...this.#lintVariables(theme, pool))
+    }
+
+    return results
+  }
+
+  /**
+   * Performs structural linting of tokenColors that doesn't require variable
+   * information.
+   *
+   * Checks for duplicate scopes and precedence issues.
+   *
+   * @param {Array} tokenColors - Array of tokenColor entries
+   * @returns {Array} Array of structural issues
+   */
+  #lintTokenColorsStructure(tokenColors) {
+    return [
+      ...this.#checkDuplicateScopes(tokenColors),
+      ...this.#checkPrecedenceIssues(tokenColors),
+    ]
+  }
+
+  /**
+   * Performs variable-dependent linting of tokenColors data.
+   * Checks for undefined variable references.
+   *
+   * @param {Array} sourceTokenColors - Array of source tokenColor entries
+   * @param {ThemePool} pool - The theme's variable pool
+   * @returns {Array} Array of variable-related issues
+   */
+  lintTokenColors(sourceTokenColors, pool) {
+    return pool
+      ? this.#checkUndefinedVariables(sourceTokenColors, pool, "tokenColors")
+      : []
+  }
+
+  /**
+   * Performs variable-dependent linting of semanticTokenColors data.
+   * Checks for undefined variable references.
+   *
+   * @param {Array} semanticTokenColors - Array of source semanticTokenColors entries
+   * @param {ThemePool} pool - The theme's variable pool
+   * @returns {Array} Array of variable-related issues
+   */
+  #lintSemanticTokenColors(semanticTokenColors, pool) {
+    return pool && semanticTokenColors.length > 0
+      ? this.#checkUndefinedVariables(semanticTokenColors, pool, "semanticTokenColors")
+      : []
+  }
+
+  /**
+   * Performs variable-dependent linting of colors data.
+   * Checks for undefined variable references.
+   *
+   * @param {Array} sourceColors - Array of source colors entries
+   * @param {ThemePool} pool - The theme's variable pool
+   * @returns {Array} Array of variable-related issues
+   */
+  #lintColors(sourceColors, pool) {
+    return pool && sourceColors.length > 0
+      ? this.#checkUndefinedVariables(sourceColors, pool, "colors")
+      : []
+  }
+
+  /**
+   * Performs variable-dependent linting for unused variables.
+   * Checks for variables defined but never used.
+   *
+   * @param {Theme} theme - The theme object
+   * @param {ThemePool} pool - The theme's variable pool
+   * @returns {Array} Array of unused variable issues
+   */
+  #lintVariables(theme, pool) {
+    return pool
+      ? this.#checkUnusedVariables(theme, pool)
+      : []
   }
 
   /**
@@ -84,37 +195,26 @@ export default class LintCommand extends Command {
    * @param {Theme} theme - The compiled theme object
    * @returns {Promise<Array>} Array of lint issues
    */
-  async lintTheme(theme) {
-    const issues = []
-    const tokenColors = theme.output?.tokenColors || []
-    const pool = theme.pool
+  async #lintTheme(theme) {
+    const results = await this.lint(theme)
 
-    // Get source tokenColors data (before compilation) for variable usage analysis
-    const sourceTokenColors = await this.getSourceTokenColors(theme)
-
-    // 1. Check for duplicate scopes
-    issues.push(...this.checkDuplicateScopes(tokenColors))
-
-    // 2. Check for undefined variables
-    issues.push(...this.checkUndefinedVariables(sourceTokenColors, pool))
-
-    // 3. Check for unused variables
-    issues.push(...this.checkUnusedVariables(theme, pool))
-
-    // 4. Check for precedence issues
-    issues.push(...this.checkPrecedenceIssues(tokenColors))
-
-    return issues
+    // Flatten all results into a single array for backward compatibility
+    return [
+      ...results.tokenColors,
+      ...results.semanticTokenColors,
+      ...results.colors,
+      ...results.variables
+    ]
   }
 
   /**
-   * Extracts source tokenColors data before compilation for variable analysis.
-   * This includes data from the main theme file and all imported files.
+   * Extracts the original source tokenColors data from theme.source and dependencies.
+   * Used for variable analysis since we need the uncompiled data with variable references.
    *
-   * @param {Theme} theme - The compiled theme object
-   * @returns {Promise<Array>} Array of source tokenColors entries
+   * @param {Theme} theme - The compiled theme object (contains both output and source)
+   * @returns {Promise<Array>} Array of source tokenColors entries with variables intact
    */
-  async getSourceTokenColors(theme) {
+  async #getTokenColors(theme) {
     const sourceTokenColors = []
 
     // Get tokenColors from main theme source
@@ -128,6 +228,7 @@ export default class LintCommand extends Command {
         if(dependency.path !== theme.sourceFile.path) {
           try {
             const depData = await theme.cache.loadCachedData(dependency)
+
             if(depData?.theme?.tokenColors)
               sourceTokenColors.push(...depData.theme.tokenColors)
           } catch {
@@ -141,13 +242,82 @@ export default class LintCommand extends Command {
   }
 
   /**
+   * Extracts the original source semanticTokenColors data from theme.source and dependencies.
+   * Used for variable analysis since we need the uncompiled data with variable references.
+   *
+   * @param {Theme} theme - The compiled theme object (contains both output and source)
+   * @returns {Promise<Array>} Array of source semanticTokenColors entries with variables intact
+   */
+  async getSemanticTokenColors(theme) {
+    const sourceSemanticTokenColors = []
+
+    // Get semanticTokenColors from main theme source
+    if(theme.source?.theme?.semanticTokenColors)
+      sourceSemanticTokenColors.push(theme.source.theme.semanticTokenColors)
+
+    // Get semanticTokenColors from imported files
+    if(theme.dependencies) {
+      for(const dependency of theme.dependencies) {
+        // Skip main file, already processed
+        if(dependency.path !== theme.sourceFile.path) {
+          try {
+            const depData = await theme.cache.loadCachedData(dependency)
+
+            if(depData?.theme?.semanticTokenColors)
+              sourceSemanticTokenColors.push(depData.theme.semanticTokenColors)
+          } catch {
+            // nothing to see here.
+          }
+        }
+      }
+    }
+
+    return sourceSemanticTokenColors
+  }
+
+  /**
+   * Extracts the original source colors data from theme.source and dependencies.
+   * Used for variable analysis since we need the uncompiled data with variable references.
+   *
+   * @param {Theme} theme - The compiled theme object (contains both output and source)
+   * @returns {Promise<Array>} Array of source colors entries with variables intact
+   */
+  async getColors(theme) {
+    const sourceColors = []
+
+    // Get colors from main theme source
+    if(theme.source?.theme?.colors)
+      sourceColors.push(theme.source.theme.colors)
+
+    // Get colors from imported files
+    if(theme.dependencies) {
+      for(const dependency of theme.dependencies) {
+        // Skip main file, already processed
+        if(dependency.path !== theme.sourceFile.path) {
+          try {
+            const depData = await theme.cache.loadCachedData(dependency)
+
+            if(depData?.theme?.colors)
+              sourceColors.push(depData.theme.colors)
+          } catch {
+            // nothing to see here.
+          }
+        }
+      }
+    }
+
+    return sourceColors
+  }
+
+  /**
    * Reports lint issues to the user with appropriate formatting and colors.
    *
    * @param {Array} issues - Array of lint issues to report
    */
-  reportIssues(issues) {
+  #reportIssues(issues) {
     if(issues.length === 0) {
       Term.info(c`{success}✓{/} No linting issues found`)
+
       return
     }
 
@@ -156,7 +326,8 @@ export default class LintCommand extends Command {
     const infos = issues.filter(i => i.severity === "low")
 
     const allIssues = errors.concat(warnings, infos)
-    allIssues.forEach(issue => this.reportSingleIssue(issue))
+
+    allIssues.forEach(issue => this.#reportSingleIssue(issue))
 
     // Clean summary
     const parts = []
@@ -187,18 +358,21 @@ export default class LintCommand extends Command {
    *
    * @param {object} issue - The issue to report
    */
-  reportSingleIssue(issue) {
+  #reportSingleIssue(issue) {
     const indicator = this.#getIndicator(issue.severity)
 
     switch(issue.type) {
       case "duplicate-scope": {
         const rules = issue.occurrences.map(occ => `{loc}'${occ.name}{/}'`).join(", ")
+
         Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
         break
       }
 
       case "undefined-variable": {
-        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)`)
+        const sectionInfo = issue.section && issue.section !== "tokenColors" ? ` in ${issue.section}` : ""
+
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)${sectionInfo}`)
         break
       }
 
@@ -226,7 +400,7 @@ export default class LintCommand extends Command {
    * @param {Array} tokenColors - Array of tokenColors entries
    * @returns {Array} Array of duplicate scope issues
    */
-  checkDuplicateScopes(tokenColors) {
+  #checkDuplicateScopes(tokenColors) {
     const issues = []
     const scopeOccurrences = new Map()
 
@@ -235,6 +409,7 @@ export default class LintCommand extends Command {
         return
 
       const scopes = entry.scope.split(",").map(s => s.trim())
+
       scopes.forEach(scope => {
         if(!scopeOccurrences.has(scope)) {
           scopeOccurrences.set(scope, [])
@@ -264,41 +439,87 @@ export default class LintCommand extends Command {
   }
 
   /**
-   * Checks for undefined variables referenced in tokenColors.
+   * Checks for undefined variables referenced in theme data.
    * Returns issues for variables that are used but not defined.
    *
-   * @param {Array} tokenColors - Array of tokenColors entries
+   * @param {Array|object} themeData - Array of entries or object containing theme data
    * @param {ThemePool} pool - The theme's variable pool
+   * @param {string} section - The section name (tokenColors, semanticTokenColors, colors)
    * @returns {Array} Array of undefined variable issues
    */
-  checkUndefinedVariables(tokenColors, pool) {
+  #checkUndefinedVariables(themeData, pool, section = "tokenColors") {
     const issues = []
     const definedVars = pool ? new Set(pool.getTokens.keys()) : new Set()
 
-    tokenColors.forEach((entry, index) => {
-      const settings = entry.settings || {}
-      for(const [key, value] of Object.entries(settings)) {
-        if(typeof value === "string") {
-          const {none,parens,braces} = Evaluator.sub.exec(value)?.groups ?? {}
-          const varName = none || parens || braces
+    if(section === "tokenColors" && Array.isArray(themeData)) {
+      themeData.forEach((entry, index) => {
+        const settings = entry.settings || {}
 
-          if(!varName)
-            return
+        for(const [key, value] of Object.entries(settings)) {
+          if(typeof value === "string") {
+            const {none,parens,braces} = Evaluator.sub.exec(value)?.groups ?? {}
+            const varName = none || parens || braces
 
-          if(!definedVars.has(varName)) {
-            issues.push({
-              type: "undefined-variable",
-              severity: "high",
-              variable: value,
-              rule: entry.name || `Entry ${index + 1}`,
-              property: key
-            })
+            if(!varName)
+              return
+
+            if(!definedVars.has(varName)) {
+              issues.push({
+                type: "undefined-variable",
+                severity: "high",
+                variable: value,
+                rule: entry.name || `Entry ${index + 1}`,
+                property: key,
+                section
+              })
+            }
           }
         }
-      }
-    })
+      })
+    } else if((section === "semanticTokenColors" || section === "colors") && Array.isArray(themeData)) {
+      // Handle semanticTokenColors and colors as objects
+      themeData.forEach((dataObject, objIndex) => {
+        if(dataObject && typeof dataObject === "object") {
+          this.#checkObjectForUndefinedVariables(dataObject, definedVars, issues, section, `Object ${objIndex + 1}`)
+        }
+      })
+    }
 
     return issues
+  }
+
+  /**
+   * Recursively checks an object for undefined variable references.
+   *
+   * @param {object} obj - The object to check
+   * @param {Set} definedVars - Set of defined variable names
+   * @param {Array} issues - Array to push issues to
+   * @param {string} section - The section name
+   * @param {string} ruleName - The rule/object name for reporting
+   * @param {string} path - The current path in the object (for nested properties)
+   */
+  #checkObjectForUndefinedVariables(obj, definedVars, issues, section, ruleName, path = "") {
+    for(const [key, value] of Object.entries(obj)) {
+      const currentPath = path ? `${path}.${key}` : key
+
+      if(typeof value === "string") {
+        const {none, parens, braces} = Evaluator.sub.exec(value)?.groups ?? {}
+        const varName = none || parens || braces
+
+        if(varName && !definedVars.has(varName)) {
+          issues.push({
+            type: "undefined-variable",
+            severity: "high",
+            variable: value,
+            rule: ruleName,
+            property: currentPath,
+            section
+          })
+        }
+      } else if(value && typeof value === "object" && !Array.isArray(value)) {
+        this.#checkObjectForUndefinedVariables(value, definedVars, issues, section, ruleName, currentPath)
+      }
+    }
   }
 
   /**
@@ -309,7 +530,7 @@ export default class LintCommand extends Command {
    * @param {ThemePool} pool - The theme's variable pool
    * @returns {Array} Array of unused variable issues
    */
-  checkUnusedVariables(theme, pool) {
+  #checkUnusedVariables(theme, pool) {
     const issues = []
 
     if(!pool || !theme.source)
@@ -320,17 +541,20 @@ export default class LintCommand extends Command {
     const {cwd} = this
     const mainFile = new FileObject(theme.sourceFile.path)
     const relativeMainPath = File.relativeOrAbsolutePath(cwd, mainFile)
-    this.collectVarsDefinitions(theme.source.vars, definedVars, "", relativeMainPath)
+
+    this.#collectVarsDefinitions(theme.source.vars, definedVars, "", relativeMainPath)
 
     // Also check dependencies for vars definitions
     if(theme.dependencies) {
       for(const dependency of theme.dependencies) {
         try {
           const depData = theme.cache?.loadCachedDataSync?.(dependency)
+
           if(depData?.vars) {
             const depFile = new FileObject(dependency.path)
             const relativeDependencyPath = File.relativeOrAbsolutePath(cwd, depFile)
-            this.collectVarsDefinitions(depData.vars, definedVars, "", relativeDependencyPath)
+
+            this.#collectVarsDefinitions(depData.vars, definedVars, "", relativeDependencyPath)
           }
         } catch {
           // Ignore cache errors
@@ -342,15 +566,15 @@ export default class LintCommand extends Command {
 
     // Find variable usage in colors, tokenColors, and semanticColors sections
     if(theme.source.colors) {
-      this.findVariableUsage(theme.source.colors, usedVars)
+      this.#findVariableUsage(theme.source.colors, usedVars)
     }
 
     if(theme.source.tokenColors) {
-      this.findVariableUsage(theme.source.tokenColors, usedVars)
+      this.#findVariableUsage(theme.source.tokenColors, usedVars)
     }
 
     if(theme.source.semanticColors) {
-      this.findVariableUsage(theme.source.semanticColors, usedVars)
+      this.#findVariableUsage(theme.source.semanticColors, usedVars)
     }
 
     // Also check dependencies for usage in these sections
@@ -358,15 +582,16 @@ export default class LintCommand extends Command {
       for(const dependency of theme.dependencies) {
         try {
           const depData = theme.cache?.loadCachedDataSync?.(dependency)
+
           if(depData) {
             if(depData.colors)
-              this.findVariableUsage(depData.colors, usedVars)
+              this.#findVariableUsage(depData.colors, usedVars)
 
             if(depData.tokenColors)
-              this.findVariableUsage(depData.tokenColors, usedVars)
+              this.#findVariableUsage(depData.tokenColors, usedVars)
 
             if(depData.semanticColors)
-              this.findVariableUsage(depData.semanticColors, usedVars)
+              this.#findVariableUsage(depData.semanticColors, usedVars)
           }
         } catch {
           // Ignore cache errors
@@ -398,17 +623,18 @@ export default class LintCommand extends Command {
    * @param {string} prefix - Current prefix for nested vars
    * @param {string} filename - The filename where this variable is defined
    */
-  collectVarsDefinitions(vars, definedVars, prefix = "", filename = "") {
+  #collectVarsDefinitions(vars, definedVars, prefix = "", filename = "") {
     if(!vars || typeof vars !== "object")
       return
 
     for(const [key, value] of Object.entries(vars)) {
       const varName = prefix ? `${prefix}.${key}` : key
+
       definedVars.set(varName, filename)
 
       // If the value is an object, recurse for nested definitions
       if(value && typeof value === "object" && !Array.isArray(value)) {
-        this.collectVarsDefinitions(value, definedVars, varName, filename)
+        this.#collectVarsDefinitions(value, definedVars, varName, filename)
       }
     }
   }
@@ -420,19 +646,20 @@ export default class LintCommand extends Command {
    * @param {any} data - The data structure to search
    * @param {Set} usedVars - Set to add found variable names to
    */
-  findVariableUsage(data, usedVars) {
+  #findVariableUsage(data, usedVars) {
     if(typeof data === "string") {
       if(Evaluator.sub.test(data)) {
         const {none, parens, braces} = Evaluator.sub.exec(data)?.groups ?? {}
         const varName = none || parens || braces
+
         if(varName) {
           usedVars.add(varName)
         }
       }
     } else if(Array.isArray(data)) {
-      data.forEach(item => this.findVariableUsage(item, usedVars))
+      data.forEach(item => this.#findVariableUsage(item, usedVars))
     } else if(data && typeof data === "object") {
-      Object.values(data).forEach(value => this.findVariableUsage(value, usedVars))
+      Object.values(data).forEach(value => this.#findVariableUsage(value, usedVars))
     }
   }
 
@@ -443,7 +670,7 @@ export default class LintCommand extends Command {
    * @param {Array} tokenColors - Array of tokenColors entries
    * @returns {Array} Array of precedence issue warnings
    */
-  checkPrecedenceIssues(tokenColors) {
+  #checkPrecedenceIssues(tokenColors) {
     const issues = []
     const allScopes = []
 
@@ -453,6 +680,7 @@ export default class LintCommand extends Command {
         return
 
       const scopes = entry.scope.split(",").map(s => s.trim())
+
       scopes.forEach(scope => {
         allScopes.push({
           scope,
@@ -472,7 +700,7 @@ export default class LintCommand extends Command {
 
         // Check if the current (earlier) scope is broader than the later one
         // This means the broad scope will mask the specific scope
-        if(this.isBroaderScope(current.scope, later.scope)) {
+        if(this.#isBroaderScope(current.scope, later.scope)) {
           issues.push({
             type: "precedence-issue",
             severity: current.index === later.index ? "low" : "high",
@@ -498,7 +726,7 @@ export default class LintCommand extends Command {
    * @param {string} specificScope - The potentially more specific scope
    * @returns {boolean} True if broadScope is broader than specificScope
    */
-  isBroaderScope(broadScope, specificScope) {
+  #isBroaderScope(broadScope, specificScope) {
     // Simple heuristic: if the specific scope starts with the broad scope + "."
     // then the broad scope is indeed broader
     // e.g., "keyword" is broader than "keyword.control", "keyword.control.import"
