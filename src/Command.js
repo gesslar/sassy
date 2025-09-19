@@ -68,6 +68,7 @@ export default class Command {
    * Sets the CLI command string.
    *
    * @param {string} data - The CLI command string
+   * @returns {this} Returns this instance for method chaining
    */
   setCliCommand(data) {
     this.#cliCommand = data
@@ -79,6 +80,7 @@ export default class Command {
    * Sets the CLI options object.
    *
    * @param {object} data - The CLI options configuration
+   * @returns {this} Returns this instance for method chaining
    */
   setCliOptions(data) {
     this.#cliOptions = data
@@ -192,7 +194,7 @@ export default class Command {
    * resolve or reject using Promise.allSettled().
    *
    * @param {string} event - The event name to emit
-   * @param {any[]} [arg] - Arguments to pass to event listeners
+   * @param {...unknown} [arg] - Arguments to pass to event listeners
    * @returns {Promise<void>} Resolves when all listeners have completed
    */
   async asyncEmit(event, arg) {

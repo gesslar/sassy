@@ -60,7 +60,7 @@ export default class TypeSpec {
   /**
    * Executes a provided function once for each type specification.
    *
-   * @param {Function} callback - Function to execute for each spec
+   * @param {function(unknown): void} callback - Function to execute for each spec
    */
   forEach(callback) {
     this.#specs.forEach(callback)
@@ -69,7 +69,7 @@ export default class TypeSpec {
   /**
    * Tests whether all type specifications pass the provided test function.
    *
-   * @param {Function} callback - Function to test each spec
+   * @param {function(unknown): boolean} callback - Function to test each spec
    * @returns {boolean} True if all specs pass the test
    */
   every(callback) {
@@ -79,7 +79,7 @@ export default class TypeSpec {
   /**
    * Tests whether at least one type specification passes the provided test function.
    *
-   * @param {Function} callback - Function to test each spec
+   * @param {function(unknown): boolean} callback - Function to test each spec
    * @returns {boolean} True if at least one spec passes the test
    */
   some(callback) {
@@ -89,7 +89,7 @@ export default class TypeSpec {
   /**
    * Creates a new array with all type specifications that pass the provided test function.
    *
-   * @param {Function} callback - Function to test each spec
+   * @param {function(unknown): boolean} callback - Function to test each spec
    * @returns {Array} New array with filtered specs
    */
   filter(callback) {
@@ -99,7 +99,7 @@ export default class TypeSpec {
   /**
    * Creates a new array populated with the results of calling the provided function on every spec.
    *
-   * @param {Function} callback - Function to call on each spec
+   * @param {function(unknown): unknown} callback - Function to call on each spec
    * @returns {Array} New array with mapped values
    */
   map(callback) {
@@ -109,9 +109,9 @@ export default class TypeSpec {
   /**
    * Executes a reducer function on each spec, resulting in a single output value.
    *
-   * @param {Function} callback - Function to execute on each spec
-   * @param {*} initialValue - Initial value for the accumulator
-   * @returns {*} The final accumulated value
+   * @param {function(unknown, unknown): unknown} callback - Function to execute on each spec
+   * @param {unknown} initialValue - Initial value for the accumulator
+   * @returns {unknown} The final accumulated value
    */
   reduce(callback, initialValue) {
     return this.#specs.reduce(callback, initialValue)
@@ -120,7 +120,7 @@ export default class TypeSpec {
   /**
    * Returns the first type specification that satisfies the provided testing function.
    *
-   * @param {Function} callback - Function to test each spec
+   * @param {function(unknown): boolean} callback - Function to test each spec
    * @returns {object|undefined} The first spec that matches, or undefined
    */
   find(callback) {
@@ -131,7 +131,7 @@ export default class TypeSpec {
    * Tests whether a value matches any of the type specifications.
    * Handles array types, union types, and empty value validation.
    *
-   * @param {*} value - The value to test against the type specifications
+   * @param {unknown} value - The value to test against the type specifications
    * @param {object} options - Validation options
    * @param {boolean} options.allowEmpty - Whether empty values are allowed
    * @returns {boolean} True if the value matches any type specification
@@ -191,6 +191,7 @@ export default class TypeSpec {
 
     this.#specs = parts.map(part => {
       const typeMatches = /(\w+)(\[\])?/.exec(part)
+
       if(!typeMatches || typeMatches.length !== 3)
         throw Sass.new(`Invalid type: ${part}`)
 

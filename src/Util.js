@@ -102,7 +102,7 @@ export default class Util {
    * Wrapper around Promise.all for consistency with other utility methods.
    *
    * @param {Promise[]} promises - Array of promises to await
-   * @returns {Promise<any[]>} Results of all promises
+   * @returns {Promise<unknown[]>} Results of all promises
    */
   static async awaitAll(promises) {
     return await Promise.all(promises)
@@ -124,7 +124,7 @@ export default class Util {
    * Wrapper around Promise.race for consistency with other utility methods.
    *
    * @param {Promise[]} promises - Array of promises to race
-   * @returns {Promise<any>} Result of the first settled promise
+   * @returns {Promise<unknown>} Result of the first settled promise
    */
   static async race(promises) {
     return await Promise.race(promises)
