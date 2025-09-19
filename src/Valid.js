@@ -7,7 +7,7 @@ export default class Valid {
 /**
  * Validates a value against a type
  *
- * @param {*} value - The value to validate
+ * @param {unknown} value - The value to validate
  * @param {string} type - The expected type in the form of "object",
  *                        "object[]", "object|object[]"
  * @param {object} [options] - Additional options for validation.

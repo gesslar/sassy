@@ -229,6 +229,7 @@ export default class ThemeToken {
    */
   setParsedColor(parsedColor) {
     this.#parsedColor = parsedColor
+
     return this
   }
 

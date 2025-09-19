@@ -109,7 +109,9 @@ export default class LintCommand extends Command {
       // Variable-dependent linting
       results.colors.push(...this.#lintColors(colors, pool))
       results.tokenColors.push(...this.lintTokenColors(tokenColors, pool))
-      results.semanticTokenColors.push(...this.#lintSemanticTokenColors(semanticTokenColors, pool))
+      results.semanticTokenColors.push(
+        ...this.#lintSemanticTokenColors(semanticTokenColors, pool)
+      )
       results.variables.push(...this.#lintVariables(theme, pool))
     }
 
@@ -517,7 +519,9 @@ export default class LintCommand extends Command {
           })
         }
       } else if(value && typeof value === "object" && !Array.isArray(value)) {
-        this.#checkObjectForUndefinedVariables(value, definedVars, issues, section, ruleName, currentPath)
+        this.#checkObjectForUndefinedVariables(
+          value, definedVars, issues, section, ruleName, currentPath
+        )
       }
     }
   }
@@ -552,7 +556,9 @@ export default class LintCommand extends Command {
 
           if(depData?.vars) {
             const depFile = new FileObject(dependency.path)
-            const relativeDependencyPath = File.relativeOrAbsolutePath(cwd, depFile)
+            const relativeDependencyPath = File.relativeOrAbsolutePath(
+              cwd, depFile
+            )
 
             this.#collectVarsDefinitions(depData.vars, definedVars, "", relativeDependencyPath)
           }
@@ -618,7 +624,7 @@ export default class LintCommand extends Command {
    * Recursively collects variable names defined in the vars section.
    * Adds found variable names to the definedVars map.
    *
-   * @param {any} vars - The vars data structure to search
+   * @param {object|null} vars - The vars data structure to search
    * @param {Map} definedVars - Map to add found variable names and filenames to
    * @param {string} prefix - Current prefix for nested vars
    * @param {string} filename - The filename where this variable is defined
@@ -643,7 +649,7 @@ export default class LintCommand extends Command {
    * Recursively finds variable usage in any data structure.
    * Adds found variable names to the usedVars set.
    *
-   * @param {any} data - The data structure to search
+   * @param {string|Array|object} data - The data structure to search
    * @param {Set} usedVars - Set to add found variable names to
    */
   #findVariableUsage(data, usedVars) {
@@ -659,7 +665,9 @@ export default class LintCommand extends Command {
     } else if(Array.isArray(data)) {
       data.forEach(item => this.#findVariableUsage(item, usedVars))
     } else if(data && typeof data === "object") {
-      Object.values(data).forEach(value => this.#findVariableUsage(value, usedVars))
+      Object.values(data).forEach(
+        value => this.#findVariableUsage(value, usedVars)
+      )
     }
   }
 

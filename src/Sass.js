@@ -24,7 +24,7 @@ export default class Sass extends Error {
    * Creates a new Sass instance.
    *
    * @param {string} message - The error message
-   * @param {...any} arg - Additional arguments passed to parent Error constructor
+   * @param {...unknown} [arg] - Additional arguments passed to parent Error constructor
    */
   constructor(message, ...arg) {
     super(message, ...arg)
@@ -115,6 +115,7 @@ export default class Sass extends Error {
           .split("\n")
           .map(line => {
             const at = line.match(/^\s{4}at\s(?<at>.*)$/)?.groups?.at ?? {}
+
             return at
               ? `* ${at}`
               : line

@@ -300,7 +300,8 @@ export default class ResolveCommand extends Command {
         const depFinal = dependency.getValue()
 
         // Add dependency's expression if it's a function call
-        if(depRaw !== dependency.getName() && !steps.some(s => s.value === depRaw)) {
+        if(depRaw !== dependency.getName() &&
+           !steps.some(s => s.value === depRaw)) {
           steps.push({
             value: depRaw,
             type: "expression",

@@ -80,7 +80,7 @@ export default class Evaluator {
    *  - Input array is mutated in-place (`value` fields change).
    *  - No return value. Evident by the absence of a return statement.
    *
-   * @param {Array<{flatPath:string,value:any}>} decomposed - Variable entries to resolve.
+   * @param {Array<{flatPath:string,value:unknown}>} decomposed - Variable entries to resolve.
    */
   evaluate(decomposed) {
     let it = 0
@@ -140,7 +140,7 @@ export default class Evaluator {
    * @param {string} parentTokenKeyString - Key string for parent token.
    * @param {string} value - Raw tokenised string to resolve.
    * @returns {string?} Fully resolved string.
-   * @throws If we've reached maximum iterations.
+   * @throws {Sass} If we've reached maximum iterations.
    */
   #evaluateValue(trail, parentTokenKeyString, value) {
     let it = 0
@@ -340,7 +340,7 @@ export default class Evaluator {
    * Predicate: does this item's value still contain variable or function tokens?
    *
    * @private
-   * @param {{value:any}} item - Entry to test.
+   * @param {{value:unknown}} item - Entry to test.
    * @returns {boolean} True if token patterns present.
    */
   #tokenCheck(item) {

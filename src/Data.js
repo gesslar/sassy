@@ -158,7 +158,7 @@ export default class Data {
    *
    * @param {Array} arr - The array to pad.
    * @param {number} length - The length to pad the array to.
-   * @param {any} value - The value to pad the array with.
+   * @param {unknown} value - The value to pad the array with.
    * @param {number} position - The position to pad the array at.
    * @returns {Array} The padded array.
    */
@@ -203,8 +203,8 @@ export default class Data {
   /**
    * Allocates an object from a source array and a spec array or function.
    *
-   * @param {any} source The source array
-   * @param {any|Function} spec The spec array or function
+   * @param {unknown} source The source array
+   * @param {Array|function(unknown): unknown} spec The spec array or function
    * @returns {Promise<object>} The allocated object
    */
   static async allocateObject(source, spec) {
@@ -254,7 +254,7 @@ export default class Data {
    * Maps an object using a transformer function
    *
    * @param {object} original The original object
-   * @param {Function} transformer The transformer function
+   * @param {function(unknown): unknown} transformer The transformer function
    * @param {boolean} mutate Whether to mutate the original object
    * @returns {Promise<object>} The mapped object
    */
@@ -298,7 +298,7 @@ export default class Data {
   /**
    * Checks if a value is of a specified type
    *
-   * @param {any} value The value to check
+   * @param {unknown} value The value to check
    * @param {string|TypeSpec} type The type to check for
    * @param {object} options Additional options for checking
    * @returns {boolean} Whether the value is of the specified type
@@ -326,7 +326,7 @@ export default class Data {
    * function does not parse the type string, and only checks for primitive
    * or constructor types.
    *
-   * @param {any} value - The value to check
+   * @param {unknown} value - The value to check
    * @param {string} type - The type to check for
    * @returns {boolean} Whether the value is of the specified type
    */
@@ -365,7 +365,7 @@ export default class Data {
   /**
    * Returns the type of a value, whether it be a primitive, object, or function.
    *
-   * @param {any} value - The value to check
+   * @param {unknown} value - The value to check
    * @returns {string} The type of the value
    */
   static typeOf(value) {
@@ -375,7 +375,7 @@ export default class Data {
   /**
    * Checks a value is undefined or null.
    *
-   * @param {any} value The value to check
+   * @param {unknown} value The value to check
    * @returns {boolean} Whether the value is undefined or null
    */
   static isNothing(value) {
@@ -386,7 +386,7 @@ export default class Data {
    * Checks if a value is empty. This function is used to check if an object,
    * array, or string is empty. Null and undefined values are considered empty.
    *
-   * @param {any} value The value to check
+   * @param {unknown} value The value to check
    * @param {boolean} checkForNothing Whether to check for null or undefined
    *                                  values
    * @returns {boolean} Whether the value is empty
@@ -467,8 +467,8 @@ export default class Data {
    * the structure if it does not exist.
    *
    * @param {object} obj - The target object to set the value in
-   * @param {string[]} keys - Array of keys representing the path to the target property
-   * @param {*} value - The value to set at the target location
+   * @param {Array<string>} keys - Array of keys representing the path to the target property
+   * @param {unknown} value - The value to set at the target location
    */
   static setNestedValue(obj, keys, value) {
     const nested = Data.assureObjectPath(obj, keys.slice(0, -1))
@@ -521,7 +521,7 @@ export default class Data {
    * Applies the predicate to all items in parallel and returns filtered results.
    *
    * @param {Array} arr - The array to filter
-   * @param {Function} predicate - Async predicate function that returns a promise resolving to boolean
+   * @param {function(unknown): Promise<boolean>} predicate - Async predicate function that returns a promise resolving to boolean
    * @returns {Promise<Array>} Promise resolving to the filtered array
    */
   static async asyncFilter(arr, predicate) {

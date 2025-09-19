@@ -306,7 +306,7 @@ export default class Compiler {
    * Checks if a value is a plain object (not null or array).
    * Utility method for type checking during compilation.
    *
-   * @param {*} value - The value to check
+   * @param {unknown} value - The value to check
    * @returns {boolean} True if the value is a plain object
    */
   #isObject(value) {

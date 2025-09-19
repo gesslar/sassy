@@ -135,6 +135,7 @@ export default class Theme {
    * Sets the compiled theme output object and updates derived JSON and hash.
    *
    * @param {object} data - The compiled theme output object
+   * @returns {this} Returns this instance for method chaining
    */
   setOutput(data) {
     this.#output = data
@@ -157,6 +158,7 @@ export default class Theme {
    * Sets the array of file dependencies.
    *
    * @param {FileObject[]} data - Array of dependency files
+   * @returns {this} Returns this instance for method chaining
    */
   setDependencies(data) {
     this.#dependencies = data
@@ -189,6 +191,7 @@ export default class Theme {
    * Sets the variable lookup data for theme compilation.
    *
    * @param {object} data - The lookup data object
+   * @returns {this} Returns this instance for method chaining
    */
   setLookup(data) {
     this.#lookup = data
@@ -213,7 +216,8 @@ export default class Theme {
    * @see reset
    *
    * @param {ThemePool} pool - The pool to assign to this theme
-   * @throws If there is already a pool.
+   * @throws {Error} If there is already a pool.
+   * @returns {this} Returns this instance for method chaining
    */
   setPool(pool) {
     if(!this.#pool)

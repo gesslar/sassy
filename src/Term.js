@@ -9,7 +9,7 @@ export default class Term {
   /**
    * Log an informational message.
    *
-   * @param {...any} arg - Values to log.
+   * @param {...unknown} [arg] - Values to log.
    */
   static log(...arg) {
     console.log(...arg)
@@ -18,7 +18,7 @@ export default class Term {
   /**
    * Log an informational message.
    *
-   * @param {...any} arg - Values to log.
+   * @param {...unknown} [arg] - Values to log.
    */
   static info(...arg) {
     console.info(...arg)
@@ -27,16 +27,16 @@ export default class Term {
   /**
    * Log a warning message.
    *
-   * @param {any} msg - Warning text / object.
+   * @param {...unknown} [arg] - Warning text / object.
    */
-  static warn(...msg) {
-    console.warn(...msg)
+  static warn(...arg) {
+    console.warn(...arg)
   }
 
   /**
    * Log an error message (plus optional details).
    *
-   * @param {...any} arg - Values to log.
+   * @param {...unknown} [arg] - Values to log.
    */
   static error(...arg) {
     console.error(...arg)
@@ -45,7 +45,7 @@ export default class Term {
   /**
    * Log a debug message (no-op unless console.debug provided/visible by env).
    *
-   * @param {...any} arg - Values to log.
+   * @param {...unknown} [arg] - Values to log.
    */
   static debug(...arg) {
     console.debug(...arg)

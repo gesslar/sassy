@@ -89,6 +89,7 @@ export default class Session {
 
       loadCost = (await Util.time(() => this.#theme.load())).cost
       const bytes = await File.fileSize(this.#theme.sourceFile)
+
       Term.status([
         ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10), ["[","]"]],
         `${this.#theme.name} loaded`,
@@ -106,24 +107,34 @@ export default class Session {
         await Promise.allSettled(this.#theme.dependencies.map(async dep => {
 
           return await (async fileObject => {
-            const fileName = File.relativeOrAbsolutePath(this.#command.cwd, fileObject)
+            const fileName = File.relativeOrAbsolutePath(
+              this.#command.cwd, fileObject
+            )
             const fileSize = await File.fileSize(fileObject)
+
             return [fileName, fileSize]
           })(dep)
 
         }))
 
       const rejected = compileResult.filter(result => result.status === "rejected")
+
       if(rejected.length > 0) {
         rejected.forEach(reject => Term.error(reject.reason))
         throw new Error("Compilation failed")
       }
 
       const dependencies = compileResult.slice(1).map(dep => dep.value)
-      const totalBytes = compileResult.reduce((acc,curr) => acc + curr.value[1], 0)
+      const totalBytes = compileResult.reduce(
+        (acc,curr) => acc + curr.value[1], 0
+      )
 
       Term.status([
-        ["success", Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10), ["[","]"]],
+        [
+          "success",
+          Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10),
+          ["[","]"]
+        ],
         `${this.#theme.name} compiled`,
         ["success", `${compileResult[0].value[1].toLocaleString()} bytes`, ["[","]"]],
         ["info", `${totalBytes.toLocaleString()} total bytes`, ["(",")"]],
@@ -150,6 +161,7 @@ export default class Session {
        */
 
       const writeResult = await Util.time(() => this.#theme.write(forceWrite))
+
       writeCost = writeResult.cost
       const result = writeResult.result
       const {
@@ -157,9 +169,15 @@ export default class Session {
         file: outputFile,
         bytes: writeBytes
       } = result
-      const outputFilename = File.relativeOrAbsolutePath(this.#command.cwd, outputFile)
+      const outputFilename = File.relativeOrAbsolutePath(
+        this.#command.cwd, outputFile
+      )
       const status = [
-        ["success", Util.rightAlignText(`${writeCost.toLocaleString()}ms`, 10), ["[","]"]],
+        [
+          "success",
+          Util.rightAlignText(`${writeCost.toLocaleString()}ms`, 10),
+          ["[","]"]
+        ],
       ]
 
       if(writeStatus === "written") {
@@ -221,12 +239,16 @@ export default class Session {
       this.#building = true
       this.#command.asyncEmit("building")
 
-      const changedFile = this.#theme.dependencies.find(dep => dep.path === changed)
+      const changedFile = this.#theme.dependencies.find(
+        dep => dep.path === changed
+      )
 
       if(!changedFile)
         return
 
-      const fileName = File.relativeOrAbsolutePath(this.#command.cwd, changedFile)
+      const fileName = File.relativeOrAbsolutePath(
+        this.#command.cwd, changedFile
+      )
 
       const message = [
         ["info", "REBUILDING", ["[","]"]],
@@ -277,7 +299,8 @@ export default class Session {
 
     if(this.#history.length > 0) {
       const lastBuild = this.#history[this.#history.length - 1]
-      const totalTime = lastBuild.loadTime + lastBuild.buildTime + lastBuild.writeTime
+      const totalTime = lastBuild.loadTime +
+        lastBuild.buildTime + lastBuild.writeTime
 
       Term.status([
         [builds > 0 ? "info" : "muted", "Last Build", ["[", "]"]],
@@ -319,6 +342,7 @@ export default class Session {
       await this.#watcher.close()
 
     const dependencies = this.#theme.dependencies.map(d => d.path)
+
     this.#watcher = chokidar.watch(dependencies, {
       // Prevent watching own output files
       ignored: [this.#theme.outputFileName],
