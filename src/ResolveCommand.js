@@ -71,7 +71,7 @@ export default class ResolveCommand extends Command {
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
     const theme = new Theme(fileObject, cwd, options)
 
-    theme.cache = this.cache
+    theme.setCache(this.getCache())
 
     await theme.load()
     await theme.build()
@@ -88,7 +88,7 @@ export default class ResolveCommand extends Command {
    * @returns {void}
    */
   async resolveColor(theme, colorName) {
-    const pool = theme.pool
+    const pool = theme.getPool()
 
     if(!pool || !pool.has(colorName))
       return Term.info(`'${colorName}' not found.`)
@@ -171,7 +171,7 @@ export default class ResolveCommand extends Command {
   }
 
   async #resolveScopeMatch(theme, match, displayName) {
-    const pool = theme.pool
+    const pool = theme.getPool()
     const settings = match.settings || {}
     const name = match.name || "Unnamed"
 

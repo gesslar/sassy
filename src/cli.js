@@ -113,7 +113,7 @@ void (async function main() {
     // Add the build subcommand
     const buildCommand = new BuildCommand({cwd, packageJson: pkgJson})
 
-    buildCommand.cache = cache
+    buildCommand.setCache(cache)
 
     void(await buildCommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)
@@ -121,7 +121,7 @@ void (async function main() {
     // Add the resolve subcommand
     const resolveCommand = new ResolveCommand({cwd, packageJson: pkgJson})
 
-    resolveCommand.cache = cache
+    resolveCommand.setCache(cache)
 
     void(await resolveCommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)
@@ -129,7 +129,7 @@ void (async function main() {
     // Add the lint subcommand
     const lintCommand = new LintCommand({cwd, packageJson: pkgJson})
 
-    lintCommand.cache = cache
+    lintCommand.setCache(cache)
 
     void(await lintCommand.buildCli(program))
       .addCliOptions(alwaysAvailable, false)

@@ -79,10 +79,18 @@ export default class Compiler {
       merged.tokenColors = mergedTokenColors
 
       // Shred them up! Kinda. And evaluate the variables in place
-      evaluate(this.#decomposeObject(merged.vars))
-      evaluate(this.#decomposeObject(merged.colors))
-      evaluate(this.#decomposeObject(merged.tokenColors))
-      evaluate(this.#decomposeObject(merged.semanticTokenColors))
+      const vars = this.#decomposeObject(merged.vars)
+
+      evaluate(vars)
+      const workColors = this.#decomposeObject(merged.colors)
+
+      evaluate(workColors)
+      const workTokenColors = this.#decomposeObject(merged.tokenColors)
+
+      evaluate(workTokenColors)
+      const workSemanticTokenColors = this.#decomposeObject(merged.semanticTokenColors)
+
+      evaluate(workSemanticTokenColors)
 
       theme.setLookup(evaluator.lookup)
 
@@ -94,9 +102,9 @@ export default class Compiler {
       }
 
       // Assemble into one object with the proper keys
-      const colors = merged.colors.reduce(reducer, {})
-      const tokenColors = this.#composeArray(merged.tokenColors)
-      const semanticTokenColors = merged.semanticTokenColors.reduce(reducer, {})
+      const colors = workColors.reduce(reducer, {})
+      const tokenColors = this.#composeArray(workTokenColors)
+      const semanticTokenColors = workSemanticTokenColors.reduce(reducer, {})
 
       // Mix and maaatch all jumbly wumbly...
       const output = Data.mergeObject(
@@ -206,7 +214,7 @@ export default class Compiler {
       if(isObject(item)) {
         result.push(...this.#decomposeObject(work[key], currPath))
       } else if(Array.isArray(work[key])) {
-        item.forEach((item, index) => {
+        work[key].forEach((item, index) => {
           const path = [...currPath, String(index+1)]
 
           result.push({
