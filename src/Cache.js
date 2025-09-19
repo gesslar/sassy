@@ -52,6 +52,7 @@ export default class Cache {
 
     if(this.#modifiedTimes.has(fileObject.path)) {
       const lastCached = this.#modifiedTimes.get(fileObject.path)
+
       if(lastModified > lastCached) {
         this.#cleanup(fileObject)
       } else {

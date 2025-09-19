@@ -84,15 +84,18 @@ export default class Evaluator {
    */
   evaluate(decomposed) {
     let it = 0
+
     do {
       decomposed.forEach(item => {
         const trail = new Array()
 
         if(typeof item.value === "string") {
           const raw = item.value
+
           item.value = this.#evaluateValue(trail, item.flatPath, raw)
           // Keep lookup in sync with latest resolved value for chained deps.
           const token = this.#pool.findToken(item.flatPath)
+
           this.#pool.resolve(item.flatPath, item.value)
           this.#pool.rawResolve(raw, item.value)
 
@@ -194,6 +197,7 @@ export default class Evaluator {
 
     // Check if this is a color function (like oklch, rgb, hsl, etc.)
     const parsedColor = parse(value)
+
     if(parsedColor) {
       token.setParsedColor(parsedColor)
     }

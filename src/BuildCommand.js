@@ -28,13 +28,13 @@ export default class BuildCommand extends Command {
   constructor(base) {
     super(base)
 
-    this.cliCommand = "build <file...>"
-    this.cliOptions = {
+    this.setCliCommand("build <file...>")
+    this.setCliOptions({
       "watch": ["-w, --watch", "watch for changes"],
       "output-dir": ["-o, --output-dir <dir>", "specify an output directory"],
       "dry-run": ["-n, --dry-run", "print theme JSON to stdout; do not write files"],
       "silent": ["-s, --silent", "silent mode. only print errors or dry-run"],
-    }
+    })
   }
 
   /**
@@ -51,7 +51,7 @@ export default class BuildCommand extends Command {
    * @throws {Error} When theme compilation fails
    */
   async execute(fileNames, options) {
-    const {cwd} = this
+    const cwd = this.getCwd()
 
     if(options.watch) {
       options.watch && this.#initialiseInputHandler()
@@ -69,7 +69,7 @@ export default class BuildCommand extends Command {
       fileNames.map(async fileName => {
         const fileObject = await this.resolveThemeFileName(fileName, cwd)
         const theme = new Theme(fileObject, cwd, options)
-        theme.cache = this.cache
+          .setCache(this.getCache())
 
         return new Session(this, theme, options)
       })
@@ -83,12 +83,11 @@ export default class BuildCommand extends Command {
     }
 
     const sessions = sessionResults.map(result => result.value)
-    const firstRun = await Promise.allSettled(
-      sessions.map(async session => await session.run())
-    )
+    const firstRun = await Promise.allSettled(sessions.map(
+      async session => await session.run()))
     const rejected = firstRun.filter(reject => reject.status === "rejected")
-    if(rejected.length > 0) {
 
+    if(rejected.length > 0) {
       rejected.forEach(reject => Term.error(reject.reason))
 
       if(firstRun.length === rejected.length)

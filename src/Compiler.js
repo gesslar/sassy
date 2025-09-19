@@ -29,7 +29,7 @@ export default class Compiler {
    * Compiles a theme source file into a VS Code colour theme.
    * Processes configuration, variables, imports, and theme definitions.
    *
-   * @param {object} theme - The file object containing source data and metadata
+   * @param {Theme} theme - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
   async compile(theme) {
@@ -43,6 +43,7 @@ export default class Compiler {
       const evaluate = (...arg) => evaluator.evaluate(...arg)
 
       const config = this.#decomposeObject(sourceConfig)
+
       evaluate(config)
       const recompConfig = this.#composeObject(config)
 
@@ -78,27 +79,24 @@ export default class Compiler {
       merged.tokenColors = mergedTokenColors
 
       // Shred them up! Kinda. And evaluate the variables in place
-      const vars = this.#decomposeObject(merged.vars)
-      evaluate(vars)
-      const workColors = this.#decomposeObject(merged.colors)
-      evaluate(workColors)
-      const workTokenColors = this.#decomposeObject(merged.tokenColors)
-      evaluate(workTokenColors)
-      const workSemanticTokenColors = this.#decomposeObject(merged.semanticTokenColors)
-      evaluate(workSemanticTokenColors)
+      evaluate(this.#decomposeObject(merged.vars))
+      evaluate(this.#decomposeObject(merged.colors))
+      evaluate(this.#decomposeObject(merged.tokenColors))
+      evaluate(this.#decomposeObject(merged.semanticTokenColors))
 
-      theme.lookup = evaluator.lookup
+      theme.setLookup(evaluator.lookup)
 
       // Now let's do some reducing... into a form that works for VS Code
       const reducer = (acc,curr) => {
         acc[curr.flatPath] = curr.value
+
         return acc
       }
 
       // Assemble into one object with the proper keys
-      const colors = workColors.reduce(reducer, {})
-      const tokenColors = this.#composeArray(workTokenColors)
-      const semanticTokenColors = workSemanticTokenColors.reduce(reducer, {})
+      const colors = merged.colors.reduce(reducer, {})
+      const tokenColors = this.#composeArray(merged.tokenColors)
+      const semanticTokenColors = merged.semanticTokenColors.reduce(reducer, {})
 
       // Mix and maaatch all jumbly wumbly...
       const output = Data.mergeObject(
@@ -139,7 +137,6 @@ export default class Compiler {
     imports = typeof imports === "string"
       ? [imports]
       : imports
-
 
     if(!Data.isArrayUniform(imports, "string"))
       throw new Sass(
@@ -211,6 +208,7 @@ export default class Compiler {
       } else if(Array.isArray(work[key])) {
         item.forEach((item, index) => {
           const path = [...currPath, String(index+1)]
+
           result.push({
             key,
             value: String(item),

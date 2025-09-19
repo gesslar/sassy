@@ -39,6 +39,7 @@ export default class File {
       return url.pathToFileURL(pathName).href
     } catch(e) {
       void e // stfu linter
+
       return pathName
     }
   }
@@ -52,6 +53,7 @@ export default class File {
   static async canReadFile(file) {
     try {
       await fs.access(file.path, fs.constants.R_OK)
+
       return true
     } catch(_) {
       return false
@@ -67,6 +69,7 @@ export default class File {
   static async canWriteFile(file) {
     try {
       await fs.access(file.path, fs.constants.W_OK)
+
       return true
     } catch(_error) {
       return false
@@ -82,6 +85,7 @@ export default class File {
   static async fileExists(file) {
     try {
       await fs.access(file.path, fs.constants.R_OK)
+
       return true
     } catch(_) {
       return false
@@ -97,6 +101,7 @@ export default class File {
   static async fileSize(file) {
     try {
       const stat = await fs.stat(file.path)
+
       return stat.size
     } catch(_) {
       return null
@@ -113,6 +118,7 @@ export default class File {
   static async fileModified(file) {
     try {
       const stat = await fs.stat(file.path)
+
       return stat.mtime
     } catch(_) {
       return null
@@ -179,8 +185,13 @@ export default class File {
    */
   static async getFiles(glob) {
     Valid.assert(
-      ((typeof glob === "string" && glob.length > 0) ||
-       (Array.isArray(glob) && Data.uniformStringArray(glob) && glob.length > 0)),
+      (
+        (typeof glob === "string" && glob.length > 0) ||
+        (
+          Array.isArray(glob) && Data.uniformStringArray(glob) &&
+          glob.length > 0
+        )
+      ),
       "glob must be a non-empty string or array of strings.",
       1
     )
@@ -225,6 +236,7 @@ export default class File {
       found.map(async dirent => {
         const fullPath = path.join(directory, dirent.name)
         const stat = await fs.stat(fullPath)
+
         return {dirent, stat, fullPath}
       }),
     )

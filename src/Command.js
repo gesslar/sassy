@@ -27,13 +27,14 @@ export default class Command {
     this.#packageJson = packageJson
   }
 
-  get cache() {
-    return this.#cache
+  setCache(cache) {
+    this.#cache = cache
+
+    return this
   }
 
-  set cache(cache) {
-    if(!this.#cache)
-      this.#cache = cache
+  getCache() {
+    return this.#cache
   }
 
   /**
@@ -41,7 +42,7 @@ export default class Command {
    *
    * @returns {object} The current working directory
    */
-  get cwd() {
+  getCwd() {
     return this.#cwd
   }
 
@@ -50,7 +51,7 @@ export default class Command {
    *
    * @returns {object} The package.json object
    */
-  get packageJson() {
+  getPackageJson() {
     return this.#packageJson
   }
 
@@ -59,7 +60,7 @@ export default class Command {
    *
    * @returns {string|null} The CLI command string
    */
-  get cliCommand() {
+  getCliCommand() {
     return this.#cliCommand
   }
 
@@ -68,17 +69,10 @@ export default class Command {
    *
    * @param {string} data - The CLI command string
    */
-  set cliCommand(data) {
+  setCliCommand(data) {
     this.#cliCommand = data
-  }
 
-  /**
-   * Gets the CLI options object.
-   *
-   * @returns {object|null} The CLI options configuration
-   */
-  get cliOptions() {
-    return this.#cliOptions
+    return this
   }
 
   /**
@@ -86,8 +80,19 @@ export default class Command {
    *
    * @param {object} data - The CLI options configuration
    */
-  set cliOptions(data) {
+  setCliOptions(data) {
     this.#cliOptions = data
+
+    return this
+  }
+
+  /**
+   * Gets the CLI options object.
+   *
+   * @returns {object|null} The CLI options configuration
+   */
+  getCliOptions() {
+    return this.#cliOptions
   }
 
   /**
@@ -95,7 +100,7 @@ export default class Command {
    *
    * @returns {string[]} Array of option names
    */
-  get cliOptionNames() {
+  getCliOptionNames() {
     return this.#optionNames
   }
 
@@ -118,7 +123,9 @@ export default class Command {
       try {
         await this.execute(...arg)
       } catch(error) {
-        throw Sass.new(`Trying to execute ${this.constructor.name} with ${JSON.stringify(...arg)}`, error)
+        throw Sass.new(
+          `Trying to execute ${this.constructor.name} with `+
+          `${JSON.stringify(...arg)}`, error)
       }
     })
 
@@ -193,7 +200,9 @@ export default class Command {
       arg = arg || new Array()
       const listeners = this.emitter.listeners(event)
 
-      const settled = await Promise.allSettled(listeners.map(listener => listener(arg)))
+      const settled =
+        await Promise.allSettled(listeners.map(listener => listener(arg)))
+
       const rejected = settled.filter(reject => reject.status === "rejected")
 
       if(rejected.length > 0) {

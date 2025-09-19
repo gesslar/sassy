@@ -10,7 +10,6 @@ import Theme from "./Theme.js"
 import Util from "./Util.js"
 import Data from "./Data.js"
 
-
 // ansiColors.enabled = colorSupport.hasBasic
 
 /**
@@ -71,6 +70,7 @@ export default class ResolveCommand extends Command {
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
     const theme = new Theme(fileObject, cwd, options)
+
     theme.cache = this.cache
 
     await theme.load()
@@ -89,6 +89,7 @@ export default class ResolveCommand extends Command {
    */
   async resolveColor(theme, colorName) {
     const pool = theme.pool
+
     if(!pool || !pool.has(colorName))
       return Term.info(`'${colorName}' not found.`)
 
@@ -127,7 +128,9 @@ export default class ResolveCommand extends Command {
 
       if(index >= 0 && index < matches.length) {
         const match = matches[index]
+
         await this.#resolveScopeMatch(theme, match, `${baseScope}.${indexStr}`)
+
         return
       } else {
         return Term.info(`'${scopeName}' not found. Available: ${baseScope}.1 through ${baseScope}.${matches.length}`)
@@ -149,6 +152,7 @@ export default class ResolveCommand extends Command {
       Term.info(`Multiple entries found for '${scopeName}', please try again with the specific query:\n`)
       matches.forEach((match, index) => {
         const name = match.name || `Entry ${index + 1}`
+
         Term.info(`${name}: ${scopeName}.${index + 1}`)
       })
     }
@@ -161,6 +165,7 @@ export default class ResolveCommand extends Command {
 
       // Handle comma-separated scopes
       const scopes = entry.scope.split(",").map(s => s.trim())
+
       return scopes.includes(targetScope)
     })
   }
@@ -172,6 +177,7 @@ export default class ResolveCommand extends Command {
 
     // Look for the foreground property specifically
     const foreground = settings.foreground
+
     if(!foreground) {
       return Term.info(`${displayName} (${name})\n\n(no foreground property)`)
     }
@@ -205,16 +211,18 @@ export default class ResolveCommand extends Command {
       }
     }
 
-    if(!bestToken) {
-      return Term.info(`${displayName} (${name})\n\n(resolved to static value: ${foreground})`)
-    }
+    if(!bestToken)
+      return Term.info(
+        `${displayName} (${name})\n\n(resolved to static value: ${foreground})`
+      )
 
     const trail = bestToken.getTrail()
     const fullTrail = this.#buildCompleteTrail(bestToken, trail)
     const finalValue = bestToken.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
-
-    const output = c`{head}${displayName}{/} {hex}${(`${name}`)}{/}\n${this.#formatOutput(fullTrail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
+    const output = c`{head}${displayName}{/} {hex}${(`${name}`)}{/}\n`+
+                    `${this.#formatOutput(fullTrail)}\n\n{head}`+
+                    `${"Resolution:"}{/} ${formattedFinalValue}`
 
     Term.info(output)
   }
@@ -251,6 +259,7 @@ export default class ResolveCommand extends Command {
 
     // Add the root token's original expression
     const rootRaw = rootToken.getRawValue()
+
     if(rootRaw !== rootToken.getName()) {
       steps.push({
         value: rootRaw,
@@ -265,6 +274,7 @@ export default class ResolveCommand extends Command {
         return
 
       const id = `${token.getName()}-${token.getRawValue()}`
+
       if(seen.has(id))
         return
 
@@ -300,6 +310,7 @@ export default class ResolveCommand extends Command {
 
         // Process dependency's trail
         const depTrail = dependency.getTrail()
+
         if(depTrail && depTrail.length > 0) {
           depTrail.forEach(depToken => processToken(depToken, level + 1))
         }
@@ -372,10 +383,12 @@ export default class ResolveCommand extends Command {
         // Hex results are indented one extra level with just spaces and arrow
         const prefix = "   ".repeat(depth + 1)
         const arrow = c`{arrow}→{/} `
+
         out.push(`${prefix}${arrow}${line}`)
       } else {
         // Everything else just gets clean indentation
         const prefix = "   ".repeat(depth)
+
         out.push(`${prefix}${line}`)
       }
     })
@@ -411,17 +424,18 @@ export default class ResolveCommand extends Command {
 
     if(this.#func.test(value)) {
       const {func,args} = this.#func.exec(value).groups
+
       return [
         c`{func}${func}{/}{parens}${"("}{/}{leaf}${args}{/}{parens}${")"}{/}`,
         "function"
       ]
     }
 
-
     if(this.#sub.test(value)) {
       const {parens,none,braces} = Evaluator.sub.exec(value)?.groups || {}
       const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
       const varValue = braces || parens || none || value
+
       return [
         c`{func}{/}{parens}${style[0]}{/}{leaf}${varValue}{/}{parens}${style[1]}{/}`,
         "variable"

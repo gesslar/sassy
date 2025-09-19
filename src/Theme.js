@@ -22,6 +22,25 @@ import Term from "./Term.js"
 import ThemePool from "./ThemePool.js"
 import Util from "./Util.js"
 
+// Symbol enums for magic values
+const WriteStatus = {
+  DRY_RUN: Symbol("dry-run"),
+  SKIPPED: Symbol("skipped"),
+  WRITTEN: Symbol("written")
+}
+
+const FileExtension = {
+  COLOR_THEME: Symbol(".color-theme.json")
+}
+
+const PropertyKey = {
+  CONFIG: Symbol("config")
+}
+
+const HashFallback = {
+  DEFAULT: Symbol("kakadoodoo")
+}
+
 /**
  * Theme class: manages the lifecycle of a theme compilation unit.
  * See file-level docstring for responsibilities.
@@ -54,7 +73,7 @@ export default class Theme {
   constructor(themeFile, cwd, options) {
     this.#sourceFile = themeFile
     this.#name = themeFile.module
-    this.#outputFileName = `${this.#name}.color-theme.json`
+    this.#outputFileName = `${this.#name}${FileExtension.COLOR_THEME.description}`
     this.#options = options
     this.#cwd = cwd
   }
@@ -71,24 +90,26 @@ export default class Theme {
     this.#pool = null
   }
 
-  get cwd() {
+  getCwd() {
     return this.#cwd
   }
 
-  get options() {
+  getOptions() {
     return this.#options
   }
 
-  set cache(cache) {
-    if(!this.cache)
+  setCache(cache) {
+    if(!this.#cache)
       this.#cache=cache
+
+    return this
   }
 
-  get cache() {
+  getCache() {
     return this.#cache
   }
 
-  get name() {
+  getName() {
     return this.#name
   }
 
@@ -97,7 +118,7 @@ export default class Theme {
    *
    * @returns {FileObject} The source theme file
    */
-  get sourceFile() {
+  getSourceFile() {
     return this.#sourceFile
   }
 
@@ -106,7 +127,7 @@ export default class Theme {
    *
    * @returns {object|null} The compiled theme output
    */
-  get output() {
+  getOutput() {
     return this.#output
   }
 
@@ -115,10 +136,12 @@ export default class Theme {
    *
    * @param {object} data - The compiled theme output object
    */
-  set output(data) {
+  setOutput(data) {
     this.#output = data
     this.#outputJson = JSON.stringify(data, null, 2) + "\n"
     this.#outputHash = Util.hashOf(this.#outputJson)
+
+    return this
   }
 
   /**
@@ -126,7 +149,7 @@ export default class Theme {
    *
    * @returns {FileObject[]} Array of dependency files
    */
-  get dependencies() {
+  getDependencies() {
     return this.#dependencies
   }
 
@@ -135,11 +158,13 @@ export default class Theme {
    *
    * @param {FileObject[]} data - Array of dependency files
    */
-  set dependencies(data) {
+  setDependencies(data) {
     this.#dependencies = data
 
     if(!this.#dependencies.includes(this.#sourceFile))
       this.#dependencies.unshift(this.#sourceFile)
+
+    return this
   }
 
   /**
@@ -147,7 +172,7 @@ export default class Theme {
    *
    * @returns {object|null} The parsed source data
    */
-  get source() {
+  getSource() {
     return this.#source
   }
 
@@ -156,7 +181,7 @@ export default class Theme {
    *
    * @returns {object|null} The lookup data object
    */
-  get lookup() {
+  getLookup() {
     return this.#lookup
   }
 
@@ -165,8 +190,10 @@ export default class Theme {
    *
    * @param {object} data - The lookup data object
    */
-  set lookup(data) {
+  setLookup(data) {
     this.#lookup = data
+
+    return this
   }
 
   /**
@@ -175,7 +202,7 @@ export default class Theme {
    *
    * @returns {ThemePool|null} The pool for this theme.
    */
-  get pool() {
+  getPool() {
     return this.#pool
   }
 
@@ -188,11 +215,11 @@ export default class Theme {
    * @param {ThemePool} pool - The pool to assign to this theme
    * @throws If there is already a pool.
    */
-  set pool(pool) {
-    if(this.#pool)
-      throw Sass.new("Cannot override existing pool.")
+  setPool(pool) {
+    if(!this.#pool)
+      this.#pool = pool
 
-    this.#pool = pool
+    return this
   }
 
   /**
@@ -207,19 +234,26 @@ export default class Theme {
   /**
    * Loads and parses the theme source file.
    * Validates that the source contains required configuration.
+   * Skips loading if no cache is available (extension use case).
    *
    * @returns {Promise<this>} Returns this instance for method chaining
    * @throws {Sass} If source file lacks required 'config' property
    */
   async load() {
+    // Skip loading if no cache (extension use case)
+    if(!this.#cache)
+      return this
+
     const source = await this.#cache.loadCachedData(this.#sourceFile)
 
-    if(!source.config)
+    if(!source[PropertyKey.CONFIG.description])
       throw Sass.new(
-        `Source file does not contain 'config' property: ${this.#sourceFile.path}`
+        `Source file does not contain '${PropertyKey.CONFIG.description}' property: ${this.#sourceFile.path}`
       )
 
     this.#source = source
+
+    return this
   }
 
   /**
@@ -246,7 +280,10 @@ export default class Theme {
    */
   async build() {
     const compiler = new Compiler()
+
     await compiler.compile(this)
+
+    return this
   }
 
   /**
@@ -264,7 +301,7 @@ export default class Theme {
     if(this.#options.dryRun) {
       Term.log(this.#outputJson)
 
-      return {status: "dry-run", file}
+      return {status: WriteStatus.DRY_RUN, file}
     }
 
     // Skip identical bytes
@@ -272,10 +309,10 @@ export default class Theme {
       const nextHash = this.#outputHash
       const lastHash = await file.exists
         ? Util.hashOf(await File.readFile(file))
-        : "kakadoodoo"
+        : HashFallback.DEFAULT.description
 
       if(lastHash === nextHash)
-        return {status: "skipped", file}
+        return {status: WriteStatus.SKIPPED, file}
     }
 
     // Real write (timed)
@@ -284,6 +321,6 @@ export default class Theme {
 
     await File.writeFile(file, output)
 
-    return {status: "written", bytes: output.length, file}
+    return {status: WriteStatus.WRITTEN, bytes: output.length, file}
   }
 }
