@@ -25,12 +25,12 @@ export default class ResolveCommand extends Command {
   constructor(base) {
     super(base)
 
-    this.cliCommand = "resolve <file>"
-    this.cliOptions = {
+    this.setCliCommand("resolve <file>")
+    this.setCliOptions({
       "color": ["-c, --color <key>", "resolve a color key to its final evaluated value"],
       "tokenColor": ["-t, --tokenColor <scope>", "resolve a tokenColors scope to its final evaluated value"],
       "semanticTokenColor": ["-s, --semanticTokenColor <scope>", "resolve a semanticTokenColors scope to its final evaluated value"],
-    }
+    })
   }
 
   /**
@@ -42,22 +42,23 @@ export default class ResolveCommand extends Command {
    * @returns {Promise<void>} Resolves when resolution is complete
    */
   async execute(inputArg, options={}) {
+    const cliOptionNames = this.getCliOptionNames()
     const intersection =
-      Data.arrayIntersection(this.cliOptionNames, Object.keys(options))
+      Data.arrayIntersection(cliOptionNames, Object.keys(options))
 
     if(intersection.length > 1)
       throw Sass.new(
-        `The options ${this.cliOptionNames.join(", ")} are ` +
+        `The options ${cliOptionNames.join(", ")} are ` +
         `mutually exclusive and may only have one expressed in the request.`
       )
 
-    const {cwd} = this
+    const cwd = this.getCwd()
     const optionName = Object.keys(options??{})
-      .find(o => this.cliOptionNames.includes(o))
+      .find(o => cliOptionNames.includes(o))
 
     if(!optionName) {
       throw Sass.new(
-        `No valid option provided. Please specify one of: ${this.cliOptionNames.join(", ")}.`
+        `No valid option provided. Please specify one of: ${cliOptionNames.join(", ")}.`
       )
     }
 
@@ -93,7 +94,7 @@ export default class ResolveCommand extends Command {
     if(!pool || !pool.has(colorName))
       return Term.info(`'${colorName}' not found.`)
 
-    const tokens = pool.getTokens
+    const tokens = pool.getTokens()
     const token = tokens.get(colorName)
     const trail = token.getTrail()
     const fullTrail = this.#buildCompleteTrail(token, trail)
@@ -115,7 +116,7 @@ export default class ResolveCommand extends Command {
    * @returns {void}
    */
   async resolveTokenColor(theme, scopeName) {
-    const tokenColors = theme.output?.tokenColors || []
+    const tokenColors = theme.getOutput()?.tokenColors || []
 
     // Check if this is a disambiguated scope (ends with .1, .2, etc.)
     const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
@@ -184,7 +185,7 @@ export default class ResolveCommand extends Command {
 
     // First, try to find the token by looking for variables that resolve to this value
     // but prioritize source variable names over computed results
-    const tokens = pool ? pool.getTokens : new Map()
+    const tokens = pool ? pool.getTokens() : new Map()
     let bestToken = null
 
     // First try to find a scope.* token that matches
@@ -238,18 +239,19 @@ export default class ResolveCommand extends Command {
   async resolveSemanticTokenColor(theme, scopeName) {
     // semanticTokenColors has the same structure as tokenColors, so we can reuse the logic
     // but we need to look at the semanticTokenColors array instead
-    const originalTokenColors = theme.output?.tokenColors
+    const originalTokenColors = theme.getOutput()?.tokenColors
 
     // Temporarily replace tokenColors with semanticTokenColors for resolution
-    if(theme.output?.semanticTokenColors) {
-      theme.output.tokenColors = theme.output.semanticTokenColors
+    const themeOutput = theme.getOutput()
+    if(themeOutput?.semanticTokenColors) {
+      themeOutput.tokenColors = themeOutput.semanticTokenColors
     }
 
     await this.resolveTokenColor(theme, scopeName)
 
     // Restore original tokenColors
-    if(originalTokenColors) {
-      theme.output.tokenColors = originalTokenColors
+    if(originalTokenColors && themeOutput) {
+      themeOutput.tokenColors = originalTokenColors
     }
   }
 

@@ -25,7 +25,7 @@ export default class ThemePool {
    *
    * @returns {Map<string, ThemeToken>} Map of tokens to their children.
    */
-  get getTokens() {
+  getTokens() {
     return this.#tokens
   }
 

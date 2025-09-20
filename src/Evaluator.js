@@ -259,7 +259,7 @@ export default class Evaluator {
     // Look up source tokens for arguments to preserve color space
     const sourceTokens = split.map(arg => {
       return this.#pool.findToken(arg) ||
-             this.#pool.getTokens?.get?.(arg) ||
+             this.#pool.getTokens()?.get?.(arg) ||
              null
     })
 

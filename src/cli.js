@@ -110,29 +110,38 @@ void (async function main() {
       .description(pkgJson.description)
       .version(pkgJson.version)
 
-    // Add the build subcommand
-    const buildCommand = new BuildCommand({cwd, packageJson: pkgJson})
+    const commands = [BuildCommand, ResolveCommand, LintCommand]
+    
+    for(const CommandClass of commands) {
+      const command = new CommandClass({cwd, packageJson: pkgJson})
+      command.setCache(cache)
+      await command.buildCli(program)
+      command.addCliOptions(alwaysAvailable, false)
+    }
 
-    buildCommand.setCache(cache)
+    // // Add the build subcommand
+    // const buildCommand = new BuildCommand({cwd, packageJson: pkgJson})
 
-    void(await buildCommand.buildCli(program))
-      .addCliOptions(alwaysAvailable, false)
+    // buildCommand.cache = cache
 
-    // Add the resolve subcommand
-    const resolveCommand = new ResolveCommand({cwd, packageJson: pkgJson})
+    // void(await buildCommand.buildCli(program))
+    //   .addCliOptions(alwaysAvailable, false)
 
-    resolveCommand.setCache(cache)
+    // // Add the resolve subcommand
+    // const resolveCommand = new ResolveCommand({cwd, packageJson: pkgJson})
 
-    void(await resolveCommand.buildCli(program))
-      .addCliOptions(alwaysAvailable, false)
+    // resolveCommand.cache = cache
 
-    // Add the lint subcommand
-    const lintCommand = new LintCommand({cwd, packageJson: pkgJson})
+    // void(await resolveCommand.buildCli(program))
+    //   .addCliOptions(alwaysAvailable, false)
 
-    lintCommand.setCache(cache)
+    // // Add the lint subcommand
+    // const lintCommand = new LintCommand({cwd, packageJson: pkgJson})
 
-    void(await lintCommand.buildCli(program))
-      .addCliOptions(alwaysAvailable, false)
+    // lintCommand.cache = cache
+
+    // void(await lintCommand.buildCli(program))
+    //   .addCliOptions(alwaysAvailable, false)
 
     // Let'er rip, bitches! VROOM VROOM, motherfucker!!
     await program.parseAsync()

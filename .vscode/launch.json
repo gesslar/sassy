@@ -33,6 +33,7 @@
         "exec",
         "--",
         "build",
+        "--nerd",
         "--output-dir",
         "./examples/output",
         "./examples/simple/midnight-ocean-yaml.yaml"

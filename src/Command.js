@@ -1,5 +1,6 @@
 import Sass from "./Sass.js"
 import FileObject from "./FileObject.js"
+import DirectoryObject from "./DirectoryObject.js"
 
 /**
  * Base class for command-line interface commands.
@@ -19,7 +20,7 @@ export default class Command {
    * Creates a new Command instance.
    *
    * @param {object} config - Configuration object
-   * @param {object} config.cwd - Current working directory object
+   * @param {DirectoryObject} config.cwd - Current working directory object
    * @param {object} config.packageJson - Package.json data
    */
   constructor({cwd,packageJson}) {
@@ -27,20 +28,10 @@ export default class Command {
     this.#packageJson = packageJson
   }
 
-  setCache(cache) {
-    this.#cache = cache
-
-    return this
-  }
-
-  getCache() {
-    return this.#cache
-  }
-
   /**
    * Gets the current working directory object.
    *
-   * @returns {object} The current working directory
+   * @returns {DirectoryObject} The current working directory
    */
   getCwd() {
     return this.#cwd
@@ -56,12 +47,24 @@ export default class Command {
   }
 
   /**
-   * Gets the CLI command string.
+   * Sets the cache instance for the command.
    *
-   * @returns {string|null} The CLI command string
+   * @param {Cache} cache - The cache instance to set
+   * @returns {this} Returns this instance for method chaining
    */
-  getCliCommand() {
-    return this.#cliCommand
+  setCache(cache) {
+    this.#cache = cache
+
+    return this
+  }
+
+  /**
+   * Gets the cache instance.
+   *
+   * @returns {Cache|null} The cache instance or null if not set
+   */
+  getCache() {
+    return this.#cache
   }
 
   /**
@@ -74,6 +77,15 @@ export default class Command {
     this.#cliCommand = data
 
     return this
+  }
+
+  /**
+   * Gets the CLI command string.
+   *
+   * @returns {string|null} The CLI command string
+   */
+  getCliCommand() {
+    return this.#cliCommand
   }
 
   /**
@@ -107,6 +119,43 @@ export default class Command {
   }
 
   /**
+   * Checks if the command has a cache instance.
+   *
+   * @returns {boolean} True if cache is available
+   */
+  hasCache() {
+    return this.#cache !== null
+  }
+
+  /**
+   * Checks if the command has a CLI command string configured.
+   *
+   * @returns {boolean} True if CLI command is set
+   */
+  hasCliCommand() {
+    return this.#cliCommand !== null
+  }
+
+  /**
+   * Checks if the command has CLI options configured.
+   *
+   * @returns {boolean} True if CLI options are set
+   */
+  hasCliOptions() {
+    return this.#cliOptions !== null
+  }
+
+  /**
+   * Checks if the command is ready to be built.
+   * Requires both CLI command and options to be set.
+   *
+   * @returns {boolean} True if command can be built
+   */
+  canBuild() {
+    return this.hasCliCommand() && this.hasCliOptions()
+  }
+
+  /**
    * Builds the CLI command interface using the commander.js program instance.
    * Initializes the command with its options and action handler.
    *
@@ -114,13 +163,13 @@ export default class Command {
    * @returns {Promise<this>} Returns this instance for method chaining
    */
   async buildCli(program) {
-    if(!this.cliCommand)
+    if(!this.hasCliCommand())
       throw Sass.new("This command has no CLI command string.")
 
-    if(!this.cliOptions)
+    if(!this.hasCliOptions())
       throw Sass.new("This command has no CLI options.")
 
-    this.#command = program.command(this.cliCommand)
+    this.#command = program.command(this.getCliCommand())
     this.#command.action(async(...arg) => {
       try {
         await this.execute(...arg)
@@ -131,7 +180,7 @@ export default class Command {
       }
     })
 
-    this.addCliOptions(this.cliOptions, true)
+    this.addCliOptions(this.getCliOptions(), true)
 
     return this
   }
@@ -142,7 +191,7 @@ export default class Command {
    * @param {string} name - The option name
    * @param {string[]} options - Array containing option flag and description
    * @param {boolean} preserve - Whether to preserve this option name in the list
-   * @returns {this} Returns this instance for method chaining
+   * @returns {Promise<this>} Returns this instance for method chaining
    */
   addCliOption(name, options, preserve) {
     if(!this.#command)

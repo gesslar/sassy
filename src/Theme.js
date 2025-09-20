@@ -22,6 +22,9 @@ import Term from "./Term.js"
 import ThemePool from "./ThemePool.js"
 import Util from "./Util.js"
 
+const outputFileExtension = "color-theme.json"
+const obviouslyASentinelYouCantMissSoShutUpAboutIt = "kakadoodoo"
+
 // Symbol enums for magic values
 const WriteStatus = {
   DRY_RUN: Symbol("dry-run"),
@@ -29,16 +32,8 @@ const WriteStatus = {
   WRITTEN: Symbol("written")
 }
 
-const FileExtension = {
-  COLOR_THEME: Symbol(".color-theme.json")
-}
-
 const PropertyKey = {
   CONFIG: Symbol("config")
-}
-
-const HashFallback = {
-  DEFAULT: Symbol("kakadoodoo")
 }
 
 /**
@@ -49,7 +44,13 @@ export default class Theme {
   #sourceFile = null
   #source = null
   #options = null
-  #dependencies = []
+  /**
+   * The dependencies of this theme.
+   *
+   * @type {Set<Dependency>}
+   * @private
+   */
+  #dependencies = new Set()
   #lookup = null
   #pool = null
   #cache = null
@@ -73,7 +74,7 @@ export default class Theme {
   constructor(themeFile, cwd, options) {
     this.#sourceFile = themeFile
     this.#name = themeFile.module
-    this.#outputFileName = `${this.#name}${FileExtension.COLOR_THEME.description}`
+    this.#outputFileName = `${this.#name}.${outputFileExtension}`
     this.#options = options
     this.#cwd = cwd
   }
@@ -90,14 +91,40 @@ export default class Theme {
     this.#pool = null
   }
 
+  /**
+   * Gets the current working directory.
+   *
+   * @returns {DirectoryObject} The current working directory
+   */
   getCwd() {
     return this.#cwd
   }
 
+  /**
+   * Gets the compilation options.
+   *
+   * @returns {object} The compilation options object
+   */
   getOptions() {
     return this.#options
   }
 
+  /**
+   * Gets a specific compilation option.
+   *
+   * @param {string} option - The option name to retrieve
+   * @returns {*} The option value or undefined if not set
+   */
+  getOption(option) {
+    return this.#options?.[option] ?? undefined
+  }
+
+  /**
+   * Sets the cache instance for theme compilation.
+   *
+   * @param {Cache} cache - The cache instance to use for file operations
+   * @returns {this} Returns this instance for method chaining
+   */
   setCache(cache) {
     if(!this.#cache)
       this.#cache=cache
@@ -105,12 +132,31 @@ export default class Theme {
     return this
   }
 
+  /**
+   * Gets the cache instance.
+   *
+   * @returns {Cache|null} The cache instance or null if not set
+   */
   getCache() {
     return this.#cache
   }
 
+  /**
+   * Gets the theme name.
+   *
+   * @returns {string} The theme name derived from the source file
+   */
   getName() {
     return this.#name
+  }
+
+  /**
+   * Gets the output file name for the compiled theme.
+   *
+   * @returns {string} The output file name with extension
+   */
+  getOutputFileName() {
+    return this.#outputFileName
   }
 
   /**
@@ -120,15 +166,6 @@ export default class Theme {
    */
   getSourceFile() {
     return this.#sourceFile
-  }
-
-  /**
-   * Gets the compiled theme output object.
-   *
-   * @returns {object|null} The compiled theme output
-   */
-  getOutput() {
-    return this.#output
   }
 
   /**
@@ -146,27 +183,131 @@ export default class Theme {
   }
 
   /**
+   * Gets the compiled theme output object.
+   *
+   * @returns {object|null} The compiled theme output
+   */
+  getOutput() {
+    return this.#output
+  }
+
+  /**
+   * Checks if the source has colors defined.
+   *
+   * @returns {boolean} True if source has theme colors
+   */
+  sourceHasColors() {
+    return !!this.#source?.theme?.colors
+  }
+
+  /**
+   * Checks if the source has token colors defined.
+   *
+   * @returns {boolean} True if source has theme token colors
+   */
+  sourceHasTokenColors() {
+    return !!this.#source?.theme?.tokenColors
+  }
+
+  /**
+   * Checks if the source has semantic token colors defined.
+   *
+   * @returns {boolean} True if source has theme semantic token colors
+   */
+  sourceHasSemanticTokenColors() {
+    return !!this.#source?.theme?.semanticTokenColors
+  }
+
+  /**
+   * Checks if the source has theme configuration.
+   *
+   * @returns {boolean} True if source has theme data
+   */
+  sourceHasTheme() {
+    return !!this.#source?.theme
+  }
+
+  /**
+   * Checks if the source has variables.
+   *
+   * @returns {boolean} True if source has vars section
+   */
+  sourceHasVars() {
+    return !!this.#source?.vars
+  }
+
+  /**
+   * Checks if the source has config section.
+   *
+   * @returns {boolean} True if source has config
+   */
+  sourceHasConfig() {
+    return !!this.#source?.config
+  }
+
+  /**
+   * Gets the source colors data.
+   *
+   * @returns {object|null} The colors object or null if not defined
+   */
+  getSourceColors() {
+    if(!this.sourceHasColors())
+      return null
+
+    return this.#source.theme.colors
+  }
+
+  /**
+   * Gets the source token colors data.
+   *
+   * @returns {Array|null} The token colors array or null if not defined
+   */
+  getSourceTokenColors() {
+    if(!this.sourceHasTokenColors())
+      return null
+
+    return this.#source.theme.tokenColors
+  }
+
+  /**
+   * Gets the source semantic token colors data.
+   *
+   * @returns {object|null} The semantic token colors object or null if not defined
+   */
+  getSourceSemanticTokenColors() {
+    if(!this.sourceHasSemanticTokenColors())
+      return null
+
+    return this.#source.theme.semanticTokenColors
+  }
+
+  /**
    * Gets the array of file dependencies.
    *
-   * @returns {FileObject[]} Array of dependency files
+   * @returns {Set<Dependency>} Array of dependency files
    */
   getDependencies() {
     return this.#dependencies
   }
 
   /**
-   * Sets the array of file dependencies.
+   * Adds a dependency to the theme with its source data.
    *
-   * @param {FileObject[]} data - Array of dependency files
+   * @param {FileObject} file - The dependency file object
+   * @param {object} source - The parsed source data from the file
    * @returns {this} Returns this instance for method chaining
    */
-  setDependencies(data) {
-    this.#dependencies = data
-
-    if(!this.#dependencies.includes(this.#sourceFile))
-      this.#dependencies.unshift(this.#sourceFile)
+  addDependency(file, source) {
+    this.#dependencies.add(
+      new Dependency()
+        .setSourceFile(file)
+        .setSource(source))
 
     return this
+  }
+
+  hasDependencies() {
+    return this.#dependencies.size > 0
   }
 
   /**
@@ -236,6 +377,92 @@ export default class Theme {
   }
 
   /**
+   * Checks if the theme has compiled output.
+   *
+   * @returns {boolean} True if theme has been compiled
+   */
+  hasOutput() {
+    return this.#output !== null
+  }
+
+  /**
+   * Checks if the theme has loaded source data.
+   *
+   * @returns {boolean} True if source data is available
+   */
+  hasSource() {
+    return this.#source !== null
+  }
+
+  /**
+   * Checks if the theme has a cache instance.
+   *
+   * @returns {boolean} True if cache is available
+   */
+  hasCache() {
+    return this.#cache !== null
+  }
+
+  /**
+   * Checks if the theme has lookup data.
+   *
+   * @returns {boolean} True if lookup data exists
+   */
+  hasLookup() {
+    return this.#lookup !== null
+  }
+
+  /**
+   * Checks if the theme is ready to be compiled.
+   * Requires source data and cache to be available.
+   *
+   * @returns {boolean} True if theme can be compiled
+   */
+  isReady() {
+    return this.hasSource() && this.hasCache()
+  }
+
+  /**
+   * Checks if the theme has been fully compiled.
+   * Requires output, pool, and lookup data to be present.
+   *
+   * @returns {boolean} True if theme is fully compiled
+   */
+  isCompiled() {
+    return this.hasOutput() && this.hasPool() && this.hasLookup()
+  }
+
+  /**
+   * Checks if the theme can be built/compiled.
+   * Same as isReady() but with more semantic naming.
+   *
+   * @returns {boolean} True if build can proceed
+   */
+  canBuild() {
+    return this.isReady()
+  }
+
+  /**
+   * Checks if the theme can be written to output.
+   * Requires the theme to be compiled.
+   *
+   * @returns {boolean} True if write can proceed
+   */
+  canWrite() {
+    return this.hasOutput()
+  }
+
+  /**
+   * Checks if the theme is in a valid state for operation.
+   * Basic validation that core properties are set.
+   *
+   * @returns {boolean} True if theme state is valid
+   */
+  isValid() {
+    return this.#sourceFile !== null && this.#name !== null
+  }
+
+  /**
    * Loads and parses the theme source file.
    * Validates that the source contains required configuration.
    * Skips loading if no cache is available (extension use case).
@@ -257,21 +484,7 @@ export default class Theme {
 
     this.#source = source
 
-    return this
-  }
-
-  /**
-   * Adds a file dependency to the theme.
-   *
-   * @param {FileObject} file - The file to add as a dependency
-   * @returns {this} Returns this instance for method chaining
-   * @throws {Sass} If the file parameter is not a valid file
-   */
-  addDependency(file) {
-    if(!file.isFile)
-      throw Sass.new("File must be a dependency.")
-
-    this.#dependencies.push(file)
+    this.addDependency(this.#sourceFile, this.#source)
 
     return this
   }
@@ -280,7 +493,7 @@ export default class Theme {
    * Builds the theme by compiling source data into final output.
    * Main entry point for theme compilation process.
    *
-   * @returns {Promise<void>} Resolves when build is complete.
+   * @returns {Promise<this>} Returns this instance for method chaining
    */
   async build() {
     const compiler = new Compiler()
@@ -313,7 +526,7 @@ export default class Theme {
       const nextHash = this.#outputHash
       const lastHash = await file.exists
         ? Util.hashOf(await File.readFile(file))
-        : HashFallback.DEFAULT.description
+        : obviouslyASentinelYouCantMissSoShutUpAboutIt
 
       if(lastHash === nextHash)
         return {status: WriteStatus.SKIPPED, file}
@@ -326,5 +539,76 @@ export default class Theme {
     await File.writeFile(file, output)
 
     return {status: WriteStatus.WRITTEN, bytes: output.length, file}
+  }
+}
+
+export class Dependency {
+  #sourceFile = null
+  #source = null
+
+  /**
+   * Sets the file object for this dependency.
+   *
+   * @param {FileObject} file - The file object of this dependency.
+   * @returns {this} This.
+   */
+  setSourceFile(file) {
+    if(!this.#sourceFile)
+      this.#sourceFile = file
+
+    return this
+  }
+
+  /**
+   * Get the file object for this depenency.
+   *
+   * @returns {FileObject} The file object of this dependency.
+   */
+  getSourceFile() {
+    return this.#sourceFile
+  }
+
+  /**
+   * Sets the source object for this dependency.
+   *
+   * @param {object} source - The parsed JSON from the file after loading.
+   * @returns {this} This.
+   */
+  setSource(source) {
+    if(!this.#source)
+      this.#source = source
+
+    return this
+  }
+
+  getSource() {
+    return this.#source
+  }
+
+  /**
+   * Checks if the dependency has a source file.
+   *
+   * @returns {boolean} True if source file is set
+   */
+  hasSourceFile() {
+    return this.#sourceFile !== null
+  }
+
+  /**
+   * Checks if the dependency has parsed source data.
+   *
+   * @returns {boolean} True if source data is available
+   */
+  hasSource() {
+    return this.#source !== null
+  }
+
+  /**
+   * Checks if the dependency is fully initialized.
+   *
+   * @returns {boolean} True if both file and source are set
+   */
+  isComplete() {
+    return this.hasSourceFile() && this.hasSource()
   }
 }

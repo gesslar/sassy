@@ -7,17 +7,154 @@ import Term from "./Term.js"
 import Theme from "./Theme.js"
 import Util from "./Util.js"
 
+/**
+ * @typedef {object} SessionOptions
+ * @property {boolean} [watch] - Whether to enable file watching
+ * @property {boolean} [nerd] - Whether to show verbose output
+ * @property {boolean} [dryRun] - Whether to skip file writes
+ */
+
+/**
+ * @typedef {object} BuildRecord
+ * @property {number} timestamp - Epoch ms when the build started
+ * @property {number} loadTime - Time (ms) spent loading theme sources
+ * @property {number} buildTime - Time (ms) spent compiling the theme
+ * @property {number} writeTime - Time (ms) spent writing the output file
+ * @property {boolean} success - Whether the build completed successfully
+ * @property {string} [error] - Error message when success is false
+ */
+
 export default class Session {
+  /**
+   * The theme instance managed by this session.
+   *
+   * @type {Theme|null}
+   * @private
+   */
   #theme = null
+
+  /**
+   * The parent command orchestrating this session.
+   *
+   * @type {Command|null}
+   * @private
+   */
   #command = null
+
+  /**
+   * Build configuration options for this session.
+   *
+   * @type {SessionOptions|null}
+   * @private
+   */
   #options = null
+
+  /**
+   * Active file system watcher for theme dependencies.
+   *
+   * @type {import("chokidar").FSWatcher|null}
+   * @private
+   */
   #watcher = null
+
+  /**
+   * Historical records of builds executed during this session.
+   *
+   * @type {Array<BuildRecord>}
+   * @private
+   */
   #history = []
+
+  /**
+   * Cumulative build statistics for this session.
+   *
+   * @type {{builds: number, failures: number}}
+   * @private
+   */
   #stats = Object.seal({builds: 0, failures: 0})
+
+  /**
+   * Flag indicating whether a build is currently in progress.
+   *
+   * @type {boolean}
+   * @private
+   */
   #building = false
 
   get theme() {
     return this.#theme
+  }
+
+  /**
+   * Gets the theme instance managed by this session.
+   *
+   * @returns {Theme} The theme instance
+   */
+  getTheme() {
+    return this.#theme
+  }
+
+  /**
+   * Gets the command instance orchestrating this session.
+   *
+   * @returns {Command} The command instance
+   */
+  getCommand() {
+    return this.#command
+  }
+
+  /**
+   * Gets the session options.
+   *
+   * @returns {SessionOptions} The session options
+   */
+  getOptions() {
+    return this.#options
+  }
+
+  /**
+   * Gets the build history for this session.
+   *
+   * @returns {Array<BuildRecord>} Array of build records
+   */
+  getHistory() {
+    return this.#history
+  }
+
+  /**
+   * Gets the build statistics for this session.
+   *
+   * @returns {{builds: number, failures: number}} Build statistics
+   */
+  getStats() {
+    return this.#stats
+  }
+
+  /**
+   * Checks if a build is currently in progress.
+   *
+   * @returns {boolean} True if building
+   */
+  isBuilding() {
+    return this.#building
+  }
+
+  /**
+   * Checks if watch mode is enabled.
+   *
+   * @returns {boolean} True if watching
+   */
+  isWatching() {
+    return this.#options?.watch === true
+  }
+
+  /**
+   * Checks if there's an active file watcher.
+   *
+   * @returns {boolean} True if watcher exists
+   */
+  hasWatcher() {
+    return this.#watcher !== null
   }
 
   /**
@@ -27,10 +164,7 @@ export default class Session {
    *
    * @param {Command} command - The parent build command instance
    * @param {Theme} theme - The theme instance to manage
-   * @param {object} options - Build configuration options
-   * @param {boolean} [options.watch] - Whether to enable file watching
-   * @param {boolean} [options.nerd] - Whether to show verbose output
-   * @param {boolean} [options.dryRun] - Whether to skip file writes
+   * @param {SessionOptions} options - Build configuration options
    */
   constructor(command, theme, options) {
     this.#command = command
@@ -88,12 +222,12 @@ export default class Session {
        */
 
       loadCost = (await Util.time(() => this.#theme.load())).cost
-      const bytes = await File.fileSize(this.#theme.sourceFile)
+      const bytes = await File.fileSize(this.#theme.getSourceFile())
 
       Term.status([
         ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10), ["[","]"]],
-        `${this.#theme.name} loaded`,
-        ["info", `${bytes} bytes`, ["[","]"]]
+        `${this.#theme.getName()} loaded`,
+        ["info", `${bytes.toLocaleString()} bytes`, ["[","]"]]
       ], this.#options)
       /**
        * ****************************************************************
@@ -102,19 +236,23 @@ export default class Session {
        */
 
       buildCost = (await Util.time(() => this.#theme.build())).cost
+      const dependencyFiles = Array
+        .from(this.#theme.getDependencies())
+        .map(d => d.getSourceFile())
+        .filter(f => f != null) // Filter out any null/undefined files
 
-      const compileResult =
-        await Promise.allSettled(this.#theme.dependencies.map(async dep => {
+      const compileResult = await Promise
+        .allSettled(dependencyFiles.map(async fileObject => {
+          if(!fileObject) {
+            throw new Error("Invalid dependency file object")
+          }
 
-          return await (async fileObject => {
-            const fileName = File.relativeOrAbsolutePath(
-              this.#command.cwd, fileObject
-            )
-            const fileSize = await File.fileSize(fileObject)
+          const fileName = File.relativeOrAbsolutePath(
+            this.#command.getCwd(), fileObject
+          )
+          const fileSize = await File.fileSize(fileObject)
 
-            return [fileName, fileSize]
-          })(dep)
-
+          return [fileName, fileSize]
         }))
 
       const rejected = compileResult.filter(result => result.status === "rejected")
@@ -124,9 +262,13 @@ export default class Session {
         throw new Error("Compilation failed")
       }
 
-      const dependencies = compileResult.slice(1).map(dep => dep.value)
+      const dependencies = compileResult
+        .slice(1)
+        .map(dep => dep?.value)
+        .filter(Boolean)
+
       const totalBytes = compileResult.reduce(
-        (acc,curr) => acc + curr.value[1], 0
+        (acc,curr) => acc + (curr?.value[1] ?? 0), 0
       )
 
       Term.status([
@@ -135,7 +277,7 @@ export default class Session {
           Util.rightAlignText(`${buildCost.toLocaleString()}ms`, 10),
           ["[","]"]
         ],
-        `${this.#theme.name} compiled`,
+        `${this.#theme.getName()} compiled`,
         ["success", `${compileResult[0].value[1].toLocaleString()} bytes`, ["[","]"]],
         ["info", `${totalBytes.toLocaleString()} total bytes`, ["(",")"]],
       ], this.#options)
@@ -163,14 +305,13 @@ export default class Session {
       const writeResult = await Util.time(() => this.#theme.write(forceWrite))
 
       writeCost = writeResult.cost
-      const result = writeResult.result
       const {
         status: writeStatus,
         file: outputFile,
         bytes: writeBytes
-      } = result
+      } = writeResult.result
       const outputFilename = File.relativeOrAbsolutePath(
-        this.#command.cwd, outputFile
+        this.#command.getCwd(), outputFile
       )
       const status = [
         [
@@ -180,7 +321,7 @@ export default class Session {
         ],
       ]
 
-      if(writeStatus === "written") {
+      if(writeStatus.description === "written") {
         status.push(
           `${outputFilename} written`,
           ["success", `${writeBytes.toLocaleString()} bytes`, ["[","]"]]
@@ -188,7 +329,7 @@ export default class Session {
       } else {
         status.push(
           `${outputFilename}`,
-          ["warn", writeStatus.toLocaleUpperCase(), ["[","]"]]
+          ["warn", writeStatus.description.toLocaleUpperCase(), ["[","]"]]
         )
       }
 
@@ -216,8 +357,7 @@ export default class Session {
         error: error.message
       })
 
-      if(error instanceof Sass)
-        error.report(this.#options.nerd)
+      Sass.new("Build process failed.", error).report(this.#options.nerd)
     } finally {
       this.#building = false
       this.#command.asyncEmit("finishedBuilding")
@@ -239,20 +379,20 @@ export default class Session {
       this.#building = true
       this.#command.asyncEmit("building")
 
-      const changedFile = this.#theme.dependencies.find(
-        dep => dep.path === changed
-      )
+      const changedFile = Array.from(this.#theme.getDependencies()).find(
+        dep => dep.getSourceFile().path === changed
+      )?.getSourceFile()
 
       if(!changedFile)
         return
 
       const fileName = File.relativeOrAbsolutePath(
-        this.#command.cwd, changedFile
+        this.#command.getCwd(), changedFile
       )
 
       const message = [
         ["info", "REBUILDING", ["[","]"]],
-        this.#theme.name,
+        this.#theme.getName(),
       ]
 
       if(this.#options.nerd)
@@ -284,7 +424,7 @@ export default class Session {
 
     Term.status([
       [builds > 0 ? "success" : "error", "SESSION SUMMARY"],
-      [builds > 0 ? "info" : "error", this.#theme.name, ["[", "]"]]
+      [builds > 0 ? "info" : "error", this.#theme.getName(), ["[", "]"]]
     ], this.#options)
 
     Term.status([
@@ -341,11 +481,11 @@ export default class Session {
     if(this.#watcher)
       await this.#watcher.close()
 
-    const dependencies = this.#theme.dependencies.map(d => d.path)
+    const dependencies = Array.from(this.#theme.getDependencies()).map(d => d.getSourceFile().path)
 
     this.#watcher = chokidar.watch(dependencies, {
       // Prevent watching own output files
-      ignored: [this.#theme.outputFileName],
+      ignored: [this.#theme.getOutputFileName()],
       // Add some stability options
       awaitWriteFinish: {
         stabilityThreshold: 100,
