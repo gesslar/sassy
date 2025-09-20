@@ -34,7 +34,7 @@ export default class Compiler {
    */
   async compile(theme) {
     try {
-      const source = theme.source
+      const source = theme.getSource()
       const {config: sourceConfig} = source ?? {}
       const {vars: sourceVars} = source
       const {theme: sourceTheme} = source
@@ -55,9 +55,12 @@ export default class Compiler {
 
       // Let's get all of the imports!
       const imports = recompConfig.import ?? []
-      const {imported,importedFiles} = await this.#import(imports, theme)
+      const {imported,importByFile} =
+        await this.#import(imports, theme)
 
-      theme.dependencies = importedFiles
+      importByFile.forEach((themeData,file) => {
+        theme.addDependency(file,themeData)
+      })
 
       // Handle tokenColors separately - imports first, then main source
       // (append-only)
@@ -82,12 +85,15 @@ export default class Compiler {
       const vars = this.#decomposeObject(merged.vars)
 
       evaluate(vars)
+
       const workColors = this.#decomposeObject(merged.colors)
 
       evaluate(workColors)
+
       const workTokenColors = this.#decomposeObject(merged.tokenColors)
 
       evaluate(workTokenColors)
+
       const workSemanticTokenColors =
         this.#decomposeObject(merged.semanticTokenColors)
 
@@ -114,16 +120,16 @@ export default class Compiler {
         sourceConfig.custom ?? {},
         {
           colors,
+          tokenColors,
           semanticTokenColors,
-          tokenColors
         }
       )
 
       // Voilà!
-      theme.output = output
-      theme.pool = evaluator.pool
+      theme.setOutput(output)
+      theme.setPool(evaluator.pool)
     } catch(error) {
-      throw Sass.new(`Compiling ${theme.name}`, error)
+      throw Sass.new(`Compiling ${theme.getName()}`, error)
     }
   }
 
@@ -133,15 +139,16 @@ export default class Compiler {
    *
    * @param {Array<string>} imports - The import filenames.
    * @param {Theme} theme - The theme object being compiled.
-   * @returns {Promise<object>} Object containing imported data and file references
+   * @returns {Promise<object,Map>} Object containing imported data and file references
    */
   async #import(imports, theme) {
-    const importedFiles = []
     const imported = {
       vars: {},
       colors: {},
-      tokenColors: []
+      tokenColors: [],
+      semanticTokenColors: {}
     }
+    const importByFile = new Map()
 
     imports = typeof imports === "string"
       ? [imports]
@@ -152,46 +159,58 @@ export default class Compiler {
         `All import entries must be strings. Got ${JSON.stringify(imports)}`
       )
 
-    const loaded = []
+    const loaded = new Map()
 
     for(const importing of imports) {
       try {
-        const file = new FileObject(importing, theme.sourceFile.directory)
-
-        importedFiles.push(file)
+        const file = new FileObject(importing, theme.getSourceFile().directory)
 
         // Get the cached version or a new version. Who knows? I don't know.
         const {result, cost} = await Util.time(async() => {
-          return await theme.cache.loadCachedData(file)
+          return await theme.getCache().loadCachedData(file)
         })
 
-        if(theme.options.nerd) {
+        if(theme.getOptions().nerd) {
           Term.status([
             ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
             "",
-            ["muted", `${File.relativeOrAbsolutePath(theme.cwd,file)}`],
-            ["muted", `${theme.name}`,["(",")"]],
-          ], theme.options)
+            ["muted", `${File.relativeOrAbsolutePath(theme.getCwd(),file)}`],
+            ["muted", `${theme.getName()}`,["(",")"]],
+          ], theme.getOptions())
         }
 
-        if(result) {
-          loaded.push(result)
-        }
+        if(result)
+          loaded.set(file, result)
+
       } catch(error) {
         throw Sass.new(`Attempting to import ${importing}`, error)
       }
     }
 
-    loaded.forEach(data => {
-      const {vars={}} = data ?? {}
-      const {colors={},tokenColors=[]} = data.theme ?? {}
+    loaded.forEach((load, file) => {
+      const vars = load?.vars ?? {}
+      const colors = load?.theme?.colors ?? {}
+      const tokenColors = load?.theme?.tokenColors ?? []
+      const semanticTokenColors = load?.theme?.semanticTokenColors ?? {}
 
-      imported.vars = Data.mergeObject(imported.vars, vars)
-      imported.colors = Data.mergeObject(imported.colors, colors)
-      imported.tokenColors = [...imported.tokenColors, ...tokenColors]
+      importByFile.set(file, new Map([
+        ["vars", vars],
+        ["colors", colors],
+        ["tokenColors", tokenColors],
+        ["semanticTokenColors", semanticTokenColors]
+      ]))
+
+      imported.vars =
+        Data.mergeObject(imported.vars, vars)
+      imported.colors =
+        Data.mergeObject(imported.colors, colors)
+      imported.tokenColors =
+        [...imported.tokenColors, ...tokenColors]
+      imported.semanticTokenColors =
+        Data.mergeObject(imported.semanticTokenColors, semanticTokenColors)
     })
 
-    return {imported,importedFiles}
+    return {imported,importByFile}
   }
 
   /**
