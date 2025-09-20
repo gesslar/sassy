@@ -243,6 +243,7 @@ export default class ResolveCommand extends Command {
 
     // Temporarily replace tokenColors with semanticTokenColors for resolution
     const themeOutput = theme.getOutput()
+
     if(themeOutput?.semanticTokenColors) {
       themeOutput.tokenColors = themeOutput.semanticTokenColors
     }

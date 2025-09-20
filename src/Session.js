@@ -481,7 +481,9 @@ export default class Session {
     if(this.#watcher)
       await this.#watcher.close()
 
-    const dependencies = Array.from(this.#theme.getDependencies()).map(d => d.getSourceFile().path)
+    const dependencies = Array.from(this.#theme
+      .getDependencies())
+      .map(d => d.getSourceFile().path)
 
     this.#watcher = chokidar.watch(dependencies, {
       // Prevent watching own output files

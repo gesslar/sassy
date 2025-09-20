@@ -113,7 +113,7 @@ export default class LintCommand extends Command {
       results.semanticTokenColors.push(
         ...this.#lintSemanticTokenColors(semanticTokenColors, pool)
       )
-      results.variables.push(...this.#lintVariables(theme, pool))
+      results.variables.push(...await this.#lintVariables(theme, pool))
     }
 
     return results
@@ -186,12 +186,12 @@ export default class LintCommand extends Command {
    *
    * @param {Theme} theme - The theme object
    * @param {ThemePool} pool - The theme's variable pool
-   * @returns {Array} Array of unused variable issues
+   * @returns {Promise<Array>} Array of unused variable issues
    * @private
    */
-  #lintVariables(theme, pool) {
+  async #lintVariables(theme, pool) {
     return pool
-      ? this.#checkUnusedVariables(theme, pool)
+      ? await this.#checkUnusedVariables(theme, pool)
       : []
   }
 
@@ -239,7 +239,9 @@ export default class LintCommand extends Command {
         // Skip main file, already processed
         if(dependency.getSourceFile().path !== theme.getSourceFile().path) {
           try {
-            const depData = await theme.getCache().loadCachedData(dependency.getSourceFile())
+            const depData = await theme
+              .getCache()
+              .loadCachedData(dependency.getSourceFile())
 
             if(depData?.theme?.tokenColors)
               sourceTokenColors.push(...depData.theme.tokenColors)
@@ -276,7 +278,9 @@ export default class LintCommand extends Command {
         // Skip main file, already processed
         if(dependency.getSourceFile().path !== theme.getSourceFile().path) {
           try {
-            const depData = await theme.getCache().loadCachedData(dependency.getSourceFile())
+            const depData = await theme
+              .getCache()
+              .loadCachedData(dependency.getSourceFile())
 
             if(depData?.theme?.semanticTokenColors)
               sourceSemanticTokenColors.push(depData.theme.semanticTokenColors)
@@ -313,7 +317,9 @@ export default class LintCommand extends Command {
         // Skip main file, already processed
         if(dependency.getSourceFile().path !== theme.getSourceFile().path) {
           try {
-            const depData = await theme.getCache().loadCachedData(dependency.getSourceFile())
+            const depData = await theme
+              .getCache()
+              .loadCachedData(dependency.getSourceFile())
 
             if(depData?.theme?.colors)
               sourceColors.push(depData.theme.colors)
@@ -562,10 +568,10 @@ export default class LintCommand extends Command {
    *
    * @param {Theme} theme - The compiled theme object
    * @param {ThemePool} pool - The theme's variable pool
-   * @returns {Array} Array of unused variable issues
+   * @returns {Promise<Array>} Array of unused variable issues
    * @private
    */
-  #checkUnusedVariables(theme, pool) {
+  async #checkUnusedVariables(theme, pool) {
     const issues = []
 
     if(!pool || !theme.getSource())
@@ -583,7 +589,8 @@ export default class LintCommand extends Command {
     if(theme.hasDependencies()) {
       for(const dependency of theme.getDependencies()) {
         try {
-          const depData = theme.getCache()?.loadCachedDataSync?.(dependency.getSourceFile())
+          const depData = await theme.getCache()
+            .loadCachedData(dependency.getSourceFile())
 
           if(depData?.vars) {
             const depFile = new FileObject(dependency.getSourceFile().path)
@@ -620,7 +627,8 @@ export default class LintCommand extends Command {
     if(theme.hasDependencies()) {
       for(const dependency of theme.getDependencies()) {
         try {
-          const depData = theme.getCache()?.loadCachedDataSync?.(dependency.getSourceFile())
+          const depData = await theme.getCache()
+            .loadCachedData(dependency.getSourceFile())
 
           if(depData) {
             if(depData.colors)
