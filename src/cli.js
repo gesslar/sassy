@@ -111,9 +111,10 @@ void (async function main() {
       .version(pkgJson.version)
 
     const commands = [BuildCommand, ResolveCommand, LintCommand]
-    
+
     for(const CommandClass of commands) {
       const command = new CommandClass({cwd, packageJson: pkgJson})
+
       command.setCache(cache)
       await command.buildCli(program)
       command.addCliOptions(alwaysAvailable, false)

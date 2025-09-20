@@ -1,6 +1,7 @@
 import Sass from "./Sass.js"
 import FileObject from "./FileObject.js"
 import DirectoryObject from "./DirectoryObject.js"
+import Cache from "./Cache.js"
 
 /**
  * Base class for command-line interface commands.
