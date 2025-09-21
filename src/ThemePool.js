@@ -6,7 +6,7 @@
  * Manages resolved values, raw resolutions, and token relationships during theme compilation.
  */
 
-import Sass from "./Sass.js"
+import {Sass} from "@gesslar/toolkit"
 import ThemeToken from "./ThemeToken.js"
 
 /**

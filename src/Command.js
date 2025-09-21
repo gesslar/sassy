@@ -1,7 +1,4 @@
-import Sass from "./Sass.js"
-import FileObject from "./FileObject.js"
-import DirectoryObject from "./DirectoryObject.js"
-import Cache from "./Cache.js"
+import {Sass, FileObject, DirectoryObject, Cache} from "@gesslar/toolkit"
 
 /**
  * Base class for command-line interface commands.

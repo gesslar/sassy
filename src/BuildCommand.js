@@ -1,10 +1,9 @@
 import {EventEmitter} from "node:events"
 import process from "node:process"
 
+import {Sass, Term} from "@gesslar/toolkit"
 import Command from "./Command.js"
-import Sass from "./Sass.js"
 import Session from "./Session.js"
-import Term from "./Term.js"
 import Theme from "./Theme.js"
 
 /**

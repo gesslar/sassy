@@ -7,7 +7,7 @@
  * management, pool integration, and serialization during theme compilation.
  */
 
-import Sass from "./Sass.js"
+import {Sass} from "@gesslar/toolkit"
 import ThemePool from "./ThemePool.js"
 
 /**

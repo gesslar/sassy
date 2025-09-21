@@ -20,9 +20,8 @@ import c from "@gesslar/colours"
 
 import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
-import File from "./File.js"
-import Term from "./Term.js"
 import Theme from "./Theme.js"
+import {Term} from "@gesslar/toolkit"
 import ThemePool from "./ThemePool.js"
 
 // oops, need to have @gesslar/colours support this, too!

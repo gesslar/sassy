@@ -1,11 +1,8 @@
 import chokidar from "chokidar"
 
 import Command from "./Command.js"
-import Sass from "./Sass.js"
-import File from "./File.js"
-import Term from "./Term.js"
+import {Sass, File, Term, Util} from "@gesslar/toolkit"
 import Theme from "./Theme.js"
-import Util from "./Util.js"
 
 /**
  * @typedef {object} SessionOptions
