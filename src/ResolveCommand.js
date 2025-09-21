@@ -2,13 +2,10 @@ import c from "@gesslar/colours"
 // import colorSupport from "color-support"
 
 import Command from "./Command.js"
-import Sass from "./Sass.js"
+import {Sass, Term, Util, Data} from "@gesslar/toolkit"
 import Colour from "./Colour.js"
 import Evaluator from "./Evaluator.js"
-import Term from "./Term.js"
 import Theme from "./Theme.js"
-import Util from "./Util.js"
-import Data from "./Data.js"
 
 // ansiColors.enabled = colorSupport.hasBasic
 
@@ -436,10 +433,10 @@ export default class ResolveCommand extends Command {
 
     if(this.#func.test(value)) {
       const result = Evaluator.extractFunctionCall(value)
-      
+
       if(!result)
         return [c`{leaf}${value}{/}`, "literal"]
-        
+
       const {func, args} = result
 
       return [

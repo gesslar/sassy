@@ -36,14 +36,10 @@ import process from "node:process"
 import url from "node:url"
 import c from "@gesslar/colours"
 
-import Cache from "./Cache.js"
-import Sass from "./Sass.js"
+import {Cache, Sass, DirectoryObject, FileObject, Term} from "@gesslar/toolkit"
 import BuildCommand from "./BuildCommand.js"
-import DirectoryObject from "./DirectoryObject.js"
-import FileObject from "./FileObject.js"
 import LintCommand from "./LintCommand.js"
 import ResolveCommand from "./ResolveCommand.js"
-import Term from "./Term.js"
 
 /**
  * Main application entry point.

@@ -11,14 +11,9 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import Sass from "./Sass.js"
-import Data from "./Data.js"
+import {Sass, Data, File, FileObject, Term, Util} from "@gesslar/toolkit"
 import Evaluator from "./Evaluator.js"
-import File from "./File.js"
-import FileObject from "./FileObject.js"
-import Term from "./Term.js"
 import Theme from "./Theme.js"
-import Util from "./Util.js"
 
 /**
  * Main compiler class for processing theme source files.

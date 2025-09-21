@@ -264,15 +264,13 @@ npm install @gesslar/sassy
 
 ```javascript
 // Import classes from the main entry point
-import { Theme, FileObject, DirectoryObject, Cache } from '@gesslar/sassy'
+import {FileObject, DirectoryObject} from '@gesslar/toolkit'
+import {Theme} from '@gesslar/sassy'
 
 // Create theme instance
 const cwd = new DirectoryObject(process.cwd())
 const fileObject = new FileObject('my-theme.yaml', cwd)
-const cache = new Cache()
-
 const theme = new Theme(fileObject, { /* options */ })
-theme.setCache(cache)
 
 // Build theme
 await theme.load()

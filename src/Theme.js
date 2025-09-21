@@ -13,15 +13,9 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import Sass from "./Sass.js"
+import {Sass, DirectoryObject, File, FileObject, Term, Util, Cache} from "@gesslar/toolkit"
 import Compiler from "./Compiler.js"
-import DirectoryObject from "./DirectoryObject.js"
-import File from "./File.js"
-import FileObject from "./FileObject.js"
-import Term from "./Term.js"
 import ThemePool from "./ThemePool.js"
-import Util from "./Util.js"
-import Cache from "./Cache.js"
 
 const outputFileExtension = "color-theme.json"
 const obviouslyASentinelYouCantMissSoShutUpAboutIt = "kakadoodoo"

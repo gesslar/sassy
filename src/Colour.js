@@ -13,10 +13,8 @@ import {
   parse
 } from "culori"
 
-import Sass from "./Sass.js"
+import {Util, Sass} from "@gesslar/toolkit"
 import ThemeToken from "./ThemeToken.js"
-import Util from "./Util.js"
-
 // Cache for parsed colours to improve performance
 const _colourCache = new Map()
 

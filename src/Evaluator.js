@@ -13,7 +13,7 @@
 
 import {parse} from "culori"
 
-import Sass from "./Sass.js"
+import {Sass} from "@gesslar/toolkit"
 import Colour from "./Colour.js"
 import ThemePool from "./ThemePool.js"
 import ThemeToken from "./ThemeToken.js"
