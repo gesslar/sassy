@@ -429,7 +429,7 @@ export default class Data {
       const value = obj[name]
 
       // Recursively freeze nested objects
-      if(value && typeof value === "object")
+      if(typeof value === "object" && value !== null)
         Data.deepFreezeObject(value)
     }
 
@@ -483,7 +483,7 @@ export default class Data {
    * @returns {object} The merged object
    */
   static mergeObject(...sources) {
-    const isObject = obj => obj && typeof obj === "object" && !Array.isArray(obj)
+    const isObject = obj => typeof obj === "object" && obj !== null && !Array.isArray(obj)
 
     return sources.reduce((acc, obj) => {
       if(!isObject(obj))

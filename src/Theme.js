@@ -283,9 +283,9 @@ export default class Theme {
   }
 
   /**
-   * Gets the array of file dependencies.
+   * Gets the set of file dependencies.
    *
-   * @returns {Set<Dependency>} Array of dependency files
+   * @returns {Set<Dependency>} Set of dependency files
    */
   getDependencies() {
     return this.#dependencies
@@ -307,6 +307,11 @@ export default class Theme {
     return this
   }
 
+  /**
+   * Checks if the theme has any dependencies.
+   *
+   * @returns {boolean} True if theme has dependencies
+   */
   hasDependencies() {
     return this.#dependencies.size > 0
   }
@@ -485,7 +490,7 @@ export default class Theme {
 
     this.#source = source
 
-    this.addDependency(this.#sourceFile, this.#source)
+    this.addDependency(this.#sourceFile, new Map(Object.entries(this.#source)))
 
     return this
   }
@@ -543,6 +548,10 @@ export default class Theme {
   }
 }
 
+/**
+ * Dependency class represents a theme file dependency.
+ * Manages the relationship between a file reference and its parsed source data.
+ */
 export class Dependency {
   #sourceFile = null
   #source = null
@@ -582,6 +591,11 @@ export class Dependency {
     return this
   }
 
+  /**
+   * Gets the parsed source data for this dependency.
+   *
+   * @returns {object|null} The parsed source data
+   */
   getSource() {
     return this.#source
   }

@@ -87,6 +87,14 @@ export default class ResolveCommand extends Command {
    * @param {object} theme - The compiled theme object with pool
    * @param {string} colorName - The color key to resolve
    * @returns {void}
+   * @example
+   * // Resolve a color variable from a compiled theme
+   * await resolveCommand.resolveColor(theme, 'colors.primary');
+   * // Output:
+   * // colors.primary:
+   * //   $(vars.accent)
+   * //     → #3366cc
+   * // Resolution: #3366cc
    */
   async resolveColor(theme, colorName) {
     const pool = theme.getPool()
@@ -427,7 +435,12 @@ export default class ResolveCommand extends Command {
     }
 
     if(this.#func.test(value)) {
-      const {func,args} = this.#func.exec(value).groups
+      const result = Evaluator.extractFunctionCall(value)
+      
+      if(!result)
+        return [c`{leaf}${value}{/}`, "literal"]
+        
+      const {func, args} = result
 
       return [
         c`{func}${func}{/}{parens}${"("}{/}{leaf}${args}{/}{parens}${")"}{/}`,
@@ -436,9 +449,9 @@ export default class ResolveCommand extends Command {
     }
 
     if(this.#sub.test(value)) {
+      const varValue = Evaluator.extractVariableName(value) || value
       const {parens,none,braces} = Evaluator.sub.exec(value)?.groups || {}
       const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
-      const varValue = braces || parens || none || value
 
       return [
         c`{func}{/}{parens}${style[0]}{/}{leaf}${varValue}{/}{parens}${style[1]}{/}`,

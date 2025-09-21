@@ -56,6 +56,37 @@ export default class Evaluator {
    */
   static func = /(?<captured>(?<func>\w+)\((?<args>[^()]+)\))/
 
+  /**
+   * Extracts a variable name from a string containing variable syntax.
+   * Supports $(var), $var, and ${var} patterns.
+   *
+   * @param {string} str - String that may contain a variable reference
+   * @returns {string|null} The variable name or null if none found
+   */
+  static extractVariableName(str) {
+    const {none, parens, braces} = Evaluator.sub.exec(str)?.groups ?? {}
+
+    return none || parens || braces || null
+  }
+
+  /**
+   * Extracts function name and arguments from a string containing function syntax.
+   * Supports functionName(args) patterns.
+   *
+   * @param {string} str - String that may contain a function call
+   * @returns {object|null} Object with {func, args} or null if none found
+   */
+  static extractFunctionCall(str) {
+    const match = Evaluator.func.exec(str)
+
+    if(!match?.groups)
+      return null
+
+    const {func, args} = match.groups
+
+    return {func, args}
+  }
+
   #pool = new ThemePool()
   get pool() {
     return this.#pool
@@ -81,6 +112,18 @@ export default class Evaluator {
    *  - No return value. Evident by the absence of a return statement.
    *
    * @param {Array<{flatPath:string,value:unknown}>} decomposed - Variable entries to resolve.
+   * @example
+   * // Example decomposed input with variables and theme references
+   * const evaluator = new Evaluator();
+   * const decomposed = [
+   *   { flatPath: 'vars.primary', value: '#3366cc' },
+   *   { flatPath: 'theme.colors.background', value: '$(vars.primary)' },
+   *   { flatPath: 'theme.colors.accent', value: 'lighten($(vars.primary), 20)' }
+   * ];
+   * evaluator.evaluate(decomposed);
+   * // After evaluation, values are resolved:
+   * // decomposed[1].value === '#3366cc'
+   * // decomposed[2].value === '#5588dd' (lightened color)
    */
   evaluate(decomposed) {
     let it = 0
@@ -229,8 +272,8 @@ export default class Evaluator {
    * @returns {ThemeToken|null} The resolved token or null.
    */
   #resolveVariable(value) {
-    const {captured,none,parens,braces} = Evaluator.sub.exec(value).groups
-    const work = none ?? parens ?? braces
+    const {captured} = Evaluator.sub.exec(value).groups
+    const work = Evaluator.extractVariableName(value)
     const existing = this.#pool.findToken(work)
 
     if(!existing)
@@ -253,7 +296,13 @@ export default class Evaluator {
    * @returns {ThemeToken|null} The resolved token or null.
    */
   #resolveFunction(value) {
-    const {captured,func,args} = Evaluator.func.exec(value).groups
+    const {captured} = Evaluator.func.exec(value).groups
+    const result = Evaluator.extractFunctionCall(value)
+
+    if(!result)
+      return null
+
+    const {func, args} = result
     const split = args?.split(",").map(a => a.trim()) ?? []
 
     // Look up source tokens for arguments to preserve color space
