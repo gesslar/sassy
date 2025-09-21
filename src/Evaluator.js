@@ -60,10 +60,10 @@ export default class Evaluator {
    * Extracts a variable name from a string containing variable syntax.
    * Supports $(var), $var, and ${var} patterns.
    *
-   * @param {string} str - String that may contain a variable reference
+   * @param {string} [str] - String that may contain a variable reference
    * @returns {string|null} The variable name or null if none found
    */
-  static extractVariableName(str) {
+  static extractVariableName(str="") {
     const {none, parens, braces} = Evaluator.sub.exec(str)?.groups ?? {}
 
     return none || parens || braces || null
@@ -73,10 +73,10 @@ export default class Evaluator {
    * Extracts function name and arguments from a string containing function syntax.
    * Supports functionName(args) patterns.
    *
-   * @param {string} str - String that may contain a function call
-   * @returns {object|null} Object with {func, args} or null if none found
+   * @param {string} [str] - String that may contain a function call
+   * @returns {{func:string, args:string}|null} Object with {func, args} or null if none found
    */
-  static extractFunctionCall(str) {
+  static extractFunctionCall(str="") {
     const match = Evaluator.func.exec(str)
 
     if(!match?.groups)
