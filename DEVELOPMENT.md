@@ -3,6 +3,11 @@
 This document contains technical information for developers working on or
 extending Sassy.
 
+## Quick Links
+
+- 📖 **[API Usage Guide](./API_USAGE.md)** - How to use Sassy programmatically
+- 🚀 **[README](./README.md)** - Main project documentation
+
 ## CLI Implementation
 
 The CLI is built with Commander.js using a subcommand architecture:
@@ -247,24 +252,43 @@ or profiling output.
 
 ## API Reference
 
-### Compiler
+**📖 For complete API usage examples and documentation, see [API_USAGE.md](./API_USAGE.md)**
+
+Sassy now supports both CLI and programmatic API usage:
+
+### Quick API Example
 
 ```bash
 npm install @gesslar/sassy
 ```
 
 ```javascript
-import Theme from '@gesslar/sassy/src/components/Theme.js'
-import FileObject from '@gesslar/sassy/src/components/FileObject.js'
+// Import classes from the main entry point
+import { Theme, FileObject, DirectoryObject, Cache } from '@gesslar/sassy'
 
-const fileObject = new FileObject('my-theme.yaml')
-const theme = new Theme(fileObject, process.cwd(), {})
+// Create theme instance
+const cwd = new DirectoryObject(process.cwd())
+const fileObject = new FileObject('my-theme.yaml', cwd)
+const cache = new Cache()
 
+const theme = new Theme(fileObject, { /* options */ })
+theme.setCache(cache)
+
+// Build theme
 await theme.load()
 await theme.build()
+const output = theme.getOutput()
+
+// Write to file or use programmatically
 await theme.write()
-// Result available in my-theme.color-theme.json
+console.log('Compiled theme:', JSON.stringify(output, null, 2))
 ```
+
+### Available Classes
+
+The API exports all core classes: `Theme`, `Compiler`, `LintCommand`, `BuildCommand`, `ResolveCommand`, `FileObject`, `DirectoryObject`, `Cache`, `Data`, `Sass`, and more.
+
+See [API_USAGE.md](./API_USAGE.md) for detailed examples and usage patterns.
 
 ## Architecture
 
