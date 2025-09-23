@@ -234,37 +234,4 @@ export default class Command {
     return fileObject
   }
 
-  /**
-   * Emits an event asynchronously and waits for all listeners to complete.
-   * Unlike the standard EventEmitter.emit() which is synchronous, this method
-   * properly handles async event listeners by waiting for all of them to
-   * resolve or reject using Promise.allSettled().
-   *
-   * @param {string} event - The event name to emit
-   * @param {...unknown} [arg] - Arguments to pass to event listeners
-   * @returns {Promise<void>} Resolves when all listeners have completed
-   */
-  async asyncEmit(event, arg) {
-    try {
-      arg = arg || new Array()
-      const listeners = this.emitter.listeners(event)
-
-      const settled =
-        await Promise.allSettled(listeners.map(listener => listener(arg)))
-
-      const rejected = settled.filter(reject => reject.status === "rejected")
-
-      if(rejected.length > 0) {
-        if(rejected[0].reason instanceof Error)
-          throw rejected[0].reason
-        else
-          throw Sass.new(rejected[0].reason)
-      }
-    } catch(error) {
-      throw Sass.new(
-        `Processing '${event}' event with ${arg&&arg.length?`'${arg}'`:"no arguments"}.`,
-        error
-      )
-    }
-  }
 }

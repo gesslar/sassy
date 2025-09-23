@@ -6,6 +6,7 @@ node_modules/
 *.log
 /output.txt
 dist/
+types/
 examples/output
 !.vscode/launch.json
 test.bash
