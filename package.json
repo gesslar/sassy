@@ -7,21 +7,27 @@
   "license": "Unlicense",
   "type": "module",
   "main": "src/index.js",
+  "types": "types/index.d.ts",
   "bin": "src/cli.js",
   "exports": {
-    ".": "./src/index.js",
-    "./cli": "./src/cli.js"
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./src/index.js"
+    }
   },
   "files": [
     "src/",
+    "types/",
     "UNLICENSE.txt"
   ],
   "scripts": {
     "clean": "rm -rfv ./dist",
-    "build": "npm run clean && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
+    "clean-types": "rm -rfv ./types",
+    "types": "npx tsc src/*.js types-helper.d.ts --allowJs --declaration --emitDeclarationOnly --outDir types --target ES2022 --module ESNext --moduleResolution Node --esModuleInterop --skipLibCheck --resolveJsonModule && node fix-types.js",
+    "build": "npm run clean && npm run types && mkdir -pv ./dist && npm pack --pack-destination ./dist/",
     "exec": "node ./src/cli.js",
     "lint": "eslint src/",
-    "submit": "npm publish --access public",
+    "submit": "npm run build && npm publish --access public",
     "examples": "node ./examples/validator.js",
     "test": "node -p \"require('fs').readFileSync('TESTING.txt', 'utf8')\"",
     "update": "npx npm-check-updates -u && npm install"
