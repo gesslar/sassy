@@ -27,7 +27,7 @@ async function fixTypeImports() {
       const needsImport = EXTERNAL_TYPES.some(type => content.includes(type))
       
       // Skip if no external types used or import already exists
-      if (!needsImport || content.includes("import type { FileObject, DirectoryObject, Cache }")) {
+      if (!needsImport || content.includes(IMPORT_STATEMENT.trim())) {
         continue
       }
       
