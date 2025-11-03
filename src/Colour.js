@@ -264,7 +264,7 @@ export default class Colour {
 
     const [_,hex] = matches
 
-    return hex.split("").reduce((acc,curr) => acc + curr.repeat(2)).toLowerCase()
+    return hex.split("").reduce((acc,curr) => acc + curr.repeat(2), "").toLowerCase()
   }
 
   /**
