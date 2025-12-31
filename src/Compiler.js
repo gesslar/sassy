@@ -11,9 +11,8 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import {Sass, Data, File, FileObject, Term, Util} from "@gesslar/toolkit"
+import {Data, FS, FileObject, Sass, Term, Util} from "@gesslar/toolkit"
 import Evaluator from "./Evaluator.js"
-import Theme from "./Theme.js"
 
 /**
  * Main compiler class for processing theme source files.
@@ -169,7 +168,7 @@ export default class Compiler {
           Term.status([
             ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
             "",
-            ["muted", `${File.relativeOrAbsolutePath(theme.getCwd(),file)}`],
+            ["muted", `${FS.relativeOrAbsolutePath(theme.getCwd(),file)}`],
             ["muted", `${theme.getName()}`,["(",")"]],
           ], theme.getOptions())
         }

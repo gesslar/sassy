@@ -1,7 +1,7 @@
 import {EventEmitter} from "node:events"
 import process from "node:process"
 
-import {Sass, Term} from "@gesslar/toolkit"
+import {Sass, Term, Util} from "@gesslar/toolkit"
 import Command from "./Command.js"
 import Session from "./Session.js"
 import Theme from "./Theme.js"
@@ -90,7 +90,7 @@ export default class BuildCommand extends Command {
       rejected.forEach(reject => Term.error(reject.reason))
 
       if(firstRun.length === rejected.length)
-        await this.asyncEmit("quit")
+        await Util.asyncEmit(this.emitter, "quit")
     }
   }
 

@@ -1,4 +1,4 @@
-import {Sass, FileObject, DirectoryObject, Cache} from "@gesslar/toolkit"
+import {Sass, FileObject} from "@gesslar/toolkit"
 
 /**
  * Base class for command-line interface commands.

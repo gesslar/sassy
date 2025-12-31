@@ -1,8 +1,6 @@
 import chokidar from "chokidar"
 
-import Command from "./Command.js"
-import {Sass, File, Term, Util} from "@gesslar/toolkit"
-import Theme from "./Theme.js"
+import {Sass, FS, Term, Util} from "@gesslar/toolkit"
 
 /**
  * @typedef {object} SessionOptions
@@ -219,7 +217,7 @@ export default class Session {
        */
 
       loadCost = (await Util.time(() => this.#theme.load())).cost
-      const bytes = await File.fileSize(this.#theme.getSourceFile())
+      const bytes = await FS.fileSize(this.#theme.getSourceFile())
 
       Term.status([
         ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10), ["[","]"]],
@@ -244,10 +242,10 @@ export default class Session {
             throw new Error("Invalid dependency file object")
           }
 
-          const fileName = File.relativeOrAbsolutePath(
+          const fileName = FS.relativeOrAbsolutePath(
             this.#command.getCwd(), fileObject
           )
-          const fileSize = await File.fileSize(fileObject)
+          const fileSize = await FS.fileSize(fileObject)
 
           return [fileName, fileSize]
         }))
@@ -307,7 +305,7 @@ export default class Session {
         file: outputFile,
         bytes: writeBytes
       } = writeResult.result
-      const outputFilename = File.relativeOrAbsolutePath(
+      const outputFilename = FS.relativeOrAbsolutePath(
         this.#command.getCwd(), outputFile
       )
       const status = [
@@ -383,7 +381,7 @@ export default class Session {
       if(!changedFile)
         return
 
-      const fileName = File.relativeOrAbsolutePath(
+      const fileName = FS.relativeOrAbsolutePath(
         this.#command.getCwd(), changedFile
       )
 

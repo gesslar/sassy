@@ -14,7 +14,6 @@ import {
 } from "culori"
 
 import {Util, Sass} from "@gesslar/toolkit"
-import ThemeToken from "./ThemeToken.js"
 // Cache for parsed colours to improve performance
 const _colourCache = new Map()
 
