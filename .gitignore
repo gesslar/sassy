@@ -12,3 +12,4 @@ examples/output
 test.bash
 temp/
 tmp/
+.claude/
