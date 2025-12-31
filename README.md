@@ -452,7 +452,7 @@ Sassy supports importing different types of theme components:
 config:
   import:
     - "./shared/colours.yaml"        # Variables and base config
-    - "./shared/ui-colours.yaml"     # VS Code color definitions  
+    - "./shared/ui-colours.yaml"     # VS Code color definitions
     - "./shared/syntax.yaml"         # Syntax highlighting rules
     - "./shared/semantic.yaml"       # Semantic token colours
 ```

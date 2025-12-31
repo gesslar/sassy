@@ -67,7 +67,7 @@ const lintCommand = new LintCommand({ cwd, packageJson: {} })
 ### Available Classes
 
 - **Theme**: Core theme compilation
-- **Compiler**: Theme compilation engine  
+- **Compiler**: Theme compilation engine
 - **LintCommand**: Theme linting functionality
 - **BuildCommand**: Theme building functionality
 - **ResolveCommand**: Variable resolution functionality

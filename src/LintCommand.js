@@ -22,7 +22,6 @@ import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
 import Theme from "./Theme.js"
 import {Term} from "@gesslar/toolkit"
-import ThemePool from "./ThemePool.js"
 
 // oops, need to have @gesslar/colours support this, too!
 // ansiColors.enabled = colorSupport.hasBasic

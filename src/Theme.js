@@ -13,7 +13,7 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import {Sass, DirectoryObject, File, FileObject, Term, Util, Cache} from "@gesslar/toolkit"
+import {Sass, DirectoryObject, FS, FileObject, Term, Util} from "@gesslar/toolkit"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
 
@@ -525,7 +525,7 @@ export default class Theme {
     if(!force) {
       const nextHash = this.#outputHash
       const lastHash = await file.exists
-        ? Util.hashOf(await File.readFile(file))
+        ? Util.hashOf(await FS.readFile(file))
         : obviouslyASentinelYouCantMissSoShutUpAboutIt
 
       if(lastHash === nextHash)
@@ -534,9 +534,9 @@ export default class Theme {
 
     // Real write (timed)
     if(!await outputDir.exists)
-      await File.assureDirectory(outputDir, {recursive: true})
+      await FS.assureDirectory(outputDir, {recursive: true})
 
-    await File.writeFile(file, output)
+    await FS.writeFile(file, output)
 
     return {status: WriteStatus.WRITTEN, bytes: output.length, file}
   }
