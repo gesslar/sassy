@@ -1,10 +1,30 @@
 {
   "name": "@gesslar/sassy",
-  "version": "0.22.1",
-  "displayName": "Sassy",
   "description": "Make gorgeous themes that speak as boldly as you do.",
-  "publisher": "gesslar",
+  "author": {
+    "name": "gesslar",
+    "url": "https://gesslar.dev"
+  },
+  "version": "0.23.0",
   "license": "Unlicense",
+  "homepage": "https://github.com/gesslar/sassy#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gesslar/sassy.git"
+  },
+  "keywords": [
+    "asmr",
+    "generator",
+    "huffing",
+    "json5",
+    "sniffsniffsniff",
+    "taylorswift",
+    "theme",
+    "vs code",
+    "vscode",
+    "yaml"
+  ],
+  "packageManager": "pnpm@10.26.2",
   "type": "module",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -37,22 +57,6 @@
   "engines": {
     "node": ">=22"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/gesslar/sassy"
-  },
-  "keywords": [
-    "asmr",
-    "generator",
-    "huffing",
-    "json5",
-    "sniffsniffsniff",
-    "taylorswift",
-    "theme",
-    "vs code",
-    "vscode",
-    "yaml"
-  ],
   "dependencies": {
     "@gesslar/colours": "^0.7.1",
     "@gesslar/toolkit": "^3.6.3",
