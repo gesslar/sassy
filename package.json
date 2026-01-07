@@ -58,7 +58,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@gesslar/colours": "^0.7.1",
+    "@gesslar/colours": "^0.8.0",
     "@gesslar/toolkit": "^3.6.3",
     "chokidar": "^5.0.0",
     "color-support": "^1.1.3",
