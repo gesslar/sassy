@@ -13,7 +13,7 @@ importers:
         version: 0.8.0
       '@gesslar/toolkit':
         specifier: ^3.6.3
-        version: 3.17.0
+        version: 3.19.0
       chokidar:
         specifier: ^5.0.0
         version: 5.0.0
@@ -110,8 +110,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@gesslar/toolkit@3.17.0':
-    resolution: {integrity: sha512-MZOCK4vpnwIM3Z7TH3noi8R7m6SaVRKQd4Yio8IYDQIvwMw2IkRCZqymRtLklSb9p2PssceoO1nDtqwXWIUU3w==}
+  '@gesslar/toolkit@3.19.0':
+    resolution: {integrity: sha512-XMBzRc933a2nb+XMrrZGx8xLekFf3SBXlxpeX1hPHKOAZOyCT2g6vve/xnAZ47CsTWfeqWD5Qg9ZQpGZMlsquw==}
     engines: {node: '>=22'}
 
   '@gesslar/uglier@0.6.0':
@@ -698,7 +698,7 @@ snapshots:
 
   '@gesslar/colours@0.8.0': {}
 
-  '@gesslar/toolkit@3.17.0':
+  '@gesslar/toolkit@3.19.0':
     dependencies:
       '@gesslar/colours': 0.8.0
       ajv: 8.17.1
@@ -708,7 +708,7 @@ snapshots:
   '@gesslar/uglier@0.6.0(eslint@9.39.2)':
     dependencies:
       '@gesslar/colours': 0.7.1
-      '@gesslar/toolkit': 3.17.0
+      '@gesslar/toolkit': 3.19.0
       '@skarab/detect-package-manager': 1.0.0
       '@stylistic/eslint-plugin': 5.6.1(eslint@9.39.2)
       eslint: 9.39.2
