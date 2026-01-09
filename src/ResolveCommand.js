@@ -2,7 +2,7 @@ import c from "@gesslar/colours"
 // import colorSupport from "color-support"
 
 import Command from "./Command.js"
-import {Sass, Term, Util, Data} from "@gesslar/toolkit"
+import {Collection, Sass, Term, Util} from "@gesslar/toolkit"
 import Colour from "./Colour.js"
 import Evaluator from "./Evaluator.js"
 import Theme from "./Theme.js"
@@ -41,7 +41,7 @@ export default class ResolveCommand extends Command {
   async execute(inputArg, options={}) {
     const cliOptionNames = this.getCliOptionNames()
     const intersection =
-      Data.arrayIntersection(cliOptionNames, Object.keys(options))
+      Collection.intersection(cliOptionNames, Object.keys(options))
 
     if(intersection.length > 1)
       throw Sass.new(

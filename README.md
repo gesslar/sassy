@@ -98,7 +98,7 @@ npx @gesslar/sassy lint my-theme.yaml
 ### Build Command Options
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `-w, --watch` | Watch files and rebuild on changes |
 | `-o, --output-dir <dir>` | Specify output directory |
 | `-n, --dry-run` | Print JSON to stdout instead of writing files |
@@ -132,7 +132,7 @@ output.
 ### Resolve Command Options
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `-c, --color <key>` | Resolve a specific color property to its final value |
 | `-t, --tokenColor <scope>` | Resolve tokenColors for a specific scope |
 | `-s, --semanticTokenColor <token>` | Resolve semantic token colors for a specific token type |
@@ -222,7 +222,7 @@ to least specific.
 ### Lint Command Options
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--nerd` | Show detailed error traces if linting fails |
 
 ## Basic Theme Structure
@@ -297,33 +297,24 @@ functions in the [Culori documentation](https://culorijs.org/).
 Make colours that work together:
 
 | Function | Example | Result |
-|----------|---------|--------|
+| ---------- | --------- | -------- |
 | `lighten(colour, %=0-100)` | `lighten($(bg), 25)` | 25% lighter background |
 | `darken(colour, %=0-100)` | `darken($(accent), 30)` | 30% darker accent |
-| || |
 | `alpha(colour, alpha=0-1)` | `alpha($(brand), 0.5)` | Set exact transparency |
 | `fade(colour, alpha=0-1)` | `fade($(accent), 0.5)` | Reduce opacity by 50% |
 | `solidify(colour, alpha=0-1)` | `solidify($(bg.accent), 0.3)` | Increase opacity by 30% |
-| || |
 | `mix(colour1, colour2, %=0-100)` | `mix($(fg), $(accent), 20)` | Blend 20% accent |
 | `mix(colour1, colour2)` | `mix($(fg), $(accent))` | Blend 50% accent |
-| || |
 | `invert(colour)` | `invert($(fg))` | Perfect opposite |
-| || |
 | `hsv(h=0-255, s=0-255, v=0-255)` | `hsv(50, 200, 180)` | HSV colour (hue 50, saturation 200, value 180) |
 | `hsva(h=0-255, s=0-255, v=0-255, a=0-1)` | `hsva(50, 200, 180, 0.5)` | HSV with 50% opacity |
-| || |
 | `hsl(h=0-360, s=0-100, l=0-100)` | `hsl(200, 50, 40)` | HSL colour (200° hue, 50% saturation, 40% lightness) |
 | `hsla(h=0-360, s=0-100, l=0-100, a=0-1)` | `hsla(200, 50, 40, 0.5)` | HSL with 50% opacity |
-| || |
 | `rgb(r=0-255, g=0-255, b=0-255)` | `rgb(139, 152, 255)` | RGB colour (139 red, 152 green, 255 blue) |
 | `rgba(r=0-255, g=0-255, b=0-255, a=0-1)` | `rgba(139, 152, 255, 0.5)` | RGB with 50% opacity |
-| || |
 | `oklch(l=0-1, c=0-100, h=0-360)` | `oklch(0.7, 25, 180)` | OKLCH colour (70% lightness, 25 chroma, 180° hue) |
 | `oklcha(l=0-1, c=0-100, h=0-360, a=0-1)` | `oklcha(0.5, 30, 45, 0.8)` | OKLCH with 80% opacity |
-| || |
 | `css(name)` | `css(tomato)` | CSS named colour (tomato, skyblue, etc.) |
-| || |
 
 > **Note:** In all of these functions, `colour` can be a raw hex (`#ff66cc`),
 a variable (`$(accent)`), a CSS named colour (`css(tomato)`), or another colour
