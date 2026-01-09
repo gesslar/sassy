@@ -11,7 +11,7 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import {Data, FS, FileObject, Sass, Term, Util} from "@gesslar/toolkit"
+import {Collection, Data, FileObject, Sass, Term, Util} from "@gesslar/toolkit"
 import Evaluator from "./Evaluator.js"
 
 /**
@@ -148,7 +148,7 @@ export default class Compiler {
       ? [imports]
       : imports
 
-    if(!Data.isArrayUniform(imports, "string"))
+    if(!Collection.isArrayUniform(imports, "string"))
       throw new Sass(
         `All import entries must be strings. Got ${JSON.stringify(imports)}`
       )
@@ -168,7 +168,7 @@ export default class Compiler {
           Term.status([
             ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
             "",
-            ["muted", `${FS.relativeOrAbsolutePath(theme.getCwd(),file)}`],
+            ["muted", `${file.toString()}`],
             ["muted", `${theme.getName()}`,["(",")"]],
           ], theme.getOptions())
         }

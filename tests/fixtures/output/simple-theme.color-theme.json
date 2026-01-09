@@ -1,0 +1,12 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "Simple Test Theme",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#1a1a1a",
+    "editor.foreground": "#e6e6e6",
+    "statusBar.background": "#4b8ebd"
+  },
+  "tokenColors": [],
+  "semanticTokenColors": {}
+}

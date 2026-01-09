@@ -1,0 +1,10 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Test Theme
+  type: dark
+vars:
+  primary: "#4b8ebd"
+  bg: lighten($(primary), 20)
+theme:
+  colors:
+    "editor.background": $(bg)

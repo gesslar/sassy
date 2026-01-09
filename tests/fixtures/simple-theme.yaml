@@ -1,0 +1,16 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Simple Test Theme
+  type: dark
+
+vars:
+  primary: "#4b8ebd"
+  secondary: "#4ab792"
+  background: "#1a1a1a"
+  foreground: "#e6e6e6"
+
+theme:
+  colors:
+    "editor.background": $(background)
+    "editor.foreground": $(foreground)
+    "statusBar.background": $(primary)

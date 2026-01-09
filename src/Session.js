@@ -1,6 +1,6 @@
 import chokidar from "chokidar"
 
-import {Sass, FS, Term, Util} from "@gesslar/toolkit"
+import {Sass, Term, Util} from "@gesslar/toolkit"
 
 /**
  * @typedef {object} SessionOptions
@@ -217,7 +217,7 @@ export default class Session {
        */
 
       loadCost = (await Util.time(() => this.#theme.load())).cost
-      const bytes = await FS.fileSize(this.#theme.getSourceFile())
+      const bytes = await this.#theme.getSourceFile().size()
 
       Term.status([
         ["success", Util.rightAlignText(`${loadCost.toLocaleString()}ms`, 10), ["[","]"]],
@@ -242,10 +242,8 @@ export default class Session {
             throw new Error("Invalid dependency file object")
           }
 
-          const fileName = FS.relativeOrAbsolutePath(
-            this.#command.getCwd(), fileObject
-          )
-          const fileSize = await FS.fileSize(fileObject)
+          const fileName = fileObject.toString()
+          const fileSize = await fileObject.size()
 
           return [fileName, fileSize]
         }))
@@ -305,9 +303,7 @@ export default class Session {
         file: outputFile,
         bytes: writeBytes
       } = writeResult.result
-      const outputFilename = FS.relativeOrAbsolutePath(
-        this.#command.getCwd(), outputFile
-      )
+      const outputFilename = outputFile.toString()
       const status = [
         [
           "success",
@@ -381,9 +377,7 @@ export default class Session {
       if(!changedFile)
         return
 
-      const fileName = FS.relativeOrAbsolutePath(
-        this.#command.getCwd(), changedFile
-      )
+      const fileName = changedFile.toString()
 
       const message = [
         ["info", "REBUILDING", ["[","]"]],
