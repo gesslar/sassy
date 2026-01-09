@@ -3,6 +3,11 @@ import chokidar from "chokidar"
 import {Sass, Term, Util} from "@gesslar/toolkit"
 
 /**
+ * @import {Command} from "./Command.js"
+ * @import {Theme} from "./Theme.js"
+ */
+
+/**
  * @typedef {object} SessionOptions
  * @property {boolean} [watch] - Whether to enable file watching
  * @property {boolean} [nerd] - Whether to show verbose output
@@ -171,7 +176,7 @@ export default class Session {
 
     this.#building = true
     await this.#command.asyncEmit("building")
-    this.#command.asyncEmit("recordBuildStart", this.#theme)
+    await this.#command.asyncEmit("recordBuildStart", this.#theme)
     await this.#buildPipeline()
 
     // This must come after, or you will fuck up the watching!
@@ -327,7 +332,7 @@ export default class Session {
       Term.status(status, this.#options)
 
       // Track successful build
-      this.#command.asyncEmit("recordBuildSucceed", this.#theme)
+      await this.#command.asyncEmit("recordBuildSucceed", this.#theme)
       this.#history.push({
         timestamp: buildStart,
         loadTime: loadCost,
@@ -348,10 +353,10 @@ export default class Session {
         error: error.message
       })
 
-      Sass.new("Build process failed.", error).report(this.#options.nerd)
+      throw Sass.new("Build process failed.", error)
     } finally {
       this.#building = false
-      this.#command.asyncEmit("finishedBuilding")
+      await this.#command.asyncEmit("finishedBuilding")
     }
   }
 
@@ -363,12 +368,14 @@ export default class Session {
    * @returns {Promise<void>}
    */
   async #handleFileChange(changed, _stats) {
+    let startedPipeline = false
+
     try {
       if(this.#building)
         return
 
       this.#building = true
-      this.#command.asyncEmit("building")
+      await this.#command.asyncEmit("building")
 
       const changedFile = Array.from(this.#theme.getDependencies()).find(
         dep => dep.getSourceFile().path === changed
@@ -390,7 +397,14 @@ export default class Session {
       Term.status(message)
 
       await this.#resetWatcher()
+      startedPipeline = true
       await this.#buildPipeline()
+    } catch(error) {
+      const sassError = Sass.new("Handling file change.", error)
+      sassError.report(this.#options?.nerd)
+
+      if(!startedPipeline)
+        await this.#command.asyncEmit("finishedBuilding")
     } finally {
       this.#building = false
     }
@@ -448,14 +462,16 @@ export default class Session {
       return
 
     try {
-      this.#command.asyncEmit("recordBuildStart", this.#theme)
+      await this.#command.asyncEmit("recordBuildStart", this.#theme)
       this.#building = true
       await this.#resetWatcher()
-      this.#command.asyncEmit("building")
+      await this.#command.asyncEmit("building")
       await this.#buildPipeline(true)
     } catch(error) {
       await this.#command.asyncEmit("recordBuildFail", this.#theme)
-      throw Sass.new("Handling rebuild request.", error)
+      const sassError = Sass.new("Handling rebuild request.", error)
+      sassError.report(this.#options?.nerd)
+      throw sassError
     } finally {
       this.#building = false
     }

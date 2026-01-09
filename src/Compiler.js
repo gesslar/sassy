@@ -15,6 +15,10 @@ import {Collection, Data, FileObject, Sass, Term, Util} from "@gesslar/toolkit"
 import Evaluator from "./Evaluator.js"
 
 /**
+ * @import {Theme} from "./Theme.js"
+ */
+
+/**
  * Main compiler class for processing theme source files.
  * Handles the complete compilation pipeline from source to VS Code theme output.
  */

@@ -1,4 +1,9 @@
-import {Sass, FileObject} from "@gesslar/toolkit"
+import {FileObject, Sass} from "@gesslar/toolkit"
+
+/**
+ * @import {Cache} from "@gesslar/toolkit"
+ * @import {DirectoryObject} from "@gesslar/toolkit"
+ */
 
 /**
  * Base class for command-line interface commands.
@@ -233,5 +238,4 @@ export default class Command {
 
     return fileObject
   }
-
 }

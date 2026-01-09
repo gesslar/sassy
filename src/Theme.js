@@ -17,6 +17,10 @@ import {Sass, DirectoryObject, FileObject, Term, Util} from "@gesslar/toolkit"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
 
+/**
+ * @import {Cache} from "@gesslar/toolkit"
+ */
+
 const outputFileExtension = "color-theme.json"
 const obviouslyASentinelYouCantMissSoShutUpAboutIt = "kakadoodoo"
 
