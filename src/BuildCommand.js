@@ -37,15 +37,27 @@ export default class BuildCommand extends Command {
   }
 
   /**
+   * Emits an event asynchronously using the internal emitter.
+   * This method wraps Util.asyncEmit for convenience.
+   *
+   * @param {string} event - The event name to emit
+   * @param {...any} args - Arguments to pass to the event handlers
+   * @returns {Promise<void>} Resolves when all event handlers have completed
+   */
+  async asyncEmit(event, ...args) {
+    return await Util.asyncEmit(this.emitter, event, ...args)
+  }
+
+  /**
    * Executes the build command for the provided theme files.
    * Processes each file in parallel, optionally watching for changes.
    *
    * @param {string[]} fileNames - Array of theme file paths to process
    * @param {object} options - Build options
    * @param {boolean} [options.watch] - Enable watch mode for file changes
-   * @param {string} [options.output-dir] - Custom output directory path
-   * @param {boolean} [options.dry-run] - Print JSON to stdout without writing files
-   * @param {boolean} [options.silent] - Silent mode, only show errors or dry-run output
+  * @param {string} [options.outputDir] - Custom output directory path
+  * @param {boolean} [options.dryRun] - Print JSON to stdout without writing files
+  * @param {boolean} [options.silent] - Silent mode, only show errors or dry-run output
    * @returns {Promise<void>} Resolves when all files are processed
    * @throws {Error} When theme compilation fails
    */
@@ -77,7 +89,10 @@ export default class BuildCommand extends Command {
     if(sessionResults.some(theme => theme.status === "rejected")) {
       const rejected = sessionResults.filter(result => result.status === "rejected")
 
-      rejected.forEach(item => Term.error(item.reason))
+      rejected.forEach(item => {
+        const sassError = Sass.new("Creating session for theme file.", item.reason)
+        sassError.report(options.nerd)
+      })
       process.exit(1)
     }
 
@@ -87,7 +102,10 @@ export default class BuildCommand extends Command {
     const rejected = firstRun.filter(reject => reject.status === "rejected")
 
     if(rejected.length > 0) {
-      rejected.forEach(reject => Term.error(reject.reason))
+      rejected.forEach(reject => {
+        const sassError = Sass.new("Running build session.", reject.reason)
+        sassError.report(options.nerd)
+      })
 
       if(firstRun.length === rejected.length)
         await Util.asyncEmit(this.emitter, "quit")
