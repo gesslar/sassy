@@ -13,7 +13,7 @@ importers:
         version: 0.8.0
       '@gesslar/toolkit':
         specifier: ^3.21.0
-        version: 3.22.2
+        version: 3.23.0(eslint@9.39.2)
       chokidar:
         specifier: ^5.0.0
         version: 5.0.0
@@ -110,8 +110,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@gesslar/toolkit@3.22.2':
-    resolution: {integrity: sha512-2xbI4+urh8vLTz2ks+Nc/Nfgynp8W+faPVaKMpUWJ2N3flYyEnhcKHR5IHy/p2mP0bbD7aWCmgQ/MgAobnoIyw==}
+  '@gesslar/toolkit@3.23.0':
+    resolution: {integrity: sha512-Y7Ti8qBdJlLoraHGjgdgZkDTEMJH/WNkvWXiw9JCHWJ4n0oeO4HW5XiJBPFsMY1BiftzFNrYAH49DY6a5QLfWw==}
     engines: {node: '>=22'}
 
   '@gesslar/uglier@1.1.0':
@@ -609,6 +609,10 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
+  types@0.1.1:
+    resolution: {integrity: sha512-JuntZtJj4MKLE9x/XBs7IjsznYhzETwr34pw3XJTKvgYtAMdeMG+o8x8U85E5Lm6eCPa1DdOdGVsHMwq4ZnZAg==}
+    engines: {node: '>= 0.6.0'}
+
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -706,17 +710,23 @@ snapshots:
 
   '@gesslar/colours@0.8.0': {}
 
-  '@gesslar/toolkit@3.22.2':
+  '@gesslar/toolkit@3.23.0(eslint@9.39.2)':
     dependencies:
+      '@eslint/js': 9.39.2
       '@gesslar/colours': 0.8.0
+      '@stylistic/eslint-plugin': 5.7.0(eslint@9.39.2)
       ajv: 8.17.1
+      globals: 17.0.0
       json5: 2.2.3
+      types: 0.1.1
       yaml: 2.8.2
+    transitivePeerDependencies:
+      - eslint
 
   '@gesslar/uglier@1.1.0(eslint@9.39.2)':
     dependencies:
       '@gesslar/colours': 0.7.1
-      '@gesslar/toolkit': 3.22.2
+      '@gesslar/toolkit': 3.23.0(eslint@9.39.2)
       '@skarab/detect-package-manager': 1.0.0
       '@stylistic/eslint-plugin': 5.7.0(eslint@9.39.2)
       eslint: 9.39.2
@@ -1176,6 +1186,8 @@ snapshots:
   type-check@0.4.0:
     dependencies:
       prelude-ls: 1.2.1
+
+  types@0.1.1: {}
 
   typescript@5.9.3: {}
 
