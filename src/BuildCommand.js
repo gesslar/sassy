@@ -49,38 +49,32 @@ export default class BuildCommand extends Command {
   }
 
   /**
+   * @typedef {object} BuildCommandOptions
+   * @property {boolean} [watch] - Enable watch mode for file changes
+   * @property {string} [outputDir] - Custom output directory path
+   * @property {boolean} [dryRun] - Print JSON to stdout without writing files
+   * @property {boolean} [silent] - Silent mode, only show errors or dry-run output
+   */
+
+  /**
    * Executes the build command for the provided theme files.
    * Processes each file in parallel, optionally watching for changes.
    *
-   * @param {string[]} fileNames - Array of theme file paths to process
-   * @param {object} options - Build options
-   * @param {boolean} [options.watch] - Enable watch mode for file changes
-  * @param {string} [options.outputDir] - Custom output directory path
-  * @param {boolean} [options.dryRun] - Print JSON to stdout without writing files
-  * @param {boolean} [options.silent] - Silent mode, only show errors or dry-run output
+   * @param {Array<string>} fileNames - Array of theme file paths to process
+   * @param {BuildCommandOptions} options - {@link BuildCommandOptions}
    * @returns {Promise<void>} Resolves when all files are processed
    * @throws {Error} When theme compilation fails
    */
   async execute(fileNames, options) {
-
-    /**
- * @typedef {object} BuildCommandOptions
- * @property {boolean} [watch] Enable watch mode for file changes
- * @property {string} [outputDir] Custom output directory path
- * @property {boolean} [dryRun] Print JSON to stdout without writing files
- * @property {boolean} [silent] Silent mode, only show errors or dry-run output
- */
     const cwd = this.getCwd()
 
     if(options.watch) {
       options.watch && this.#initialiseInputHandler()
 
-      this.emitter.on("quit", async() =>
-        await this.#handleQuit())
-
-      this.emitter.on("building", async() => await this.#startBuilding())
+      this.emitter.on("quit", async() => await this.#handleQuit())
+      this.emitter.on("building", () => this.#startBuilding())
       this.emitter.on("finishedBuilding", () => this.#finishBuilding())
-      this.emitter.on("erasePrompt", async() => await this.#erasePrompt())
+      this.emitter.on("erasePrompt", () => this.#erasePrompt())
       this.emitter.on("printPrompt", () => this.#printPrompt())
     }
 
@@ -96,16 +90,6 @@ export default class BuildCommand extends Command {
 
     if(Promised.hasRejected(sessionResults))
       Promised.throw("Creating sessions.", sessionResults)
-
-    // if(sessionResults.some(theme => theme.status === "rejected")) {
-    //   const rejected = sessionResults.filter(result => result.status === "rejected")
-
-    //   rejected.forEach(item => {
-    //     const sassError = Sass.new("Creating session for theme file.", item.reason)
-    //     sassError.report(options.nerd)
-    //   })
-    //   process.exit(1)
-    // }
 
     const sessions = Promised.values(sessionResults)
     const firstRun = await Promised.settle(sessions.map(
@@ -123,7 +107,7 @@ export default class BuildCommand extends Command {
   async #handleQuit() {
     await this.asyncEmit("closeSession")
 
-    await Term.directWrite("\x1b[?25h")
+    Term.write("\x1b[?25h")
 
     Term.info()
     Term.info("Exiting.")
@@ -160,16 +144,16 @@ export default class BuildCommand extends Command {
       }
     })
 
-    await Term.directWrite("\x1b[?25l")
+    Term.write("\x1b[?25l")
   }
 
-  async #printPrompt() {
+  #printPrompt() {
     if(this.#hasPrompt && this.#building > 0)
       return
 
-    await Term.directWrite("\n")
+    Term.write("\n")
 
-    await Term.directWrite(Term.terminalMessage([
+    Term.write(Term.terminalMessage([
       ["info", "F5", ["<",">"]],
       "rebuild all,",
       ["info", "Ctrl-C", ["<",">"]],
@@ -179,17 +163,18 @@ export default class BuildCommand extends Command {
     this.#hasPrompt = true
   }
 
-  async #erasePrompt() {
+  #erasePrompt() {
     if(!this.#hasPrompt)
       return
 
     this.#hasPrompt = false
 
-    await Term.clearLines(1)
+    Term.clearLine().moveStart()
   }
 
-  async #startBuilding() {
-    await this.#erasePrompt()
+  #startBuilding() {
+    this.#erasePrompt()
+
     this.#building++
   }
 

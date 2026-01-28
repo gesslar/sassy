@@ -222,7 +222,7 @@ export default class Compiler {
    * evaluation.
    *
    * @param {object} work - The object to decompose
-   * @param {string[]} path - Current path array for nested properties
+   * @param {Array<string>} path - Current path array for nested properties
    * @returns {Array<object>} Array of decomposed object entries with path information
    */
   #decomposeObject(work, path = []) {

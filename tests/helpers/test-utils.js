@@ -101,7 +101,7 @@ export class TestUtils {
    * Assert that an error is of expected type and contains expected message
    *
    * @param {Error} error - The error to check
-   * @param {new (...args: unknown[]) => Error} expectedType - Expected error constructor
+   * @param {new (...args: Array<unknown>) => Error} expectedType - Expected error constructor
    * @param {string|RegExp} [expectedMessage] - Expected message or pattern
    */
   static assertError(error, expectedType, expectedMessage) {

@@ -16,7 +16,7 @@
  *    sourceFile: FileObject          // entry theme file
  *    source: object                  // raw parsed data (must contain `config`)
  *    output: object                  // final theme JSON object
- *    dependencies: FileObject[]      // secondary sources discovered during compile
+ *    dependencies: Array<FileObject> // secondary sources discovered during compile
  *    lookup: object                  // variable lookup data for compilation
  *    breadcrumbs: Map                // variable resolution tracking
  *  }
