@@ -21,9 +21,8 @@ describe("Session", () => {
       const command = new BuildCommand({cwd, packageJson})
       command.setCache(new Cache())
 
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -33,6 +32,7 @@ describe("Session", () => {
       const originalAsyncEmit = command.asyncEmit.bind(command)
       command.asyncEmit = async function(event, ...args) {
         asyncEmitCalls.push({event, args})
+
         return await originalAsyncEmit(event, ...args)
       }
 
@@ -70,9 +70,8 @@ describe("Session", () => {
       const command = new BuildCommand({cwd, packageJson})
       command.setCache(new Cache())
 
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -92,7 +91,7 @@ describe("Session", () => {
       // Mock theme.write to avoid file operations
       const originalWrite = theme.write.bind(theme)
       theme.write = async function() {
-        return {status: {description: "skipped"}, file: new FileObject("test.json"), bytes: 0}
+        return {status: {description: "skipped"}, file: cwd.getFile("test.json"), bytes: 0}
       }
 
       // Mock theme.getSourceFile to return a file
@@ -111,7 +110,7 @@ describe("Session", () => {
         async() => {
           await session.run()
         },
-        (error) => {
+        error => {
           // Should be a Sass error
           return error instanceof Sass || error.constructor.name === "Sass"
         }
@@ -131,14 +130,13 @@ describe("Session", () => {
       const command = new BuildCommand({cwd, packageJson})
       command.setCache(new Cache())
 
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
 
-      let emitOrder = []
+      const emitOrder = []
       let asyncEmitActive = false
 
       // Track asyncEmit calls with timing to verify they're awaited

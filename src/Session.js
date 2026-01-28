@@ -1,6 +1,7 @@
 import chokidar from "chokidar"
+import path from "node:path"
 
-import {Sass, Term, Util} from "@gesslar/toolkit"
+import {Promised, Sass, Term, Util} from "@gesslar/toolkit"
 
 /**
  * @import {Command} from "./Command.js"
@@ -22,6 +23,11 @@ import {Sass, Term, Util} from "@gesslar/toolkit"
  * @property {number} writeTime - Time (ms) spent writing the output file
  * @property {boolean} success - Whether the build completed successfully
  * @property {string} [error] - Error message when success is false
+ */
+
+/**
+ * @import {Theme} from "./Theme.js"
+ * @import {Command} from "./Command.js"
  */
 
 export default class Session {
@@ -175,6 +181,7 @@ export default class Session {
   async run() {
 
     this.#building = true
+
     await this.#command.asyncEmit("building")
     await this.#command.asyncEmit("recordBuildStart", this.#theme)
     await this.#buildPipeline()
@@ -229,6 +236,7 @@ export default class Session {
         `${this.#theme.getName()} loaded`,
         ["info", `${bytes.toLocaleString()} bytes`, ["[","]"]]
       ], this.#options)
+
       /**
        * ****************************************************************
        * Have the theme build itself.
@@ -241,31 +249,24 @@ export default class Session {
         .map(d => d.getSourceFile())
         .filter(f => f != null) // Filter out any null/undefined files
 
-      const compileResult = await Promise
-        .allSettled(dependencyFiles.map(async fileObject => {
-          if(!fileObject) {
-            throw new Error("Invalid dependency file object")
-          }
+      const cwd = this.#theme.getCwd()
+      const settled = await Promised
+        .settle(dependencyFiles.map(async fileObject => {
+          if(!fileObject)
+            throw Sass.new("Invalid dependency file object")
 
-          const fileName = fileObject.toString()
-          const fileSize = await fileObject.size()
-
-          return [fileName, fileSize]
+          return [fileObject.relativeTo(cwd), await fileObject.size()]
         }))
 
-      const rejected = compileResult.filter(result => result.status === "rejected")
+      if(Promised.hasRejected(settled))
+        throw Sass.new("Compiling dependencies.", settled)
 
-      if(rejected.length > 0) {
-        rejected.forEach(reject => Term.error(reject.reason))
-        throw new Error("Compilation failed")
-      }
-
-      const dependencies = compileResult
+      const dependencies = Promised.values(settled)
         .slice(1)
         .map(dep => dep?.value)
         .filter(Boolean)
 
-      const totalBytes = compileResult.reduce(
+      const totalBytes = settled.reduce(
         (acc,curr) => acc + (curr?.value[1] ?? 0), 0
       )
 
@@ -276,7 +277,7 @@ export default class Session {
           ["[","]"]
         ],
         `${this.#theme.getName()} compiled`,
-        ["success", `${compileResult[0].value[1].toLocaleString()} bytes`, ["[","]"]],
+        ["success", `${settled[0].value[1].toLocaleString()} bytes`, ["[","]"]],
         ["info", `${totalBytes.toLocaleString()} total bytes`, ["(",")"]],
       ], this.#options)
 
@@ -308,7 +309,7 @@ export default class Session {
         file: outputFile,
         bytes: writeBytes
       } = writeResult.result
-      const outputFilename = outputFile.toString()
+      const outputFilename = outputFile.relativeTo(cwd)
       const status = [
         [
           "success",
@@ -363,7 +364,7 @@ export default class Session {
   /**
    * Handles a file change event and triggers a rebuild for the theme.
    *
-   * @param {string} changed - Path to the changed file
+   * @param {string} changed - Path to the changed file (from chokidar)
    * @param {object} _stats - OS-level file stat information
    * @returns {Promise<void>}
    */
@@ -377,14 +378,23 @@ export default class Session {
       this.#building = true
       await this.#command.asyncEmit("building")
 
+      // Normalize the changed path from chokidar for comparison
+      const normalizedChanged = path.resolve(changed)
+
       const changedFile = Array.from(this.#theme.getDependencies()).find(
-        dep => dep.getSourceFile().path === changed
+        dep => {
+          const depPath = dep.getSourceFile().real.path
+          const normalizedDepPath = path.resolve(depPath)
+
+          return normalizedDepPath === normalizedChanged
+        }
       )?.getSourceFile()
 
       if(!changedFile)
         return
 
-      const fileName = changedFile.toString()
+      const cwd = this.#theme.getCwd()
+      const fileName = changedFile.relativeTo(cwd)
 
       const message = [
         ["info", "REBUILDING", ["[","]"]],
@@ -411,10 +421,10 @@ export default class Session {
   }
 
   /**
-   * Displays a formatted summary of the session's build statistics and performance.
-   * Shows total builds, success/failure counts, success rate percentage, and timing
-   * information from the most recent build. Used during session cleanup to provide
-   * final statistics to the user.
+   * Displays a formatted summary of the session's build statistics and
+   * performance. Shows total builds, success/failure counts, success rate
+   * percentage, and timing information from the most recent build. Used during
+   * session cleanup to provide final statistics to the user.
    *
    * @returns {void}
    */
@@ -486,9 +496,15 @@ export default class Session {
     if(this.#watcher)
       await this.#watcher.close()
 
+    // Get real paths for chokidar (normalized for consistency)
     const dependencies = Array.from(this.#theme
       .getDependencies())
-      .map(d => d.getSourceFile().path)
+      .map(d => {
+        const filePath = d.getSourceFile().real.path
+
+        // Normalize to absolute path for chokidar
+        return path.resolve(filePath)
+      })
 
     this.#watcher = chokidar.watch(dependencies, {
       // Prevent watching own output files

@@ -30,11 +30,9 @@ describe("ResolveCommand", () => {
       const packageJson = {}
       const command = new ResolveCommand({cwd, packageJson})
       command.setCache(new Cache())
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-
       await assert.rejects(
-        () => command.execute(fixturePath, {}),
-        (error) => {
+        () => command.execute("./fixtures/simple-theme.yaml", {}),
+        error => {
           return error instanceof Sass || error.constructor.name === "Sass"
         }
       )
@@ -49,7 +47,7 @@ describe("ResolveCommand", () => {
 
       await assert.rejects(
         () => command.execute(fixturePath, {color: "test", tokenColor: "test"}),
-        (error) => {
+        error => {
           return error instanceof Sass || error.constructor.name === "Sass"
         }
       )
@@ -99,9 +97,8 @@ describe("ResolveCommand", () => {
       const packageJson = {}
       const command = new ResolveCommand({cwd, packageJson})
       command.setCache(new Cache())
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()

@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    // Enable JavaScript support
+    "allowJs": true,
+    "checkJs": false,
+    "maxNodeModuleJsDepth": 0,
+    // Type declaration generation
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    // Output configuration
+    "outDir": "./types",
+    "rootDir": "./src",
+    // Module system
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    // Strict type checking (helps generate better types)
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    // Additional checks
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    // Emit settings
+    "stripInternal": false,
+    "removeComments": false,
+    "preserveConstEnums": true
+  },
+  "include": [
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests",
+    "work",
+    "types",
+    "src/cli.js",
+    "examples"
+  ]
+}

@@ -1,13 +1,17 @@
 // scripts/validate-examples.mjs
 import {spawn} from "node:child_process"            // ✨ swap in spawn
 import {readdir, stat} from "node:fs/promises"
-import {join, extname, basename} from "node:path"
+import {basename} from "node:path"
 import console from "node:console"
 import process from "node:process"
+import { DirectoryObject, FileObject } from "@gesslar/toolkit"
 
-const EXAMPLES_BASE = "./examples"
-const EXAMPLES_DIRS = ["advanced/src", "simple"]
-const EXAMPLES_OUTPUT_DIR = `${EXAMPLES_BASE}/output`
+/** @type {DirectoryObject} */
+const EXAMPLES_BASE = new DirectoryObject("./examples")
+/** @type {Array<DirectoryObject>} */
+const EXAMPLES_DIRS = [EXAMPLES_BASE.getDirectory("advanced/src"), EXAMPLES_BASE.getDirectory("simple")]
+/** @type {DirectoryObject} */
+const EXAMPLES_OUTPUT_DIR = EXAMPLES_BASE.getDirectory(`output`)
 
 // stream child output directly to this TTY
 /**
@@ -30,24 +34,26 @@ function run(cmd, args, env = {}) {
 
 /**
  *
- * @param dir
+ * @param {DirectoryObject} dir - The directory
+ * @returns {AsyncGenerator<FileObject>} The file object.
  */
 async function* walk(dir) {
-  for(const name of await readdir(dir)) {
-    const p = join(dir, name)
-    const s = await stat(p)
-    if(s.isDirectory())
-      yield *walk(p)
+  const {directories, files} = await dir.read()
+
+  for(const item of [...directories, ...files].flat()) {
+    if(item.isDirectory)
+      yield *walk(item)
     else
-      yield p
+      yield item
   }
 }
 
+/** @type {Array<FileObject} */
 const sources = []
 await Promise.all(
   EXAMPLES_DIRS.map(async dir => {
-    for await(const file of await walk(`${EXAMPLES_BASE}/${dir}`)) {
-      if([".yaml", ".json5"].includes(extname(file)))
+    for await (const file of walk(dir)) {
+      if([".yaml", ".json5"].includes(file.extension))
         sources.push(file)
     }
   })
@@ -61,23 +67,23 @@ if(sources.length === 0) {
 let ok = 0, fail = 0
 
 for(const f of sources) {
-  const out = basename(f).replace(/\.(yaml|json5)$/i, ".color-theme.json")
+  const out = EXAMPLES_OUTPUT_DIR.getFile(`${f.module}.color-theme.json`)
 
   try {
     // shows the exact command; still useful, but actual output now streams live
-    console.debug(["build", "-o", EXAMPLES_OUTPUT_DIR, f].join(" "))
+    console.debug(["build", "-o", EXAMPLES_OUTPUT_DIR.path, f].join(" "))
 
-    await run("node", ["src/cli.js", "build", "-o", EXAMPLES_OUTPUT_DIR, f])
+    await run("node", ["src/cli.js", "build", "-n", "-o", EXAMPLES_OUTPUT_DIR.path, f.path])
 
     try {
-      await stat(`${EXAMPLES_OUTPUT_DIR}/${out}`)
+      if(await out.exists)
+        ok++
+      else
+        fail++
     } catch(e) {
       console.error(e.message)
       fail++
-      continue
     }
-
-    ok++
   } catch(e) {
     // spawn doesn't buffer stdout/stderr; this is just a summary line
     console.error("✗ failed", f, "\n", e?.message || e)

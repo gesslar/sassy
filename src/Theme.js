@@ -13,12 +13,14 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import {Sass, DirectoryObject, FileObject, Term, Util} from "@gesslar/toolkit"
+import {Sass, Term, Util} from "@gesslar/toolkit"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
 
 /**
  * @import {Cache} from "@gesslar/toolkit"
+ * @import {DirectoryObject} from "@gesslar/toolkit"
+ * @import {FileObject} from "@gesslar/toolkit"
  */
 
 const outputFileExtension = "color-theme.json"
@@ -43,6 +45,7 @@ export default class Theme {
   #sourceFile = null
   #source = null
   #options = null
+
   /**
    * The dependencies of this theme.
    *
@@ -60,6 +63,8 @@ export default class Theme {
   #outputJson = null
   #outputFileName = null
   #outputHash = null
+  #outputFile = null
+  #outputDir = null
 
   #cwd = null
 
@@ -76,6 +81,16 @@ export default class Theme {
     this.#outputFileName = `${this.#name}.${outputFileExtension}`
     this.#options = options
     this.#cwd = cwd
+
+    // Let's create the output directory, since we're gonna needs it.
+    // If outputDir is not provided or is ".", use the cwd itself
+    const outputDir = options.outputDir && options.outputDir !== "."
+      ? cwd.getDirectory(options.outputDir)
+      : cwd
+    const outputFile = outputDir.getFile(this.#outputFileName)
+
+    this.#outputFile = outputFile
+    this.#outputDir = outputDir
   }
 
   /**
@@ -483,7 +498,7 @@ export default class Theme {
 
     if(!source[PropertyKey.CONFIG.description])
       throw Sass.new(
-        `Source file does not contain '${PropertyKey.CONFIG.description}' property: ${this.#sourceFile.path}`
+        `Source file does not contain '${PropertyKey.CONFIG.description}' property: ${this.#sourceFile.relativeTo(this.#cwd)}`
       )
 
     this.#source = source
@@ -501,7 +516,6 @@ export default class Theme {
    */
   async build() {
     const compiler = new Compiler()
-
     await compiler.compile(this)
 
     return this
@@ -516,8 +530,7 @@ export default class Theme {
    */
   async write(force=false) {
     const output = this.#outputJson
-    const outputDir = new DirectoryObject(this.#options.outputDir)
-    const file = new FileObject(this.#outputFileName, outputDir)
+    const file = this.#outputFile
 
     if(this.#options.dryRun) {
       Term.log(this.#outputJson)
@@ -537,8 +550,8 @@ export default class Theme {
     }
 
     // Real write (timed)
-    if(!await outputDir.exists)
-      await outputDir.assureExists()
+    if(!await this.#outputDir.exists)
+      await this.#outputDir.assureExists()
 
     await file.write(output)
 

@@ -1,8 +1,9 @@
-import {FileObject, Sass} from "@gesslar/toolkit"
+import {FileSystem, Sass} from "@gesslar/toolkit"
 
 /**
- * @import {Cache} from "@gesslar/toolkit"
  * @import {DirectoryObject} from "@gesslar/toolkit"
+ * @import {FileObject} from "@gesslar/toolkit"
+ * @import {Cache} from "@gesslar/toolkit"
  */
 
 /**
@@ -22,11 +23,10 @@ export default class Command {
   /**
    * Creates a new Command instance.
    *
-   * @param {object} config - Configuration object
    * @param {DirectoryObject} config.cwd - Current working directory object
    * @param {object} config.packageJson - Package.json data
    */
-  constructor({cwd,packageJson}) {
+  constructor({cwd, packageJson}) {
     this.#cwd = cwd
     this.#packageJson = packageJson
   }
@@ -226,15 +226,17 @@ export default class Command {
    * Resolves a theme file name to a FileObject and validates its existence.
    *
    * @param {string} fileName - The theme file name or path
-   * @param {object} cwd - The current working directory object
+   * @param {DirectoryObject} cwd - The current working directory object
    * @returns {Promise<FileObject>} The resolved and validated FileObject
    * @throws {Sass} If the file does not exist
    */
   async resolveThemeFileName(fileName, cwd) {
-    const fileObject = new FileObject(fileName, cwd)
+    fileName = FileSystem.relativeOrAbsolutePath(cwd.path, fileName)
+
+    const fileObject = cwd.getFile(fileName)
 
     if(!await fileObject.exists)
-      throw Sass.new(`No such file 🤷: ${fileObject.path}`)
+      throw Sass.new(`No such file 🤷: ${fileObject.relativeTo(cwd)}`)
 
     return fileObject
   }

@@ -141,9 +141,9 @@ describe("Command", () => {
       const cwd = new DirectoryObject(__dirname)
       const packageJson = {}
       const command = new Command({cwd, packageJson})
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const fileObject = await command.resolveThemeFileName(fixturePath, cwd)
-      assert.ok(fileObject instanceof FileObject)
+      // Use relative path from test directory to fixtures
+      const fileObject = await command.resolveThemeFileName("./fixtures/simple-theme.yaml", cwd)
+      assert.ok(fileObject instanceof FileObject || fileObject.constructor.name === "FileObject")
       assert.ok(await fileObject.exists)
     })
 
@@ -153,7 +153,7 @@ describe("Command", () => {
       const command = new Command({cwd, packageJson})
       await assert.rejects(
         () => command.resolveThemeFileName("nonexistent.yaml", cwd),
-        (error) => {
+        error => {
           return error instanceof Sass || error.constructor.name === "Sass"
         }
       )
@@ -169,7 +169,7 @@ describe("Command", () => {
       const mockProgram = {command: () => ({action: () => {}, option: () => {}})}
       await assert.rejects(
         () => command.buildCli(mockProgram),
-        (error) => {
+        error => {
           return error instanceof Sass || error.constructor.name === "Sass"
         }
       )
@@ -183,7 +183,7 @@ describe("Command", () => {
       const mockProgram = {command: () => ({action: () => {}, option: () => {}})}
       await assert.rejects(
         () => command.buildCli(mockProgram),
-        (error) => {
+        error => {
           return error instanceof Sass || error.constructor.name === "Sass"
         }
       )
