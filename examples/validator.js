@@ -4,7 +4,7 @@ import {readdir, stat} from "node:fs/promises"
 import {basename} from "node:path"
 import console from "node:console"
 import process from "node:process"
-import { DirectoryObject, FileObject } from "@gesslar/toolkit"
+import {DirectoryObject, FileObject} from "@gesslar/toolkit"
 
 /** @type {DirectoryObject} */
 const EXAMPLES_BASE = new DirectoryObject("./examples")
@@ -52,7 +52,7 @@ async function* walk(dir) {
 const sources = []
 await Promise.all(
   EXAMPLES_DIRS.map(async dir => {
-    for await (const file of walk(dir)) {
+    for await(const file of walk(dir)) {
       if([".yaml", ".json5"].includes(file.extension))
         sources.push(file)
     }
@@ -73,7 +73,7 @@ for(const f of sources) {
     // shows the exact command; still useful, but actual output now streams live
     console.debug(["build", "-o", EXAMPLES_OUTPUT_DIR.path, f].join(" "))
 
-    await run("node", ["src/cli.js", "build", "-n", "-o", EXAMPLES_OUTPUT_DIR.path, f.path])
+    await run("node", ["src/cli.js", "build", "-o", EXAMPLES_OUTPUT_DIR.path, f.path])
 
     try {
       if(await out.exists)
