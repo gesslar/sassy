@@ -1,17 +1,17 @@
 # Variables for later substitution
 vars:
   colors:
-    black: oklch(0.176 0.003 31.1)
-    white: oklch(0.923 0 89.9)
-    blue: oklch(0.497 0.121 257.3)
+    black: oklch(.145 0 0)
+    white: oklch(0.8 0 90)
+    blue: oklch(0.5 0.2 210)
     red: oklch(0.672 0.215 25.1)
     yellow: oklch(0.921 0.148 98.1)
-    orange: oklch(0.721 0.134 71.2)
+    orange: oklch(0.7 0.152 70)
     green: oklch(0.765 0.125 167.8)
     green2: oklch(0.767 0.177 136.6)
     purple: oklch(0.641 0.21 327.7)
-    pink: oklch(0.809 0.146 340.6)
-    teal: oklch(0.431 0.049 231.1)
+    pink: oklch(0.8 0.2 340)
+    teal: oklch(0.6 0.05 240)
     gold: oklch(0.86 0.168 87.8)
 
   # The following define secondary basics that can be relied upon by the
@@ -22,16 +22,16 @@ vars:
     fg.inverse: $std.bg
     fg.secondary: darken($std.fg, 5)
     fg.inactive: darken($std.fg, 25)
-    fg.faint: fade($std.fg, 0.50)
-    fg.accent: lighten($accent, 50)
-    fg.accent.faint: fade(lighten($accent, 30), 0.50)
-    fg.accent.whisper: fade($std.fg.accent.faint, 0.30)
+    fg.faint: fade($std.fg, 0.53)
+    fg.accent: lighten($accent, 35)
+    fg.accent.faint: darken($std.fg.accent, 15)
+    fg.accent.whisper: darken($std.fg.accent, 15)
     fg.accent.secondary: lighten($accent.secondary, 50)
     fg.accent.secondary.faint: fade(lighten($std.fg.accent.secondary, 30), 0.50)
     fg.success: $std.fg
     fg.warning: $std.fg
-    fg.info: lighten($status.info, 25)
-    fg.error: lighten($status.error, 70)
+    fg.info: $status.info
+    fg.error: $status.error
     fg.badge: $std.bg
 
     bg: $theme.bg
@@ -102,10 +102,10 @@ vars:
     shadow.sticky: fade($shadow, 0.25)
 
   status:
-    warning: $colors.orange
-    info: $colors.teal
-    error: $colors.red
     success: $colors.green
+    info: $colors.teal
+    warning: $colors.orange
+    error: $colors.red
 
     added: lighten($status.success, 20)
     modified: lighten($status.warning, 20)
