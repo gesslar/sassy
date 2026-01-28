@@ -1,7 +1,7 @@
 import {EventEmitter} from "node:events"
 import process from "node:process"
 
-import {Sass, Term, Util} from "@gesslar/toolkit"
+import {Promised, Sass, Term, Util} from "@gesslar/toolkit"
 import Command from "./Command.js"
 import Session from "./Session.js"
 import Theme from "./Theme.js"
@@ -62,6 +62,14 @@ export default class BuildCommand extends Command {
    * @throws {Error} When theme compilation fails
    */
   async execute(fileNames, options) {
+
+    /**
+ * @typedef {object} BuildCommandOptions
+ * @property {boolean} [watch] Enable watch mode for file changes
+ * @property {string} [outputDir] Custom output directory path
+ * @property {boolean} [dryRun] Print JSON to stdout without writing files
+ * @property {boolean} [silent] Silent mode, only show errors or dry-run output
+ */
     const cwd = this.getCwd()
 
     if(options.watch) {
@@ -76,7 +84,7 @@ export default class BuildCommand extends Command {
       this.emitter.on("printPrompt", () => this.#printPrompt())
     }
 
-    const sessionResults = await Promise.allSettled(
+    const sessionResults = await Promised.settle(
       fileNames.map(async fileName => {
         const fileObject = await this.resolveThemeFileName(fileName, cwd)
         const theme = new Theme(fileObject, cwd, options)
@@ -86,30 +94,25 @@ export default class BuildCommand extends Command {
       })
     )
 
-    if(sessionResults.some(theme => theme.status === "rejected")) {
-      const rejected = sessionResults.filter(result => result.status === "rejected")
+    if(Promised.hasRejected(sessionResults))
+      Promised.throw("Creating sessions.", sessionResults)
 
-      rejected.forEach(item => {
-        const sassError = Sass.new("Creating session for theme file.", item.reason)
-        sassError.report(options.nerd)
-      })
-      process.exit(1)
-    }
+    // if(sessionResults.some(theme => theme.status === "rejected")) {
+    //   const rejected = sessionResults.filter(result => result.status === "rejected")
 
-    const sessions = sessionResults.map(result => result.value)
-    const firstRun = await Promise.allSettled(sessions.map(
+    //   rejected.forEach(item => {
+    //     const sassError = Sass.new("Creating session for theme file.", item.reason)
+    //     sassError.report(options.nerd)
+    //   })
+    //   process.exit(1)
+    // }
+
+    const sessions = Promised.values(sessionResults)
+    const firstRun = await Promised.settle(sessions.map(
       async session => await session.run()))
-    const rejected = firstRun.filter(reject => reject.status === "rejected")
 
-    if(rejected.length > 0) {
-      rejected.forEach(reject => {
-        const sassError = Sass.new("Running build session.", reject.reason)
-        sassError.report(options.nerd)
-      })
-
-      if(firstRun.length === rejected.length)
-        await Util.asyncEmit(this.emitter, "quit")
-    }
+    if(Promised.hasRejected(firstRun))
+      Promised.throw("Executing sessions.", firstRun)
   }
 
   /**

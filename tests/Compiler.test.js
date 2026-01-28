@@ -17,9 +17,8 @@ describe("Compiler", () => {
     it("compiles a simple theme", async() => {
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -37,9 +36,8 @@ describe("Compiler", () => {
     it("resolves variables correctly", async() => {
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -71,8 +69,8 @@ theme:
 
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
-      const themeFile = new FileObject(testPath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/function-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()

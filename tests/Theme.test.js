@@ -16,8 +16,7 @@ describe("Theme", () => {
     it("creates a theme instance with source file", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
 
       assert.ok(theme.isValid())
@@ -27,8 +26,7 @@ describe("Theme", () => {
     it("generates output filename from source file", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       const outputName = theme.getOutputFileName()
 
@@ -41,8 +39,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -66,7 +63,7 @@ describe("Theme", () => {
         "vars:\n  primary: '#ff0000'"
       )
 
-      const invalidFile = new FileObject(invalidPath)
+      const invalidFile = cwd.getFile("./fixtures/invalid-theme.yaml")
       const theme = new Theme(invalidFile, cwd, options)
       theme.setCache(cache)
 
@@ -79,8 +76,7 @@ describe("Theme", () => {
     it("skips loading when no cache is set", async() => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       // Don't set cache
 
@@ -95,8 +91,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -111,8 +106,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -130,12 +124,11 @@ describe("Theme", () => {
 
   describe("write()", () => {
     it("writes compiled theme to file", async() => {
-      const testDir = await TestUtils.createTestDir("output")
+      await TestUtils.createTestDir("output")
       const cwd = new DirectoryObject(__dirname)
-      const options = {outputDir: testDir}
+      const options = {outputDir: "./fixtures/output"}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -149,12 +142,11 @@ describe("Theme", () => {
     })
 
     it("skips write when output unchanged", async() => {
-      const testDir = await TestUtils.createTestDir("output")
+      await TestUtils.createTestDir("output")
       const cwd = new DirectoryObject(__dirname)
-      const options = {outputDir: testDir}
+      const options = {outputDir: "./fixtures/output"}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -172,8 +164,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {dryRun: true}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -191,8 +182,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -209,8 +199,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 
@@ -230,8 +219,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const cache = new Cache()
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
       const theme = new Theme(themeFile, cwd, options)
       theme.setCache(cache)
 

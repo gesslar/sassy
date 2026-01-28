@@ -49,10 +49,8 @@ describe("LintCommand", () => {
       const packageJson = {}
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-
       // Should not throw for valid theme
-      await command.execute(fixturePath, {})
+      await command.execute("./fixtures/simple-theme.yaml", {})
     })
 
     it("throws for non-existent file", async() => {
@@ -63,7 +61,7 @@ describe("LintCommand", () => {
 
       await assert.rejects(
         () => command.execute("nonexistent.yaml", {}),
-        (error) => {
+        error => {
           return error instanceof Error
         }
       )
@@ -76,9 +74,8 @@ describe("LintCommand", () => {
       const packageJson = {}
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -98,9 +95,8 @@ describe("LintCommand", () => {
       const packageJson = {}
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()

@@ -36,7 +36,7 @@ import process from "node:process"
 import url from "node:url"
 import c from "@gesslar/colours"
 
-import {Cache, Sass, DirectoryObject, FileObject, Term} from "@gesslar/toolkit"
+import {Cache, DirectoryObject, FileObject, Sass, Term} from "@gesslar/toolkit"
 import BuildCommand from "./BuildCommand.js"
 import LintCommand from "./LintCommand.js"
 import ResolveCommand from "./ResolveCommand.js"
@@ -74,9 +74,11 @@ void (async function main() {
     c.alias.set("modified-bracket", "{F165}")
     c.alias.set("muted", "{F240}")
     c.alias.set("muted-bracket", "{F244}")
+
     // Lint command
     c.alias.set("context", "{F159}")
     c.alias.set("loc", "{F148}")
+
     // Resolve command
     c.alias.set("head", "{F220}")
     c.alias.set("leaf", "{F151}")
@@ -89,11 +91,12 @@ void (async function main() {
     c.alias.set("arrow", "{F033}")
 
     const cache = new Cache()
-    const cr = new DirectoryObject(url.fileURLToPath(new url.URL("..", import.meta.url)))
-    const cwd = new DirectoryObject(process.cwd())
-    const packageJson = new FileObject("package.json", cr)
-    const pkgJsonResult = await cache.loadCachedData(packageJson)
-    const pkgJson = pkgJsonResult
+    const cwd = DirectoryObject.fromCwd()
+    const packageJson = new FileObject(
+      "package.json",
+      url.fileURLToPath(new url.URL("..", import.meta.url))
+    )
+    const pkgJson = await packageJson.loadData()
 
     // These are available to all subcommands in addition to whatever they
     // provide.
@@ -116,36 +119,13 @@ void (async function main() {
       command.addCliOptions(alwaysAvailable, false)
     }
 
-    // // Add the build subcommand
-    // const buildCommand = new BuildCommand({cwd, packageJson: pkgJson})
-
-    // buildCommand.cache = cache
-
-    // void(await buildCommand.buildCli(program))
-    //   .addCliOptions(alwaysAvailable, false)
-
-    // // Add the resolve subcommand
-    // const resolveCommand = new ResolveCommand({cwd, packageJson: pkgJson})
-
-    // resolveCommand.cache = cache
-
-    // void(await resolveCommand.buildCli(program))
-    //   .addCliOptions(alwaysAvailable, false)
-
-    // // Add the lint subcommand
-    // const lintCommand = new LintCommand({cwd, packageJson: pkgJson})
-
-    // lintCommand.cache = cache
-
-    // void(await lintCommand.buildCli(program))
-    //   .addCliOptions(alwaysAvailable, false)
-
     // Let'er rip, bitches! VROOM VROOM, motherfucker!!
     await program.parseAsync()
 
   } catch(error) {
-    Sass.new("Starting Sassy.", error)
-      .report(sassyOptions.nerd || true)
+    Sass
+      .from(error, "Starting Sassy.")
+      .report(sassyOptions.nerd ?? false)
 
     process.exit(1)
   }

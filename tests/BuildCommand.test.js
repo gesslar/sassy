@@ -107,20 +107,19 @@ describe("BuildCommand", () => {
       const command = new BuildCommand({cwd, packageJson})
       command.setCache(new Cache())
 
-      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
-
       // Track if Sass.new is called with the right context
       let sassErrorContext = null
       const originalSassNew = Sass.new.bind(Sass)
       Sass.new = function(context, error) {
         sassErrorContext = context
+
         return originalSassNew(context, error)
       }
 
       // Create a session that will fail during run
       // We'll use a real session but mock the theme to fail
-      const themeFile = new FileObject(fixturePath)
-      const theme = new Theme(themeFile, cwd, {})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
       theme.setCache(command.getCache())
 
       // Mock theme.build to throw

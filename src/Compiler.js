@@ -11,7 +11,8 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import {Collection, Data, FileObject, Sass, Term, Util} from "@gesslar/toolkit"
+import {Collection, Data, Sass, Term, Util} from "@gesslar/toolkit"
+
 import Evaluator from "./Evaluator.js"
 
 /**
@@ -43,6 +44,7 @@ export default class Compiler {
       const config = this.#decomposeObject(sourceConfig)
 
       evaluate(config)
+
       const recompConfig = this.#composeObject(config)
 
       const header = {
@@ -53,12 +55,11 @@ export default class Compiler {
 
       // Let's get all of the imports!
       const imports = recompConfig.import ?? []
-      const {imported,importByFile} =
-        await this.#import(imports, theme)
+      const {imported,importByFile} = await this.#import(imports, theme)
 
-      importByFile.forEach((themeData,file) => {
-        theme.addDependency(file,themeData)
-      })
+      importByFile.forEach(
+        (themeData, file) => theme.addDependency(file,themeData)
+      )
 
       // Handle tokenColors separately - imports first, then main source
       // (append-only)
@@ -153,15 +154,18 @@ export default class Compiler {
       : imports
 
     if(!Collection.isArrayUniform(imports, "string"))
-      throw new Sass(
+      throw Sass.new(
         `All import entries must be strings. Got ${JSON.stringify(imports)}`
       )
 
     const loaded = new Map()
 
+    const themeSource = theme.getSourceFile()
+    const themeDirectory = themeSource.parent
+
     for(const importing of imports) {
       try {
-        const file = new FileObject(importing, theme.getSourceFile().directory)
+        const file = themeDirectory.getFile(importing)
 
         // Get the cached version or a new version. Who knows? I don't know.
         const {result, cost} = await Util.time(async() => {
@@ -169,10 +173,11 @@ export default class Compiler {
         })
 
         if(theme.getOptions().nerd) {
+          const cwd = theme.getCwd()
           Term.status([
             ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
             "",
-            ["muted", `${file.toString()}`],
+            ["muted", `${file.relativeTo(cwd)}`],
             ["muted", `${theme.getName()}`,["(",")"]],
           ], theme.getOptions())
         }
