@@ -6,6 +6,7 @@ import {Promised, Sass, Term, Util} from "@gesslar/toolkit"
 /**
  * @import {Command} from "./Command.js"
  * @import {Theme} from "./Theme.js"
+ * @import {FSWatcher} from "chokidar"
  */
 
 /**
@@ -58,7 +59,7 @@ export default class Session {
   /**
    * Active file system watcher for theme dependencies.
    *
-   * @type {import("chokidar").FSWatcher|null}
+   * @type {FSWatcher}
    * @private
    */
   #watcher = null

@@ -115,7 +115,7 @@ export default class Command {
   /**
    * Gets the array of CLI option names.
    *
-   * @returns {string[]} Array of option names
+   * @returns {Array<string>} Array of option names
    */
   getCliOptionNames() {
     return this.#optionNames
@@ -192,7 +192,7 @@ export default class Command {
    * Adds a single CLI option to the command.
    *
    * @param {string} name - The option name
-   * @param {string[]} options - Array containing option flag and description
+   * @param {Array<string>} options - Array containing option flag and description
    * @param {boolean} preserve - Whether to preserve this option name in the list
    * @returns {Promise<this>} Returns this instance for method chaining
    */
