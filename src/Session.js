@@ -383,7 +383,7 @@ export default class Session {
 
       const changedFile = Array.from(this.#theme.getDependencies()).find(
         dep => {
-          const depPath = dep.getSourceFile().real.path
+          const depPath = dep.getSourceFile().path
           const normalizedDepPath = path.resolve(depPath)
 
           return normalizedDepPath === normalizedChanged
@@ -500,7 +500,7 @@ export default class Session {
     const dependencies = Array.from(this.#theme
       .getDependencies())
       .map(d => {
-        const filePath = d.getSourceFile().real.path
+        const filePath = d.getSourceFile().path
 
         // Normalize to absolute path for chokidar
         return path.resolve(filePath)

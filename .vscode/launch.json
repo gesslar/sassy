@@ -89,7 +89,7 @@
         "build",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/blackboard.yaml"
+        "./examples/advanced/blackboard.yaml"
       ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole"
@@ -106,7 +106,7 @@
         "--",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/blackboard-semantics.yaml"
+        "./examples/advanced/blackboard-semantics.yaml"
       ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole"
@@ -125,7 +125,7 @@
         "--watch",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/blackboard.yaml"
+        "./examples/advanced/blackboard.yaml"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -144,9 +144,9 @@
         "--watch",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/blackboard.yaml",
-        "./examples/advanced/src/bubblegum-goth.yaml",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/blackboard.yaml",
+        "./examples/advanced/bubblegum-goth.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -164,7 +164,7 @@
         "--nerd",
         "--color",
         "editor.inactiveSelectionBackground",
-        "./examples/advanced/src/blackboard.yaml",
+        "./examples/advanced/blackboard.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -179,7 +179,7 @@
         "exec",
         "--",
         "lint",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -195,7 +195,7 @@
         "--",
         "lint",
         "--nerd",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -212,7 +212,7 @@
         "build",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -230,7 +230,7 @@
         "--nerd",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -248,9 +248,9 @@
         "--nerd",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/blackboard.yaml",
-        "./examples/advanced/src/bubblegum-goth.yaml",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/blackboard.yaml",
+        "./examples/advanced/bubblegum-goth.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
@@ -269,9 +269,9 @@
         "--nerd",
         "--output-dir",
         "./examples/output",
-        "./examples/advanced/src/blackboard.yaml",
-        "./examples/advanced/src/bubblegum-goth.yaml",
-        "./examples/advanced/src/corporate.yaml",
+        "./examples/advanced/blackboard.yaml",
+        "./examples/advanced/bubblegum-goth.yaml",
+        "./examples/advanced/corporate.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
