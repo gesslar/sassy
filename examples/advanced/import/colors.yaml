@@ -1,5 +1,8 @@
 theme:
   colors:
+    window:
+      activeBorder: $accent
+      inactiveBorder: $accent.secondary
     contrastActiveBorder: $transparent
     contrastBorder: $transparent
     # Let's get some of the singletons out of the way first
@@ -423,7 +426,7 @@ theme:
 
     # Line Numbers
     editorLineNumber:
-      foreground: fade($std.fg.accent, .6)
+      foreground: fade($std.fg.accent, 0.5)
       activeForeground: fade($std.fg.accent, .1)
       dimmedForeground: fade($std.fg.accent, .8)
     # Cursor
@@ -446,7 +449,7 @@ theme:
 
     # Whitespace
     editorWhitespace:
-      foreground: $std.fg.accent.whisper # Whitespace characters (spaces, tabs, etc.) when enabled
+      foreground: darken($std.fg.accent.whisper, 45) # Whitespace characters (spaces, tabs, etc.) when enabled
     # Indent Guides
     editorIndentGuide:
       background1: alpha($std.line, .55)
@@ -521,18 +524,18 @@ theme:
     # Editor Diagnostics
     editorError:
       foreground: $std.fg.error
-      border: lighten($std.outline.error, 100)
-      background: fade($std.bg.error, 0.60)
+      border: $std.outline.error
+      background: fade($std.bg.error, 0.65)
 
     editorWarning:
       foreground: $std.fg.warning
-      border: lighten($std.outline.warning, 100)
-      background: fade($std.bg.warning, 0.60)
+      border: $std.outline.warning
+      background: fade($std.bg.warning, 0.65)
 
     editorInfo:
       foreground: $std.fg.info
-      border: lighten($std.outline.info, 100)
-      background: fade($std.bg.info, 0.60)
+      border: $std.outline.info
+      background: fade($std.bg.info, 0.65)
 
     editorHint:
       foreground: $std.fg.success

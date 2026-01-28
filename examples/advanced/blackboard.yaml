@@ -1,14 +1,13 @@
 # Theme Config
 config:
-  $schema: vscode://schemas/color-theme
-  name: bubblegum-goth
+  schema: vscode://schemas/color-theme
+  name: blackboard
   type: dark
 
   import:
-    - ../import/variables.yaml
-    - ../import/colors.yaml
-    - ../import/token-colors-$(type).yaml
-    - ../import/token-colors-$(type)-universal.yaml
+    - import/variables.yaml
+    - import/colors.yaml
+    - import/tokenColors-$(type).yaml
 
   custom:
     semanticHighlighting: false
@@ -22,12 +21,10 @@ vars:
   # variables definitions. Dark and light themes will define these
   # differently. Anything expressed here will override anything being
   # imported.
-  fg:
-    main: $main
 
   theme:
     fg: $main
     bg: $colors.black
-    accent: $colors.pink
-    accentSecondary: darken($colors.pink, 60)
+    accent: $colors.blue
+    accentSecondary: $colors.teal
     shadow: alpha($theme.accent, 0.25)

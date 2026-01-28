@@ -1,19 +1,20 @@
 vars:
   colors:
     tc:
-      grey: oklch(0.765 0     89.9)
+      grey: oklch(0.765 0 89.9)
       green: oklch(0.679 0.092 138.1)
       blue: oklch(0.686 0.064 255.3)
       pink: oklch(0.703 0.071 332.1)
       orange: oklch(0.693 0.099 79.6)
-      red: oklch(0.602 0.123 21.4)
+      red: oklch(0.6059 0.1502 18.01)
+      pink2: oklch(0.6 0.1 0)
       peach: oklch(0.679 0.088 40.8)
       yellow: oklch(0.803 0.077 103.6)
-      apricot: oklch(0.73  0.072 66.3)
+      apricot: oklch(0.73 0.072 66.3)
       petal: oklch(0.725 0.068 347.5)
       purple: oklch(0.656 0.070 307.3)
-      gold: oklch(0.743 0.074 91.8)
-      white: oklch(0.952 0.029 102.7)
+      gold: oklch(0.8 0.16 90)
+      white: oklch(0.8 0.03 102)
       variableBlue: oklch(0.701 0.056 255.3)
       constantGreen: oklch(0.684 0.082 138)
       classGold: oklch(0.747 0.069 91.8)
@@ -30,7 +31,7 @@ vars:
 
   scope:
     # Basic structural elements
-    comment: fade(mix($colors.tc.grey, $colors.teal, 55), 0.20)
+    comment: mix($std.fg.accent, $colors.tc.pink, 75)
     text: $colors.tc.blue
     punctuation: $colors.tc.blue
     baseText: $colors.tc.white
@@ -46,7 +47,7 @@ vars:
     # Universal identifiers
     variable: $colors.tc.variableBlue
     parameter: $colors.tc.variableBlue
-    property: $colors.tc.red
+    property: $colors.tc.pink2
     constant: $colors.tc.constantGreen
 
     # Universal callables
@@ -66,7 +67,7 @@ vars:
     operator2: $colors.tc.keywordPurple
 
     # Universal structural
-    attribute: darken($colors.tc.gold, 30)
+    attribute: $colors.tc.gold
     declaration: $colors.tc.classGold
     embeddedLanguage: $colors.tc.classGold
 
@@ -143,31 +144,28 @@ theme:
     # #########################################################################
 
     - name: Plain Text
-      scope: meta.paragraph, text.html, meta.jsx.children, doctype, entity.name.class
+      scope: meta.paragraph, text.html, meta.jsx.children, doctype
       settings:
         foreground: $scope.baseText
 
     - name: Control Keywords (if/for/return/etc)
-      scope: keyword.control, meta.at-rule, keyword.control.anchor.regexp,
+      scope: keyword.control, meta.at-rule,
         meta.var.expr keyword.control.export, keyword.other.using,
-        keyword.control.directive.conditional, meta.preprocessor,
-        keyword.other.namespace, keyword.preprocessor,
+        meta.preprocessor, keyword.other.namespace, keyword.preprocessor,
         keyword.other.special-method, def.meta, meta.require,
         keyword.other.crate, meta.use, keyword.package, keyword.function,
-        keyword.interface, keyword.control.default, entity.name.goto-label
+        keyword.interface, entity.name.goto-label
       settings:
         foreground: $colors.tc.pink
 
     - name: Self/This/etc
       scope: variable.parameter.function.language.special.self,
-        variable.language.special.self,
-        this.class.meta, storage.modifier.this, variable.language.this,
-        variable.language.base
+        variable.language.special.self, this.class.meta, storage.modifier.this
       settings:
         foreground: $scope.selfRef
 
     - name: Quoted Strings
-      scope: string, string.quoted, string.unquoted.heredoc,
+      scope: string.quoted, string.unquoted.heredoc,
         jsx.children.objectliteral.expression.embedded.tag.string.block,
         meta.string-contents
       settings:
@@ -175,8 +173,7 @@ theme:
 
     - name: Functions/Methods
       scope: entity.name.function, meta.definition.method,
-        support.function, function.meta, function-call,
-        entity.name.function.decorator
+        support.function, function.meta, function-call
       settings:
         foreground: $scope.function
 
@@ -196,10 +193,10 @@ theme:
       settings:
         foreground: $scope.link
 
-    - name: Storage
-      scope: storage, support.module.node, storage.type.primitive.var
+    - name: Storage Modifiers (async, const, etc)
+      scope: storage.modifier, storage.type.accessor
       settings:
-        foreground: $scope.keyword
+        foreground: $scope.storage.modifier
 
     - name: Storage types
       scope: entity.name.variable.enum-member, keyword.declaration.abstract,
@@ -211,40 +208,35 @@ theme:
         keyword.other.class, keyword.other.delegate,
         keyword.other.enum, keyword.other.event, keyword.other.fn,
         keyword.other.interface, keyword.struct, keyword.type,
-        meta.namespace.declaration, storage.type, storage.type.annotation,
-        storage.type.numeric, storage.type.primitive, declaration.keyword
+        meta.namespace.declaration, storage.type.annotation,
+        storage.type.numeric, declaration.keyword
       settings:
         foreground: $scope.declaration
 
-    - name: Storage Modifiers (async, const, etc)
-      scope: storage.modifier, storage.type.accessor, keyword.other
+    - name: Storage Modifiers (async, const, etc) - to not mask
+      scope: keyword.other
       settings:
         foreground: $scope.storage.modifier
 
-    - name: Number
-      scope: constant.numeric, entity.other.keyframe-offset,
-        entity.other.keyframe-offset.percentage, constant.numeric.integer,
-        constant.numeric.floating-point
+    - name: Storage
+      scope: support.module.node, storage.type.primitive.var
+      settings:
+        foreground: $scope.keyword
 
+    - name: Number
+      scope: constant.numeric, entity.other.keyframe-offset
       settings:
         foreground: $scope.number
 
     - name: Variables
       scope: var-single-variable.variable.readwrite.other.meta,
         support.variable.object.process, entity.name.variable,
-        variable.other, class.variable, instance.variable, global.variable,
-        variable.other.property, variable.language
+        class.variable, instance.variable, global.variable,
       settings:
         foreground: $scope.variable
 
-    - name: Constants
-      scope: constant.other.placeholder,
-        constant.other.variable.mac-classic, constant.other.caps
-      settings:
-        foreground: $scope.constant
-
     - name: Built-in constant
-      scope: constant.language, support.variable.object.node, support.constant,
+      scope: support.variable.object.node, support.constant,
         constant.character.format.placeholder.other
       settings:
         foreground: $scope.constant
@@ -258,12 +250,20 @@ theme:
         foreground: $scope.namespace
 
     - name: Type Names
-      scope: entity.name.type,
-        support.type, storage.type.built-in,
-        meta.type.annotation, entity.name.type,
-        support.type.cocoa, meta.argument-type, meta.protocol-list
+      scope: storage.type.built-in,
+        meta.type.annotation, meta.argument-type, meta.protocol-list
       settings:
         foreground: $scope.types
+
+    - name: Storage types - to not mask
+      scope: storage.type
+      settings:
+        foreground: $scope.declaration
+
+    - name: Storage - to not mask
+      scope: storage
+      settings:
+        foreground: $scope.keyword
 
     - name: String Interpolation Begin and End
       scope: begin.expression.string, end.expression.string,
@@ -279,16 +279,10 @@ theme:
       settings:
         foreground: $scope.interpolation
 
-    - name: User-defined constant
-      scope: constant.character, constant.other, variable.other.constant,
-        character.constant.entity
-      settings:
-        foreground: $scope.constant
-
     - name: Parameters
       scope: variable.parameter, function.parameters.entity.name.meta,
-        variable.other.macro.argument, meta.function-call,
-        meta.function-call.arguments
+        variable.other.macro.argument,
+        meta.function-call meta.function-call.arguments
       settings:
         foreground: $scope.parameter
 
@@ -296,18 +290,17 @@ theme:
     # Classes
     # #########################################################################
 
+    - name: Class Super
+      scope: super.meta, support.class.super, meta.inheritance-clause
+      settings:
+        foreground: $scope.selfRef
+
     - name: Class names
       scope: entity.name.class, support.class, entity.name.type.class,
         meta.function-call.static, meta.function-call.object, meta.function-call,
-        support.other.namespace.use, support.class.exception
+        support.other.namespace.use
       settings:
         foreground: $scope.class
-
-    - name: Class Super
-      scope: super.meta, variable.language.super, support.class.super,
-        meta.inheritance-clause
-      settings:
-        foreground: $scope.selfRef
 
     - name: Inherited Class
       scope: entity.other.inherited-class
@@ -319,15 +312,13 @@ theme:
     # #########################################################################
 
     - name: Tag name
-      scope: punctuation.definition.tag, punctuation.definition.tag.begin,
-        punctuation.definition.tag.end, entity.name.tag
+      scope: punctuation.definition.tag, entity.name.tag
       settings:
         foreground: $scope.punctuation
 
     - name: Tag attribute
-      scope: entity.other.attribute-name, entity.other.attribute-name.class,
-        entity.other.attribute-name.id, entity.other.attribute-name.pseudo-class,
-        meta.tag.attributes, name.tag.out.plain.unquoted.string.entity
+      scope: entity.other.attribute-name, meta.tag.attributes,
+        name.tag.out.plain.unquoted.string.entity
       settings:
         foreground: $scope.attribute
 
@@ -363,8 +354,7 @@ theme:
 
     - name: Property Names
       scope: support.type.property-name, support.type.vendored.property-name,
-        support.type.property-name.media-feature.media, meta.property-name,
-        variable.other.property, support.variable.property,
+        meta.property-name, variable.other.property, support.variable.property,
         property.field.declaration.class.meta
       settings:
         foreground: $scope.property
@@ -403,7 +393,100 @@ theme:
         fontStyle: bold
 
     - name: General Keyword Operators
-      scope: keyword.operator, operator, keyword.operator.gradient,
-        keyword.operator.quantifier.regexp, keyword.operator.key
+      scope: keyword.operator, operator
       settings:
         foreground: $scope.operator
+
+    # #########################################################################
+    # Universal fallback rules for common patterns
+    # #########################################################################
+
+    - name: Type Names
+      scope: entity.name.type, support.type
+      settings:
+        foreground: $scope.types
+
+    - name: Universal Comments
+      scope: comment, punctuation.definition.comment
+      settings:
+        foreground: $scope.comment
+        fontStyle: italic
+
+    - name: Constants
+      scope: constant.other, constant.character, variable.other.constant,
+        character.constant.entity
+      settings:
+        foreground: $scope.constant
+
+    - name: Universal Self References
+      scope: variable.language.self, variable.language.this,
+        variable.language.base, variable.language.super
+      settings:
+        foreground: $scope.selfRef
+
+    - name: Universal Booleans
+      scope: constant.language.boolean, constant.language.null
+      settings:
+        foreground: $scope.boolean
+
+    - name: Universal String Interpolation
+      scope: punctuation.definition.template-expression,
+        string.interpolated.expression, punctuation.definition.variable,
+        punctuation.section.embedded.begin, punctuation.section.embedded.end
+      settings:
+        foreground: $scope.interpolation
+
+    - name: Universal Punctuation
+      scope: punctuation, begin.brace, end.brace
+      settings:
+        foreground: $scope.punctuation
+
+    - name: Universal Types Fallback
+      scope: namespace, class, enum, interface, struct, typeParameter, type
+      settings:
+        foreground: $scope.types
+
+    - name: Universal Callables Fallback
+      scope: function, method, macro
+      settings:
+        foreground: $scope.function
+
+    - name: Universal Identifiers Fallback
+      scope: parameter, variable, property, enumMember, decorator, event
+      settings:
+        foreground: $scope.variable
+
+    - name: Universal Literals Fallback
+      scope: number, regexp
+      settings:
+        foreground: $scope.number
+
+    - name: Universal Keywords Fallback
+      scope: keyword.declaration, label
+      settings:
+        foreground: $scope.keyword
+
+    # #########################################################################
+    # Final Fallbacks - Broadest possible scopes (NEVER override anything)
+    # These are last resort matchers for any unmatched tokens
+    # #########################################################################
+
+    - name: Final Fallback - Base Source
+      scope: source
+      settings:
+        foreground: $scope.baseText
+
+    - name: Final Fallback - Generic Keyword
+      scope: keyword
+      settings:
+        foreground: $scope.keyword
+
+    - name: Final Fallback - Generic Constant
+      scope: constant
+      settings:
+        foreground: $scope.constant
+
+    - name: Final Fallback - Generic Constant
+      scope: string
+      settings:
+        foreground: $scope.string

@@ -9,7 +9,7 @@ import {DirectoryObject, FileObject} from "@gesslar/toolkit"
 /** @type {DirectoryObject} */
 const EXAMPLES_BASE = new DirectoryObject("./examples")
 /** @type {Array<DirectoryObject>} */
-const EXAMPLES_DIRS = [EXAMPLES_BASE.getDirectory("advanced/src"), EXAMPLES_BASE.getDirectory("simple")]
+const EXAMPLES_DIRS = [EXAMPLES_BASE.getDirectory("advanced"), EXAMPLES_BASE.getDirectory("simple")]
 /** @type {DirectoryObject} */
 const EXAMPLES_OUTPUT_DIR = EXAMPLES_BASE.getDirectory(`output`)
 
@@ -38,13 +38,12 @@ function run(cmd, args, env = {}) {
  * @returns {AsyncGenerator<FileObject>} The file object.
  */
 async function* walk(dir) {
-  const {directories, files} = await dir.read()
-
-  for(const item of [...directories, ...files].flat()) {
-    if(item.isDirectory)
-      yield *walk(item)
+  const {files} = await dir.read()
+  for(const file of files) {
+    if(file.isDirectory)
+      yield *walk(file)
     else
-      yield item
+      yield file
   }
 }
 
