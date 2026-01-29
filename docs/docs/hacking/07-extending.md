@@ -3,16 +3,19 @@ sidebar_position: 7
 title: "Extending Sassy"
 ---
 
-# Extending Sassy
+import CodeBlock from "@site/src/components/CodeBlock"
 
 ## Adding Colour Functions
 
-The simplest extension point. Edit `Evaluator.js` and add a case to the `#colourFunction` switch statement:
+The simplest extension point. Edit `Evaluator.js` and add a case to the
+`#colourFunction` switch statement:
 
-```javascript
-case "saturate":
-  return Colour.saturate(args[0], args[1])
-```
+<CodeBlock lang="javascript">{`
+
+  case "saturate":
+    return Colour.saturate(args[0], args[1])
+
+`}</CodeBlock>
 
 Then implement the corresponding method in `Colour.js` using Culori's API. The function receives parsed arguments (colour values already resolved from variables) and must return a hex string.
 

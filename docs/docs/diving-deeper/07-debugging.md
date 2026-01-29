@@ -3,9 +3,11 @@ sidebar_position: 7
 title: "Debugging with Resolve"
 ---
 
-# Debugging with Resolve
+import CodeBlock from "@site/src/components/CodeBlock"
 
-When a colour doesn't look right and you're not sure why, `resolve` traces the entire computation chain from your source expression down to the final hex value.
+When a colour doesn't look right and you're not sure why, `resolve` traces the
+entire computation chain from your source expression down to the final hex
+value.
 
 ## Three Resolution Modes
 
@@ -13,67 +15,79 @@ The resolve command takes your theme file and one of three flags:
 
 ### Trace a colour property
 
-```bash
-npx @gesslar/sassy resolve ocean.yaml --color std.fg.inactive
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy resolve ocean.yaml --color std.fg.inactive
+
+`}</CodeBlock>
 
 This resolves a variable from your `vars` or `colors` sections. The output shows every step:
 
-```
-std.fg.inactive:
+<CodeBlock lang="log">{`
+  std.fg.inactive:
 
-fade($(std.fg), 60)
-   $(std.fg)
-      $(main)
-         $(colors.white)
-            → #e0e0e0
-      → #e0e0e066
+  fade($(std.fg), 60)
+    $(std.fg)
+        $(main)
+          $(colors.white)
+              → #e0e0e0
+        → #e0e0e066
 
-Resolution: #e0e0e066
-```
+  Resolution: #e0e0e066
+`}</CodeBlock>
 
 You can read it top to bottom: `std.fg.inactive` is defined as `fade($(std.fg), 60)`. That references `$(std.fg)`, which references `$(main)`, which references `$(colors.white)`, which resolves to `#e0e0e0`. Back up the chain, the fade function produces `#e0e0e066`.
 
 ### Trace a tokenColors scope
 
-```bash
-npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword
+
+`}</CodeBlock>
 
 This finds the `tokenColors` entry matching the given scope and traces its foreground value:
 
-```
-keyword (Keywords)
+<CodeBlock lang="log">{`
 
-$(scope.keyword)
-   $(accent)
-      $(colors.cyan)
-         → #4a9eff
-   → #4a9eff
+  keyword (Keywords)
 
-Resolution: #4a9eff
-```
+  $(scope.keyword)
+    $(accent)
+        $(colors.cyan)
+          → #4a9eff
+    → #4a9eff
+
+  Resolution: #4a9eff
+
+`}</CodeBlock>
 
 If multiple `tokenColors` entries match the same scope, Sassy shows a disambiguation list:
 
-```
-Multiple entries found for 'keyword', please try again with the specific query:
+<CodeBlock lang="log">{`
 
-Keywords: keyword.1
-Control Flow: keyword.2
-```
+  Multiple entries found for 'keyword', please try again with the specific query:
+
+  Keywords: keyword.1
+  Control Flow: keyword.2
+
+`}</CodeBlock>
 
 Then resolve the specific one:
 
-```bash
-npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword.1
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword.1
+
+`}</CodeBlock>
 
 ### Trace a semanticTokenColors scope
 
-```bash
-npx @gesslar/sassy resolve ocean.yaml --semanticTokenColor variable.readonly
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy resolve ocean.yaml --semanticTokenColor variable.readonly
+
+`}</CodeBlock>
 
 Works identically to `--tokenColor`, but looks in the `semanticTokenColors` section of your theme output.
 

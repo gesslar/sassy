@@ -3,39 +3,48 @@ sidebar_position: 6
 title: "Error System"
 ---
 
-# Error System
+import CodeBlock from "@site/src/components/CodeBlock"
 
-Sassy's error handling is provided by `@gesslar/toolkit` through two classes: **Sass** and **Tantrum**.
+Sassy's error handling is provided by `@gesslar/toolkit` through two classes:
+**Sass** and **Tantrum**.
 
 ## Sass
 
-An enhanced `Error` with trace context chains. Rather than relying solely on JavaScript stack traces, Sass errors accumulate domain-specific context as they propagate up through the pipeline.
+An enhanced `Error` with trace context chains. Rather than relying solely on
+JavaScript stack traces, Sass errors accumulate domain-specific context as they
+propagate up through the pipeline.
 
-```javascript
-Sass.new("Variable not found")
-  .trace("evaluating $(unknown.var)")
-  .trace("in theme.colors['editor.background']")
-  .trace("compiling ocean-theme.yaml")
-```
+<CodeBlock lang="javascript">{`
+
+  Sass.new("Variable not found")
+    .trace("evaluating $(unknown.var)")
+    .trace("in theme.colors['editor.background']")
+    .trace("compiling ocean-theme.yaml")
+
+`}</CodeBlock>
 
 ### Key Methods
 
-- **`.addTrace(message)` / `.trace(message)`** — add a context layer. Traces are stored LIFO (most recent first when reading).
+- **`.addTrace(message)` / `.trace(message)`** — add a context layer. Traces
+  are stored LIFO (most recent first when reading).
 - **`.report(nerdMode)`** — format for terminal output.
   - **Default mode**: clean multi-line trace showing domain context only.
-  - **Nerd mode** (`--nerd` flag): adds pruned JavaScript stack frames alongside domain context.
+  - **Nerd mode** (`--nerd` flag): adds pruned JavaScript stack frames
+    alongside domain context.
 
 ### Usage Pattern
 
 Errors are caught at each layer and re-wrapped with additional context:
 
-```javascript
-try {
-  // compilation work
-} catch(error) {
-  throw Sass.new(`Compiling ${theme.getName()}`, error)
-}
-```
+<CodeBlock lang="javascript">{`
+
+  try {
+      // compilation work
+    } catch(error) {
+      throw Sass.new(\`Compiling \${theme.getName()}\`, error)
+    }
+
+`}</CodeBlock>
 
 This builds a chain of context from the point of failure up to the session level.
 

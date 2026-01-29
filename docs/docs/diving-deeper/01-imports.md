@@ -3,71 +3,80 @@ sidebar_position: 1
 title: "Splitting Into Files"
 ---
 
-# Splitting Into Files
+import CodeBlock from "@site/src/components/CodeBlock"
 
-Your ocean theme works. It builds, it looks great, everything lives in one file. That's fine for a small theme, but as your design grows, a single file gets unwieldy. Let's fix that.
+Your ocean theme works. It builds, it looks great, everything lives in one
+file. That's fine for a small theme, but as your design grows, a single file
+gets unwieldy. Let's fix that.
 
 ## The Import System
 
-Sassy lets you split your theme across multiple files using `config.import`. Each import path is resolved relative to the main theme file.
+Sassy lets you split your theme across multiple files using `config.import`.
+Each import path is resolved relative to the main theme file.
 
 Here's the idea: extract your `vars` section into a shared file, and keep the main theme file focused on structure.
 
 **ocean.yaml** (trimmed down):
 
-```yaml
-config:
-  name: "Ocean"
-  type: dark
-  import:
-    - "./shared/variables.yaml"
+<CodeBlock lang="yaml">{`
 
-theme:
-  colors:
-    editor.background: $(std.bg)
-    editor.foreground: $(std.fg)
-    editorCursor.foreground: $(accent)
-    sideBar.background: $(std.bg.panel)
-    activityBar.background: $(std.bg.panel)
+  config:
+    name: "Ocean"
+    type: dark
+    import:
+      - "./shared/variables.yaml"
 
-  tokenColors:
-    - name: Comments
-      scope: comment
-      settings:
-        foreground: $(scope.comment)
-    - name: Keywords
-      scope: keyword
-      settings:
-        foreground: $(scope.keyword)
-    - name: Strings
-      scope: string
-      settings:
-        foreground: $(scope.string)
-```
+  theme:
+    colors:
+      editor.background: $(std.bg)
+      editor.foreground: $(std.fg)
+      editorCursor.foreground: $(accent)
+      sideBar.background: $(std.bg.panel)
+      activityBar.background: $(std.bg.panel)
+
+    tokenColors:
+      - name: Comments
+        scope: comment
+        settings:
+          foreground: $(scope.comment)
+      - name: Keywords
+        scope: keyword
+        settings:
+          foreground: $(scope.keyword)
+      - name: Strings
+        scope: string
+        settings:
+          foreground: $(scope.string)
+
+`}</CodeBlock>
 
 **shared/variables.yaml**:
 
-```yaml
-vars:
-  accent: "#4a9eff"
-  main: "#e0e0e0"
+<CodeBlock lang="yaml">{`
 
-  std:
-    fg: $(main)
-    bg: "#1a1a2e"
-    bg.panel: lighten($(std.bg), 15)
+  vars:
+    accent: "#4a9eff"
+    main: "#e0e0e0"
 
-  scope:
-    comment: fade($(std.fg), 60)
-    keyword: $(accent)
-    string: "#a8d8a8"
-```
+    std:
+      fg: $(main)
+      bg: "#1a1a2e"
+      bg.panel: lighten($(std.bg), 15)
+
+    scope:
+      comment: fade($(std.fg), 60)
+      keyword: $(accent)
+      string: "#a8d8a8"
+
+`}</CodeBlock>
 
 Build it the same way you always have:
 
-```bash
-npx @gesslar/sassy build ocean.yaml
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy build ocean.yaml
+
+`}</CodeBlock>
 
 The output is identical. The organisation is just better.
 
@@ -85,12 +94,14 @@ This means you can define a base set of `tokenColors` in a shared file, then add
 
 You can import multiple files:
 
-```yaml
-config:
-  import:
-    - "./shared/palette.yaml"
-    - "./shared/tokens.yaml"
-```
+<CodeBlock lang="yaml">{`
+
+  config:
+    import:
+      - "./shared/palette.yaml"
+      - "./shared/tokens.yaml"
+
+`}</CodeBlock>
 
 They are processed in order. If both files define `vars.accent`, the second file's value wins. Then the main theme file gets the final say over everything.
 
