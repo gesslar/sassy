@@ -69,7 +69,7 @@ The `settings` block supports:
 
 ## Build It
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy build ocean.yaml
 

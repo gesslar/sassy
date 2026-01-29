@@ -9,7 +9,7 @@ Sassy includes a built-in linter that catches common problems before they become
 
 ## Running the Linter
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy lint ocean.yaml
 
