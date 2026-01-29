@@ -29,6 +29,8 @@ const config = {
   onBrokenAnchors: "throw",
   onDuplicateRoutes: "throw",
 
+  trailingSlash: false,
+
   i18n: {
     defaultLocale: "en",
     locales: ["en"],
@@ -74,6 +76,9 @@ const config = {
         zIndex: 100,
       },
 
+      docs: {
+      },
+
       navbar: {
         title: "Sassy",
         hideOnScroll: false,
@@ -116,7 +121,7 @@ const config = {
       footer: {
         style: 'dark',
         links: [],
-        copyright: `🙅🏻<del>Copyright ©${new Date().getFullYear()}</del>🙅🏻<br /><a href="https://unlicense.org"/>Unlicense</a>. Built with Docusaurus.`,
+        copyright: `🙅🏻<del>Copyright ©${new Date().getFullYear()}</del>🙅🏻<br /><a href="https://unlicense.org"/>Unlicense</a>. Built with <a href="https://docusaurus.io/">Docusaurus</a>.`,
       },
       prism: {
         additionalLanguages: [

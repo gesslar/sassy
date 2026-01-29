@@ -187,9 +187,48 @@
   --ifm-spacing-vertical: 1rem;
   --ifm-spacing-horizontal: 1rem;
 
-  --red: #ff0000ee;
+  --test: #ff0000ee;
 
-  /* Navbar-specific adjustments */
+  main {
+    border-top: 1px solid rgb(from var(--ifm-color-primary-light) r g b / 25%);
+  }
+
+  .header-svg {
+    transform: translateY(0.3rem) translateX(0.25rem);
+    filter: invert(0%);
+  }
+
+  .theme-doc-sidebar-container {
+    background-color: rgb(from var(--ifm-background-surface-color) r g b / 50%);
+  }
+
+  [class*="docSidebarContainer_"] {
+    border-color: rgb(from var(--ifm-color-primary-light) r g b / 25%);
+  }
+
+  [class*="table-of-contents__left-border"] {
+    border-color: rgb(from var(--ifm-color-primary-light) r g b / 25%);
+  }
+
+  [class*="theme-code-block"] {
+    pre code {
+      border: 0.25rem solid rgb(from var(--ifm-color-primary-dark) r g b / 10%);
+    }
+  }
+
+  .pagination-nav__link--next,
+  .pagination-nav__link--prev {
+    border: 0.15rem solid rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
+
+    &:hover {
+      border-color: var(--ifm-pagination-nav-color-hover);
+    }
+  }
+
+  .footer {
+    --ifm-footer-background-color: rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
+    margin-top: auto;
+  }
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -367,9 +406,8 @@
   /* ── Spacing ── */
   --ifm-spacing-vertical: 1rem;
   --ifm-spacing-horizontal: 1rem;
-}
 
-.header-svg {
-  transform: translateY(0.3rem) translateX(0.25rem);
-  filter: invert(75%);
+  .header-svg {
+    filter: invert(75%);
+  }
 }
