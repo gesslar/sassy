@@ -44,7 +44,7 @@ references the variable `bg` — Sassy resolves it to `#1a1a2e` at build time.
 
 Run this from the same directory as your `ocean.yaml`:
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
 npx @gesslar/sassy build ocean.yaml
 

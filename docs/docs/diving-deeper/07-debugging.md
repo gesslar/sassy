@@ -15,7 +15,7 @@ The resolve command takes your theme file and one of three flags:
 
 ### Trace a colour property
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy resolve ocean.yaml --color std.fg.inactive
 
@@ -40,7 +40,7 @@ You can read it top to bottom: `std.fg.inactive` is defined as `fade($(std.fg), 
 
 ### Trace a tokenColors scope
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword
 
@@ -75,7 +75,7 @@ If multiple `tokenColors` entries match the same scope, Sassy shows a disambigua
 
 Then resolve the specific one:
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword.1
 
@@ -83,7 +83,7 @@ Then resolve the specific one:
 
 ### Trace a semanticTokenColors scope
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy resolve ocean.yaml --semanticTokenColor variable.readonly
 

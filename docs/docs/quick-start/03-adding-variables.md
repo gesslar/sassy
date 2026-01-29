@@ -76,7 +76,7 @@ Update `theme.colors` to use the semantic layer:
 
 ## Build It
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy build ocean.yaml
 

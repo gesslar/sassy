@@ -96,7 +96,7 @@ You only override what changes. The derived values cascade.
 
 Build both themes in one command:
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy build ocean.yaml sunset.yaml
 
@@ -158,7 +158,7 @@ Remember: tokenColors from imports append in order, and the main file's tokenCol
 
 During development, watch all your themes at once:
 
-<CodeBlock lange="shell">{`
+<CodeBlock lang="shell"shell">{`
 
   npx @gesslar/sassy build --watch ocean.yaml sunset.yaml
 
