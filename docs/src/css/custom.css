@@ -1,0 +1,369 @@
+@import "https: //fonts.googleapis.com/css2?family=Material+Symbols+Outlined?icon_names=search";
+
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  /* ── Semantic colours ── */
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
+
+  --ifm-color-secondary: #ebedf0;
+  --ifm-color-success: #00a400;
+  --ifm-color-info: #54c7ec;
+  --ifm-color-warning: #ffba00;
+  --ifm-color-danger: #fa3e3e;
+
+  --ifm-color-white: #fff;
+  --ifm-color-black: #000;
+
+  /* ── Gray scale ── */
+  --ifm-color-gray-0: #fff;
+  --ifm-color-gray-100: #f5f6f7;
+  --ifm-color-gray-200: #ebedf0;
+  --ifm-color-gray-300: #dadde1;
+  --ifm-color-gray-400: #ccd0d5;
+  --ifm-color-gray-500: #bec3c9;
+  --ifm-color-gray-600: #8d949e;
+  --ifm-color-gray-700: #606770;
+  --ifm-color-gray-800: #444950;
+  --ifm-color-gray-900: #1c1e21;
+  --ifm-color-gray-1000: #000;
+
+  /* ── Emphasis scale ── */
+  --ifm-color-emphasis-0: var(--ifm-color-gray-0);
+  --ifm-color-emphasis-100: var(--ifm-color-gray-100);
+  --ifm-color-emphasis-200: var(--ifm-color-gray-200);
+  --ifm-color-emphasis-300: var(--ifm-color-gray-300);
+  --ifm-color-emphasis-400: var(--ifm-color-gray-400);
+  --ifm-color-emphasis-500: var(--ifm-color-gray-500);
+  --ifm-color-emphasis-600: var(--ifm-color-gray-600);
+  --ifm-color-emphasis-700: var(--ifm-color-gray-700);
+  --ifm-color-emphasis-800: var(--ifm-color-gray-800);
+  --ifm-color-emphasis-900: var(--ifm-color-gray-900);
+  --ifm-color-emphasis-1000: var(--ifm-color-gray-1000);
+
+  /* ── Content colours ── */
+  --ifm-color-content: var(--ifm-color-emphasis-900);
+  --ifm-color-content-secondary: rgba(0, 0, 0, 0.68);
+  --ifm-color-content-inverse: var(--ifm-color-emphasis-1000);
+
+  /* ── Background ── */
+  --ifm-background-color: #fff;
+  --ifm-background-surface-color: #fff;
+
+  /* ── Font colours ── */
+  --ifm-font-color-base: var(--ifm-color-content);
+  --ifm-font-color-secondary: var(--ifm-color-content-secondary);
+  --ifm-font-color-base-inverse: var(--ifm-color-content-inverse);
+
+  /* ── Links ── */
+  --ifm-link-color: var(--ifm-color-primary);
+  --ifm-link-hover-color: var(--ifm-link-color);
+
+  /* ── Hover / HR ── */
+  --ifm-hover-overlay: rgba(0, 0, 0, 0.05);
+  --ifm-hr-background-color: var(--ifm-color-gray-500);
+
+  /* ── Blockquote ── */
+  --ifm-blockquote-color: var(--ifm-color-emphasis-800);
+  --ifm-blockquote-border-color: var(--ifm-color-emphasis-300);
+  --ifm-blockquote-font-size: 100%;
+
+  /* ── Alert ── */
+  --ifm-alert-background-color: inherit;
+  --ifm-alert-border-color: inherit;
+  --ifm-alert-color: var(--ifm-font-color-base);
+  --ifm-alert-padding-vertical: 1rem;
+  --ifm-alert-padding-horizontal: 1rem;
+
+  /* ── Badge ── */
+  --ifm-badge-background-color: inherit;
+  --ifm-badge-border-color: inherit;
+  --ifm-badge-color: var(--ifm-color-white);
+  --ifm-badge-padding-vertical: 0.25rem;
+  --ifm-badge-padding-horizontal: 0.5rem;
+
+  /* ── Breadcrumb ── */
+  --ifm-breadcrumb-color-active: var(--ifm-color-primary);
+  --ifm-breadcrumb-item-background-active: var(--ifm-hover-overlay);
+
+  /* ── Button ── */
+  --ifm-button-background-color: inherit;
+  --ifm-button-border-color: var(--ifm-button-background-color);
+  --ifm-button-color: var(--ifm-font-color-base-inverse);
+  --ifm-button-font-weight: 700;
+
+  /* ── Card ── */
+  --ifm-card-background-color: var(--ifm-background-surface-color);
+  --ifm-card-vertical-spacing: 1rem;
+  --ifm-card-horizontal-spacing: 1rem;
+
+  /* ── Dropdown ── */
+  --ifm-dropdown-link-color: var(--ifm-font-color-base);
+  --ifm-dropdown-hover-background-color: var(--ifm-hover-overlay);
+  --ifm-dropdown-font-weight: 500;
+
+  /* ── Footer ── */
+  --ifm-footer-background-color: #303846;
+  --ifm-footer-color: inherit;
+  --ifm-footer-link-color: var(--ifm-color-secondary);
+  --ifm-footer-link-hover-color: var(--ifm-color-primary);
+  --ifm-footer-title-color: var(--ifm-color-white);
+  --ifm-footer-padding-vertical: 2rem;
+
+  /* ── Hero ── */
+  --ifm-hero-background-color: var(--ifm-background-surface-color);
+  --ifm-hero-text-color: var(--ifm-color-emphasis-800);
+
+  /* ── Menu / Sidebar ── */
+  --ifm-menu-color: var(--ifm-color-emphasis-700);
+  --ifm-menu-color-active: var(--ifm-color-primary);
+  --ifm-menu-color-background-active: var(--ifm-hover-overlay);
+  --ifm-menu-color-background-hover: var(--ifm-hover-overlay);
+
+  /* ── Navbar ── */
+  --ifm-navbar-background-color: var(--ifm-background-surface-color);
+  --ifm-navbar-link-color: var(--ifm-font-color-base);
+  --ifm-navbar-link-hover-color: var(--ifm-color-primary);
+  --ifm-navbar-link-active-color: var(--ifm-link-color);
+  --ifm-navbar-search-input-background-color: var(--ifm-color-emphasis-200);
+  --ifm-navbar-search-input-color: var(--ifm-color-emphasis-800);
+  --ifm-navbar-search-input-placeholder-color: var(--ifm-color-emphasis-500);
+  --ifm-navbar-padding-vertical: 0.5rem;
+  --ifm-navbar-padding-horizontal: 1rem;
+
+  /* ── Pagination ── */
+  --ifm-pagination-color-active: var(--ifm-color-primary);
+  --ifm-pagination-padding-vertical: 0.25rem;
+  --ifm-pagination-padding-horizontal: 1rem;
+
+  /* ── Pills ── */
+  --ifm-pills-color-active: var(--ifm-color-primary);
+  --ifm-pills-color-background-active: var(--ifm-hover-overlay);
+
+  /* ── TOC ── */
+  --ifm-toc-border-color: var(--ifm-color-emphasis-300);
+  --ifm-toc-link-color: var(--ifm-color-content-secondary);
+
+  /* ── Tabs ── */
+  --ifm-tabs-color: var(--ifm-color-secondary);
+  --ifm-tabs-color-active: var(--ifm-color-primary);
+  --ifm-tabs-color-active-border: var(--ifm-tabs-color-active);
+
+  /* ── Code / Pre ── */
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  /* ── Headings ── */
+  --ifm-heading-color: inherit;
+  --ifm-heading-font-weight: 700;
+  --ifm-heading-margin-bottom: 1rem;
+
+  /* ── Tables ── */
+  --ifm-table-background: transparent;
+  --ifm-table-stripe-background: rgba(0, 0, 0, 0.03);
+
+  /* ── Typography ── */
+  --ifm-font-weight-base: 400;
+  --ifm-leading: 1.25rem;
+  --ifm-paragraph-margin-bottom: 1.25rem;
+
+  /* ── Spacing ── */
+  --ifm-spacing-vertical: 1rem;
+  --ifm-spacing-horizontal: 1rem;
+
+  --red: #ff0000ee;
+
+  /* Navbar-specific adjustments */
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  /* ── Semantic colours ── */
+  --ifm-color-primary: #1ca1a3;
+  --ifm-color-primary-dark: #007284;
+  --ifm-color-primary-darker: #0e4d48;
+  --ifm-color-primary-darkest: #091712;
+  --ifm-color-primary-light: #1ca1a3;
+  --ifm-color-primary-lighter: #4bc2b3;
+  --ifm-color-primary-lightest: #8fe0cb;
+
+  --ifm-color-secondary: #ebedf0;
+  --ifm-color-success: #00a400;
+  --ifm-color-info: #54c7ec;
+  --ifm-color-warning: #ffba00;
+  --ifm-color-danger: #fa3e3e;
+
+  --ifm-color-white: #ffffff;
+  --ifm-color-black: #000000;
+
+  /* ── Gray scale ── */
+  --ifm-color-gray-0: #fff;
+  --ifm-color-gray-100: #f5f6f7;
+  --ifm-color-gray-200: #ebedf0;
+  --ifm-color-gray-300: #dadde1;
+  --ifm-color-gray-400: #ccd0d5;
+  --ifm-color-gray-500: #bec3c9;
+  --ifm-color-gray-600: #8d949e;
+  --ifm-color-gray-700: #606770;
+  --ifm-color-gray-800: #444950;
+  --ifm-color-gray-900: #1c1e21;
+  --ifm-color-gray-1000: #000;
+
+  /* ── Emphasis scale ── */
+  --ifm-color-emphasis-0: var(--ifm-color-gray-1000);
+  --ifm-color-emphasis-100: var(--ifm-color-gray-900);
+  --ifm-color-emphasis-200: var(--ifm-color-gray-800);
+  --ifm-color-emphasis-300: var(--ifm-color-gray-700);
+  --ifm-color-emphasis-400: var(--ifm-color-gray-600);
+  --ifm-color-emphasis-500: var(--ifm-color-gray-500);
+  --ifm-color-emphasis-600: var(--ifm-color-gray-400);
+  --ifm-color-emphasis-700: var(--ifm-color-gray-300);
+  --ifm-color-emphasis-800: var(--ifm-color-gray-200);
+  --ifm-color-emphasis-900: var(--ifm-color-gray-100);
+  --ifm-color-emphasis-1000: var(--ifm-color-gray-0);
+
+  /* ── Content colours ── */
+  --ifm-color-content: #d1d1d1;
+  --ifm-color-content-secondary: #e1e1e1;
+  --ifm-color-content-inverse: var(--ifm-color-emphasis-0);
+
+  /* ── Background ── */
+  --ifm-background-color: oklch(0.2046 0 0);
+  --ifm-background-surface-color: oklch(0.1638 0 0);
+
+  /* ── Font colours ── */
+  --ifm-font-color-base: var(--ifm-color-content);
+  --ifm-font-color-secondary: var(--ifm-color-content-secondary);
+  --ifm-font-color-base-inverse: var(--ifm-color-content-inverse);
+
+  /* ── Links ── */
+  --ifm-link-color: var(--ifm-color-primary);
+  --ifm-link-hover-color: var(--ifm-link-color);
+
+  /* ── Hover / HR ── */
+  --ifm-hover-overlay: rgb(from var(--ifm-color-primary-lightest) r g b / 10%);
+  --ifm-hr-background-color: var(--ifm-color-primary-darker);
+
+  /* ── Blockquote ── */
+  --ifm-blockquote-color: var(--ifm-color-emphasis-800);
+  --ifm-blockquote-border-color: var(--ifm-color-emphasis-300);
+  --ifm-blockquote-font-size: 100%;
+
+  /* ── Alert ── */
+  --ifm-alert-background-color: inherit;
+  --ifm-alert-border-color: inherit;
+  --ifm-alert-color: var(--ifm-font-color-base);
+  --ifm-alert-padding-vertical: 1rem;
+  --ifm-alert-padding-horizontal: 1rem;
+
+  /* ── Badge ── */
+  --ifm-badge-background-color: inherit;
+  --ifm-badge-border-color: inherit;
+  --ifm-badge-color: var(--ifm-color-white);
+  --ifm-badge-padding-vertical: 0.25rem;
+  --ifm-badge-padding-horizontal: 0.5rem;
+
+  /* ── Breadcrumb ── */
+  --ifm-breadcrumb-color-active: var(--ifm-color-primary);
+  --ifm-breadcrumb-item-background-active: var(--ifm-hover-overlay);
+
+  /* ── Button ── */
+  --ifm-button-background-color: inherit;
+  --ifm-button-border-color: var(--ifm-button-background-color);
+  --ifm-button-color: var(--ifm-font-color-base-inverse);
+  --ifm-button-font-weight: 700;
+
+  /* ── Card ── */
+  --ifm-card-background-color: var(--ifm-background-surface-color);
+  --ifm-card-vertical-spacing: 1rem;
+  --ifm-card-horizontal-spacing: 1rem;
+
+  /* ── Dropdown ── */
+  --ifm-dropdown-link-color: var(--ifm-font-color-base);
+  --ifm-dropdown-hover-background-color: var(--ifm-hover-overlay);
+  --ifm-dropdown-font-weight: 500;
+
+  /* ── Footer ── */
+  --ifm-footer-background-color: #303846;
+  --ifm-footer-color: inherit;
+  --ifm-footer-link-color: var(--ifm-color-secondary);
+  --ifm-footer-link-hover-color: var(--ifm-color-primary);
+  --ifm-footer-title-color: var(--ifm-color-white);
+  --ifm-footer-padding-vertical: 2rem;
+
+  /* ── Hero ── */
+  --ifm-hero-background-color: var(--ifm-background-surface-color);
+  --ifm-hero-text-color: var(--ifm-color-emphasis-800);
+
+  /* ── Menu / Sidebar ── */
+  --ifm-menu-color: var(--ifm-color-emphasis-700);
+  --ifm-menu-color-active: var(--ifm-color-primary);
+  --ifm-menu-color-background-active: var(--ifm-hover-overlay);
+  --ifm-menu-color-background-hover: var(--ifm-hover-overlay);
+
+  /* ── Navbar ── */
+  --ifm-navbar-background-color: var(--ifm-background-surface-color);
+  --ifm-navbar-link-color: var(--ifm-font-color-base);
+  --ifm-navbar-link-hover-color: var(--ifm-color-primary);
+  --ifm-navbar-link-active-color: var(--ifm-link-color);
+  --ifm-navbar-search-input-background-color: var(--ifm-color-emphasis-200);
+  --ifm-navbar-search-input-color: var(--ifm-color-emphasis-800);
+  --ifm-navbar-search-input-placeholder-color: var(--ifm-color-emphasis-500);
+  --ifm-navbar-padding-vertical: 0.5rem;
+  --ifm-navbar-padding-horizontal: 1rem;
+
+  /* ── Pagination ── */
+  --ifm-pagination-color-active: var(--ifm-color-primary);
+  --ifm-pagination-padding-vertical: 0.25rem;
+  --ifm-pagination-padding-horizontal: 1rem;
+
+  /* ── Pills ── */
+  --ifm-pills-color-active: var(--ifm-color-primary);
+  --ifm-pills-color-background-active: var(--ifm-hover-overlay);
+
+  /* ── TOC ── */
+  --ifm-toc-border-color: var(--ifm-color-emphasis-300);
+  --ifm-toc-link-color: var(--ifm-color-content-secondary);
+
+  /* ── Tabs ── */
+  --ifm-tabs-color: var(--ifm-color-secondary);
+  --ifm-tabs-color-active: var(--ifm-color-primary);
+  --ifm-tabs-color-active-border: var(--ifm-tabs-color-active);
+
+  /* ── Code / Pre ── */
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  /* ── Headings ── */
+  --ifm-heading-color: inherit;
+  --ifm-heading-font-weight: 700;
+  --ifm-heading-margin-bottom: 1rem;
+
+  /* ── Tables ── */
+  --ifm-table-background: transparent;
+  --ifm-table-stripe-background: #ffffff12;
+
+  /* ── Typography ── */
+  --ifm-font-weight-base: 400;
+  --ifm-leading: 1.25rem;
+  --ifm-paragraph-margin-bottom: 1.25rem;
+
+  /* ── Spacing ── */
+  --ifm-spacing-vertical: 1rem;
+  --ifm-spacing-horizontal: 1rem;
+}
+
+.header-svg {
+  transform: translateY(0.3rem) translateX(0.25rem);
+  filter: invert(75%);
+}

@@ -1,0 +1,55 @@
+name: Deploy Docs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm --dir docs install --frozen-lockfile
+
+      - name: Build Docusaurus
+        run: pnpm --dir docs build
+        env:
+          NODE_ENV: production
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known hosts
+        env:
+          SFTP_SERVER: ${{ secrets.SFTP_SERVER }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$SFTP_SERVER" >> ~/.ssh/known_hosts
+
+      - name: Install rsync
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
+
+      - name: Rsync deploy
+        env:
+          SFTP_SERVER: ${{ secrets.SFTP_SERVER }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_TARGET_DIR: ${{ secrets.SFTP_TARGET_DIR }}
+        run: |
+          rsync -avz --delete -e "ssh" docs/build/ "$SFTP_USERNAME@$SFTP_SERVER:$SFTP_TARGET_DIR"

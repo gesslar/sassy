@@ -1,0 +1,318 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+/* ── Hero ── */
+
+.heroBanner {
+  padding: 5rem 0 3rem;
+  text-align: center;
+  position: sticky;
+  top: var(--ifm-navbar-height);
+  z-index: 10;
+  overflow: hidden;
+  transition: padding 0.35s ease, box-shadow 0.35s ease;
+}
+
+.heroBannerShrunk {
+  padding: 1.2rem 0 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.heroInner {
+  transition: gap 0.35s ease;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  transition: font-size 0.35s ease, margin-bottom 0.35s ease;
+}
+
+.heroBannerShrunk .heroTitle {
+  font-size: 2.2rem;
+  margin-bottom: 0.1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.4rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+  transition: font-size 0.35s ease, margin-bottom 0.35s ease;
+}
+
+.heroSubtitleShrunk {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Collapsible section (tagline paragraph) */
+.heroCollapsible {
+  max-height: 200px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+.heroCollapsibleHidden {
+  max-height: 0;
+  opacity: 0;
+}
+
+.heroTagline {
+  font-size: 1.05rem;
+  opacity: 0.7;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  transition: margin-bottom 0.35s ease;
+}
+
+.buttonsShrunk {
+  margin-bottom: 0.6rem;
+}
+
+.buttonsShrunk :global(.button--lg) {
+  padding: 0.4rem 1.2rem;
+  font-size: 0.9rem;
+}
+
+.buttonOutline {
+  border-color: var(--ifm-color-white);
+  color: var(--ifm-color-white);
+}
+
+.buttonOutline:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--ifm-color-white);
+}
+
+.install {
+  opacity: 0.7;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: font-size 0.35s ease;
+}
+
+.installShrunk {
+  font-size: 0.8rem;
+}
+
+.install code {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.copyButton {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--ifm-color-white);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.copyButton:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .heroBannerShrunk {
+    padding: 1rem 1.5rem 0.8rem;
+  }
+
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+
+  .heroBannerShrunk .heroTitle {
+    font-size: 1.8rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.15rem;
+  }
+
+  .heroSubtitleShrunk {
+    font-size: 0.9rem;
+  }
+}
+
+/* ── Scroll reveal ── */
+
+.revealSection {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Section titles ── */
+
+.sectionTitle {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  font-size: 2rem;
+}
+
+/* ── Before / After ── */
+
+.beforeAfter {
+  padding: 4rem 0;
+}
+
+.codeComparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.codeBlock {
+  min-width: 0;
+}
+
+.codeLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  opacity: 0.6;
+}
+
+@media screen and (max-width: 768px) {
+  .codeComparison {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Features ── */
+
+.features {
+  padding: 4rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.feature {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.featureIcon {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.75rem;
+  opacity: 0.8;
+}
+
+.featureTitle {
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.featureDescription {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 768px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ── Audiences ── */
+
+.audiences {
+  padding: 4rem 0;
+}
+
+.audienceGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.audienceCard {
+  display: block;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-toc-border-color);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.audienceCard:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  color: inherit;
+}
+
+.audienceCard h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-color-primary);
+}
+
+.audienceCard p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .audienceGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .audienceGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -51,6 +51,9 @@
     "submit": "pnpm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
     "examples": "node ./examples/validator.js",
     "update": "pnpm self-update && pnpx npm-check-updates -u && pnpm install",
+    "docs:dev": "pnpm --dir docs start",
+    "docs:build": "pnpm --dir docs build",
+    "docs:deploy": "gh workflow run deploy-docs.yml",
     "pr": "gt submit -p --ai",
     "patch": "pnpm version patch",
     "minor": "pnpm version minor",
@@ -71,6 +74,7 @@
     "yaml": "^2.8.2"
   },
   "devDependencies": {
+    "@docusaurus/eslint-plugin": "^3.9.2",
     "@gesslar/uglier": "^1.2.0",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
