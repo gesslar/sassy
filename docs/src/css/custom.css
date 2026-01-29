@@ -1,4 +1,4 @@
-@import "https: //fonts.googleapis.com/css2?family=Material+Symbols+Outlined?icon_names=search";
+@import url('https://fonts.googleapis.com/css2?family=Victor+Mono:wght@300..700&family=Noto+Sans:wght@300..700&display=swap');
 
 /**
  * Any CSS included here will be global. The classic template
@@ -8,6 +8,11 @@
 
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: "Noto Sans";
+  --ifm-heading-font-family: "Noto Sans Thin";
+
+  --ifm-font-family-monospace: "Victor Mono";
+
   /* ── Semantic colours ── */
   --ifm-color-primary: #b03f9f;
   --ifm-color-primary-dark: #8a2a7e;
