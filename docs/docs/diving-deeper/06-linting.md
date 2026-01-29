@@ -21,7 +21,7 @@ The linter compiles your theme (including all imports) and then analyses the res
 
 ### 1. Duplicate Scopes (warning)
 
-The same TextMate scope appearing in more than one `tokenColors` entry. VS Code uses the last matching rule, so earlier entries are silently ignored.
+The same TextMate scope appearing in more than one `tokenColors` entry. VS Code uses the first matching rule, so later entries with the same scope are dead code.
 
 <CodeBlock lang="log">{`
 ● Scope 'keyword' is duplicated in 'Keywords', 'Control Flow'
@@ -55,7 +55,7 @@ Not a bug, but it's clutter. If you're maintaining a shared design system, unuse
 
 ### 4. Precedence Issues (warning)
 
-A broad TextMate scope appearing before a more specific one. Because VS Code processes tokenColors top-to-bottom with last-match-wins behaviour, a broad scope listed _after_ a specific one can mask it. But when a broad scope is in the _same rule_ as a specific one, it's a lower-severity note about redundancy.
+A broad TextMate scope appearing before a more specific one. VS Code evaluates `tokenColors` rules top-to-bottom and stops at the first match, so a broad scope listed _before_ a specific one will match first and mask it. When both scopes are in the _same rule_, it's a lower-severity note about redundancy.
 
 <CodeBlock lang="log">{`
 

@@ -152,7 +152,7 @@ Then both themes import it:
 
 `}</CodeBlock>
 
-Remember: tokenColors from imports append in order, and the main file's tokenColors come last. This lets you add theme-specific overrides after the shared rules.
+Remember: tokenColors from imports appear first in the output, and the main file's tokenColors come last. Since VS Code uses first-match semantics, the imported rules take precedence and the main file's entries act as fallbacks for scopes not already covered.
 
 ## Watch Mode with Multiple Themes
 

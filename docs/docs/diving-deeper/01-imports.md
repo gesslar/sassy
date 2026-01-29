@@ -86,9 +86,9 @@ When Sassy processes imports, it follows two rules:
 
 1. **Objects deep-merge.** If both the imported file and the main file define `vars.std.bg`, the main file's value wins. Later values override earlier ones at every nesting level.
 
-2. **Arrays append.** If both files define `tokenColors`, the imported entries come first, followed by the main file's entries. Nothing gets replaced -- both sets appear in the output.
+2. **Arrays append.** If both files define `tokenColors`, the imported entries come first, followed by the main file's entries. Nothing gets replaced -- both sets appear in the output. Applying these as fallbacks to whatever is missing or not covered by the imports.
 
-This means you can define a base set of `tokenColors` in a shared file, then add theme-specific rules in the main file. They all end up in the final output, in order.
+This means you can define a base set of `tokenColors` in a shared file, then add theme-specific rules in the main file. They all end up in the final output, in order, with the first matching rule winning.
 
 ## Import Order Matters
 
