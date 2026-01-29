@@ -3,56 +3,26 @@ sidebar_position: 2
 title: "Your First Theme"
 ---
 
-import Tabs from "@theme/Tabs"
-import TabItem from "@theme/TabItem"
+import CodeBlock from "@site/src/components/CodeBlock"
 
 Let's get something on screen. Create a file called `ocean.yaml` and add the following:
 
-<Tabs groupId="json5-yaml">
-  <TabItem value="json5" label="JSON5" default>
+<CodeBlock lang="yaml">{`
 
-```json
-{
-  config: {
-    name: "Ocean",
-    type: "dark",
-  },
+  config:
+    name: "Ocean"
+    type: dark
 
-  vars: {
-    bg: "#1a1a2e",
-    fg: "#e6e6e6",
-  },
+  vars:
+    bg: "#1a1a2e"
+    fg: "#e6e6e6"
 
-  theme: {
-    colors: {
-      "editor.background": "$(bg)",
-      "editor.foreground": "$(fg)",
-    },
-  },
-}
-```
+  theme:
+    colors:
+      editor.background: $(bg)
+      editor.foreground: $(fg)
 
-  </TabItem>
-  <TabItem value="yaml" label="YAML">
-
-```yaml
-config:
-  name: "Ocean"
-  type: dark
-
-vars:
-  bg: "#1a1a2e"
-  fg: "#e6e6e6"
-
-theme:
-  colors:
-    editor.background: $(bg)
-    editor.foreground: $(fg)
-
-```
-
-  </TabItem>
-</Tabs>
+`}</CodeBlock>
 
 That's a valid Sassy theme. Let's break it down.
 
@@ -66,7 +36,7 @@ That's a valid Sassy theme. Let's break it down.
 
 **`vars`** is where you define variables. Here we have two: `bg` and `fg`.
 These are just names pointing to hex colours.
-
+****
 **`theme.colors`** maps VS Code UI properties to values. The `$(bg)` syntax
 references the variable `bg` — Sassy resolves it to `#1a1a2e` at build time.
 
@@ -74,23 +44,29 @@ references the variable `bg` — Sassy resolves it to `#1a1a2e` at build time.
 
 Run this from the same directory as your `ocean.yaml`:
 
-```bash
+<CodeBlock lange="shell">{`
+
 npx @gesslar/sassy build ocean.yaml
-```
+
+`}
+</CodeBlock>
 
 Sassy creates `ocean.color-theme.json` alongside your source file. Open it up:
 
-```json
-{
-  "name": "Ocean",
-  "type": "dark",
-  "colors": {
-    "editor.background": "#1a1a2e",
-    "editor.foreground": "#e6e6e6"
-  },
-  "tokenColors": []
-}
-```
+<CodeBlock lang="json">
+{`
+
+  {
+    "name": "Ocean",
+    "type": "dark",
+    "colors": {
+      "editor.background": "#1a1a2e",
+      "editor.foreground": "#e6e6e6"
+    },
+    "tokenColors": []
+  }
+`}
+</CodeBlock>
 
 Variables resolved, standard VS Code format. Two colours isn't much of a theme
 yet, but the pipeline works. Next, we'll build a proper palette.

@@ -3,7 +3,7 @@ sidebar_position: 2
 title: "Building a Design System"
 ---
 
-# Building a Design System
+import CodeBlock from "@site/src/components/CodeBlock"
 
 You've split your theme into files. Now let's make that shared variables file actually worth sharing. The goal: a layered system where raw palette colours feed into semantic tokens, and semantic tokens feed into your theme.
 
@@ -19,48 +19,50 @@ Here's what that looks like in practice:
 
 **shared/variables.yaml**:
 
-```yaml
-vars:
-  colors:
-    blue: "#2d5a87"
-    cyan: "#4a9eff"
-    gray: "#808080"
-    white: "#e0e0e0"
-    red: "#e74c3c"
-    green: "#a8d8a8"
-    yellow: "#f0c674"
+<CodeBlock lang="yaml">{`
 
-  # Semantic tokens -- what colours mean
-  accent: $(colors.cyan)
-  main: $(colors.white)
+  vars:
+    colors:
+      blue: "#2d5a87"
+      cyan: "#4a9eff"
+      gray: "#808080"
+      white: "#e0e0e0"
+      red: "#e74c3c"
+      green: "#a8d8a8"
+      yellow: "#f0c674"
 
-  std:
-    fg: $(main)
-    fg.accent: $(accent)
-    fg.inactive: fade($(std.fg), 60)
-    fg.muted: fade($(std.fg), 40)
-    bg: "#1a1a2e"
-    bg.accent: darken($(accent), 70)
-    bg.panel: lighten($(std.bg), 15)
-    bg.panel.inner: lighten($(std.bg.panel), 10)
-    outline: fade($(accent), 30)
-    shadow: fade($(std.bg), 80)
+    # Semantic tokens -- what colours mean
+    accent: $(colors.cyan)
+    main: $(colors.white)
 
-  status:
-    error: $(colors.red)
-    warning: $(colors.yellow)
-    success: $(colors.green)
-    info: $(colors.cyan)
+    std:
+      fg: $(main)
+      fg.accent: $(accent)
+      fg.inactive: fade($(std.fg), 60)
+      fg.muted: fade($(std.fg), 40)
+      bg: "#1a1a2e"
+      bg.accent: darken($(accent), 70)
+      bg.panel: lighten($(std.bg), 15)
+      bg.panel.inner: lighten($(std.bg.panel), 10)
+      outline: fade($(accent), 30)
+      shadow: fade($(std.bg), 80)
 
-  # Scope mappings -- syntax concepts to colours
-  scope:
-    comment: $(std.fg.inactive)
-    keyword: $(accent)
-    string: $(colors.green)
-    number: $(colors.yellow)
-    function: $(colors.cyan)
-    type: $(colors.blue)
-```
+    status:
+      error: $(colors.red)
+      warning: $(colors.yellow)
+      success: $(colors.green)
+      info: $(colors.cyan)
+
+    # Scope mappings -- syntax concepts to colours
+    scope:
+      comment: $(std.fg.inactive)
+      keyword: $(accent)
+      string: $(colors.green)
+      number: $(colors.yellow)
+      function: $(colors.cyan)
+      type: $(colors.blue)
+
+`}</CodeBlock>
 
 ## Why This Structure Matters
 
@@ -74,54 +76,55 @@ This is the parametric design philosophy: **meaning over hex codes**. You descri
 
 Your main theme file stays clean:
 
-```yaml
-config:
-  name: "Ocean"
-  type: dark
-  import:
-    - "./shared/variables.yaml"
+<CodeBlock lang="yaml">{`
 
-theme:
-  colors:
-    editor.background: $(std.bg)
-    editor.foreground: $(std.fg)
-    editorCursor.foreground: $(std.fg.accent)
-    sideBar.background: $(std.bg.panel)
-    sideBarSectionHeader.background: $(std.bg.panel.inner)
-    activityBar.background: $(std.bg.panel)
-    focusBorder: $(std.outline)
-    widget.shadow: $(std.shadow)
+  config:
+    name: "Ocean"
+    type: dark
+    import:
+      - "./shared/variables.yaml"
 
-    editorError.foreground: $(status.error)
-    editorWarning.foreground: $(status.warning)
-    editorInfo.foreground: $(status.info)
+  theme:
+    colors:
+      editor.background: $(std.bg)
+      editor.foreground: $(std.fg)
+      editorCursor.foreground: $(std.fg.accent)
+      sideBar.background: $(std.bg.panel)
+      sideBarSectionHeader.background: $(std.bg.panel.inner)
+      activityBar.background: $(std.bg.panel)
+      focusBorder: $(std.outline)
+      widget.shadow: $(std.shadow)
 
-  tokenColors:
-    - name: Comments
-      scope: comment
-      settings:
-        foreground: $(scope.comment)
-    - name: Keywords
-      scope: keyword
-      settings:
-        foreground: $(scope.keyword)
-    - name: Strings
-      scope: string
-      settings:
-        foreground: $(scope.string)
-    - name: Numbers
-      scope: constant.numeric
-      settings:
-        foreground: $(scope.number)
-    - name: Functions
-      scope: entity.name.function
-      settings:
-        foreground: $(scope.function)
-    - name: Types
-      scope: entity.name.type
-      settings:
-        foreground: $(scope.type)
-```
+      editorError.foreground: $(status.error)
+      editorWarning.foreground: $(status.warning)
+      editorInfo.foreground: $(status.info)
+
+    tokenColors:
+      - name: Comments
+        scope: comment
+        settings:
+          foreground: $(scope.comment)
+      - name: Keywords
+        scope: keyword
+        settings:
+          foreground: $(scope.keyword)
+      - name: Strings
+        scope: string
+        settings:
+          foreground: $(scope.string)
+      - name: Numbers
+        scope: constant.numeric
+        settings:
+          foreground: $(scope.number)
+      - name: Functions
+        scope: entity.name.function
+        settings:
+          foreground: $(scope.function)
+      - name: Types
+        scope: entity.name.type
+        settings:
+          foreground: $(scope.type)
+`}</CodeBlock>
 
 Every colour in the theme traces back to a named concept. Read it and you know exactly what each value _means_.
 

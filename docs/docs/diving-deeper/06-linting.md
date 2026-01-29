@@ -3,15 +3,17 @@ sidebar_position: 6
 title: "Linting Your Theme"
 ---
 
-# Linting Your Theme
+import CodeBlock from "@site/src/components/CodeBlock"
 
 Sassy includes a built-in linter that catches common problems before they become mysterious visual bugs in VS Code.
 
 ## Running the Linter
 
-```bash
-npx @gesslar/sassy lint ocean.yaml
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy lint ocean.yaml
+
+`}</CodeBlock>
 
 The linter compiles your theme (including all imports) and then analyses the result for issues.
 
@@ -21,9 +23,9 @@ The linter compiles your theme (including all imports) and then analyses the res
 
 The same TextMate scope appearing in more than one `tokenColors` entry. VS Code uses the last matching rule, so earlier entries are silently ignored.
 
-```
+<CodeBlock lang="log">{`
 ● Scope 'keyword' is duplicated in 'Keywords', 'Control Flow'
-```
+`}</CodeBlock>
 
 This usually means you have two rules that should be consolidated, or one should use a more specific scope like `keyword.control`.
 
@@ -31,9 +33,11 @@ This usually means you have two rules that should be consolidated, or one should
 
 Referencing a variable that doesn't exist in your `vars` section or any imported file.
 
-```
-● Variable '$(scope.operator)' is used but not defined in 'Operators' (foreground property)
-```
+<CodeBlock lang="log">{`
+
+  ● Variable '$(scope.operator)' is used but not defined in 'Operators' (foreground property)
+
+`}</CodeBlock>
 
 This is the most critical issue -- it means a value in your output will be a literal string like `$(scope.operator)` instead of a colour, and VS Code will ignore it.
 
@@ -41,9 +45,11 @@ This is the most critical issue -- it means a value in your output will be a lit
 
 Variables defined in `vars` but never referenced anywhere in `colors`, `tokenColors`, or `semanticTokenColors`.
 
-```
-● Variable '$scope.operator' is defined in './shared/variables.yaml', but is never used
-```
+<CodeBlock lang="log">{`
+
+  ● Variable '$scope.operator' is defined in './shared/variables.yaml', but is never used
+
+`}</CodeBlock>
 
 Not a bug, but it's clutter. If you're maintaining a shared design system, unused variables might indicate a scope mapping that lost its consumer.
 
@@ -51,13 +57,17 @@ Not a bug, but it's clutter. If you're maintaining a shared design system, unuse
 
 A broad TextMate scope appearing before a more specific one. Because VS Code processes tokenColors top-to-bottom with last-match-wins behaviour, a broad scope listed _after_ a specific one can mask it. But when a broad scope is in the _same rule_ as a specific one, it's a lower-severity note about redundancy.
 
-```
-● Scope 'keyword' in 'Base Syntax' masks more specific 'keyword.control' in 'Control Flow'
-```
+<CodeBlock lang="log">{`
 
-```
-● Scope 'entity.name' makes more specific 'entity.name.function' redundant in 'Entities'
-```
+  ● Scope 'keyword' in 'Base Syntax' masks more specific 'keyword.control' in 'Control Flow'
+
+`}</CodeBlock>
+
+<CodeBlock lang="log">{`
+
+  ● Scope 'entity.name' makes more specific 'entity.name.function' redundant in 'Entities'
+
+`}</CodeBlock>
 
 The linter checks proper TextMate scope hierarchy -- `keyword` is broader than `keyword.control` because every `keyword.control` scope also matches `keyword`.
 
@@ -65,15 +75,19 @@ The linter checks proper TextMate scope hierarchy -- `keyword` is broader than `
 
 Issues are sorted by severity: errors first, then warnings, then info. The summary at the end gives you counts:
 
-```
-2 errors, 3 warnings, 1 info
-```
+<CodeBlock lang="log">{`
+
+  2 errors, 3 warnings, 1 info
+
+`}</CodeBlock>
 
 A clean theme produces:
 
-```
-✓ No linting issues found
-```
+<CodeBlock lang="log">{`
+
+  ✓ No linting issues found
+
+`}</CodeBlock>
 
 ## CI Integration
 

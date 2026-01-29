@@ -3,27 +3,31 @@ sidebar_position: 4
 title: "Colour Functions"
 ---
 
-# Colour Functions
+import CodeBlock from "@site/src/components/CodeBlock"
 
-Hand-picking hex codes for every shade is tedious and fragile. Sassy lets you derive colours from existing ones using functions powered by [Culori](https://culorijs.org/).
+Hand-picking hex codes for every shade is tedious and fragile. Sassy lets you
+derive colours from existing ones using functions powered by [Culori](https://culorijs.org/).
 
 ## Derived Colours
 
 Add these to your `vars.std` group:
 
-```yaml
-vars:
-  std:
-    fg: $(colors.white)
-    fg.inactive: fade($(std.fg), 60)
-    bg: "#1a1a2e"
-    bg.panel: lighten($(std.bg), 15)
-    bg.accent: darken($(accent), 70)
-    outline: fade($(accent), 30)
-    shadow: fade($(std.bg), 80)
-```
+<CodeBlock lang="yaml">{`
 
-Instead of guessing what "60% opacity white" looks like as a hex code, you write `fade($(std.fg), 60)` and Sassy computes it.
+  vars:
+    std:
+      fg: $(colors.white)
+      fg.inactive: fade($(std.fg), 60)
+      bg: "#1a1a2e"
+      bg.panel: lighten($(std.bg), 15)
+      bg.accent: darken($(accent), 70)
+      outline: fade($(accent), 30)
+      shadow: fade($(std.bg), 80)
+
+`}</CodeBlock>
+
+Instead of guessing what "60% opacity white" looks like as a hex code, you
+write `fade($(std.fg), 60)` and Sassy computes it.
 
 ## Core Functions
 
@@ -42,32 +46,39 @@ The first argument is always a colour — a hex value, a variable reference, or 
 
 Add more properties using the derived colours:
 
-```yaml
-theme:
-  colors:
-    editor.background: $(std.bg)
-    editor.foreground: $(std.fg)
-    editorGroupHeader.tabsBackground: $(std.bg.panel)
-    tab.activeBackground: $(std.bg)
-    tab.activeForeground: $(std.fg)
-    tab.inactiveBackground: $(std.bg.panel)
-    tab.inactiveForeground: $(std.fg.inactive)
-    focusBorder: $(std.outline)
-    panel.border: $(std.outline)
-    editorOverviewRuler.border: $(std.outline)
-    widget.shadow: $(std.shadow)
-    titleBar.activeBackground: $(std.bg.accent)
-    titleBar.activeForeground: $(std.fg)
-    titleBar.inactiveBackground: $(std.bg.accent)
-    titleBar.inactiveForeground: $(std.fg.inactive)
-```
+<CodeBlock lang="yaml">{`
+
+  theme:
+    colors:
+      editor.background: $(std.bg)
+      editor.foreground: $(std.fg)
+      editorGroupHeader.tabsBackground: $(std.bg.panel)
+      tab.activeBackground: $(std.bg)
+      tab.activeForeground: $(std.fg)
+      tab.inactiveBackground: $(std.bg.panel)
+      tab.inactiveForeground: $(std.fg.inactive)
+      focusBorder: $(std.outline)
+      panel.border: $(std.outline)
+      editorOverviewRuler.border: $(std.outline)
+      widget.shadow: $(std.shadow)
+      titleBar.activeBackground: $(std.bg.accent)
+      titleBar.activeForeground: $(std.fg)
+      titleBar.inactiveBackground: $(std.bg.accent)
+      titleBar.inactiveForeground: $(std.fg.inactive)
+
+`}</CodeBlock>
 
 ## Build It
 
-```bash
-npx @gesslar/sassy build ocean.yaml
-```
+<CodeBlock lange="shell">{`
 
-Open the output and look at the resolved values. `fade($(std.fg), 60)` becomes something like `#e6e6e699` — the same white at 60% opacity, computed automatically. Change your base `bg` colour and every derived shade updates with it.
+  npx @gesslar/sassy build ocean.yaml
+
+`}</CodeBlock>
+
+Open the output and look at the resolved values. `fade($(std.fg), 60)` becomes
+something like `#e6e6e699` — the same white at 60% opacity, computed
+automatically. Change your base `bg` colour and every derived shade updates
+with it.
 
 Next, let's add syntax highlighting.

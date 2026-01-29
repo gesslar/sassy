@@ -3,7 +3,7 @@ sidebar_position: 5
 title: "Syntax Highlighting"
 ---
 
-# Syntax Highlighting
+import CodeBlock from "@site/src/components/CodeBlock"
 
 So far we've styled the VS Code UI. Now let's colour the actual code.
 
@@ -13,41 +13,43 @@ VS Code uses **TextMate scopes** to identify parts of your code — keywords, st
 
 Add a `tokenColors` section inside `theme`:
 
-```yaml
-theme:
-  tokenColors:
-    - name: Comments
-      scope: comment
-      settings:
-        foreground: $(std.fg.inactive)
-        fontStyle: italic
+<CodeBlock lang="yaml">{`
 
-    - name: Keywords
-      scope: keyword, storage.type
-      settings:
-        foreground: $(accent)
+  theme:
+    tokenColors:
+      - name: Comments
+        scope: comment
+        settings:
+          foreground: $(std.fg.inactive)
+          fontStyle: italic
 
-    - name: Strings
-      scope: string
-      settings:
-        foreground: $(colors.green)
+      - name: Keywords
+        scope: keyword, storage.type
+        settings:
+          foreground: $(accent)
 
-    - name: Numbers
-      scope: constant.numeric
-      settings:
-        foreground: $(colors.yellow)
+      - name: Strings
+        scope: string
+        settings:
+          foreground: $(colors.green)
 
-    - name: Functions
-      scope: entity.name.function
-      settings:
-        foreground: $(colors.cyan)
+      - name: Numbers
+        scope: constant.numeric
+        settings:
+          foreground: $(colors.yellow)
 
-    - name: Classes
-      scope: entity.name.class, entity.name.type
-      settings:
-        foreground: $(colors.blue)
-        fontStyle: bold
-```
+      - name: Functions
+        scope: entity.name.function
+        settings:
+          foreground: $(colors.cyan)
+
+      - name: Classes
+        scope: entity.name.class, entity.name.type
+        settings:
+          foreground: $(colors.blue)
+          fontStyle: bold
+
+`}</CodeBlock>
 
 ## How Scopes Work
 
@@ -61,14 +63,17 @@ Each `scope` is a TextMate grammar selector. VS Code matches them against the to
 Comma-separated scopes (like `keyword, storage.type`) apply the same style to multiple scopes. VS Code uses the first matching rule, so order can matter for overlapping scopes.
 
 The `settings` block supports:
+
 - `foreground` — the text colour
 - `fontStyle` — `italic`, `bold`, `underline`, or combinations like `bold italic`
 
 ## Build It
 
-```bash
-npx @gesslar/sassy build ocean.yaml
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy build ocean.yaml
+
+`}</CodeBlock>
 
 To see the result, install the theme in VS Code and open a source file. Comments should appear faded and italic, keywords in your accent colour, strings in green, and so on.
 

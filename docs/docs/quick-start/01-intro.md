@@ -3,54 +3,43 @@ sidebar_position: 1
 title: "What is Sassy?"
 ---
 
-import Tabs from "@theme/Tabs"
-import TabItem from "@theme/TabItem"
+import CodeBlock from "@site/src/components/CodeBlock"
 
 ## The Problem
 
-VS Code themes are painful to maintain. A typical theme file is 800+ lines of disconnected hex codes — no relationships, no structure, just raw values. Want to tweak your accent colour? Good luck finding every place it's used. Want a slightly darker background for panels? Time to open a colour picker and eyeball it.
+VS Code themes are painful to maintain. A typical theme file is 800+ lines of
+disconnected hex codes — no relationships, no structure, just raw values. Want
+tweak your accent colour? Good luck finding every place it's used. Want a
+slightly darker background for panels? Time to open a colour picker and
+eyeball it.
 
-```json
-{
-  "editor.background": "#1a1a2e",
-  "sideBar.background": "#242440",
-  "panel.background": "#1e1e36",
-  "statusBar.background": "#16162a"
-}
-```
+<CodeBlock lang="json">{`
+
+  {
+    "editor.background": "#1a1a2e",
+    "sideBar.background": "#242440",
+    "panel.background": "#1e1e36",
+    "statusBar.background": "#16162a"
+  }
+
+`}</CodeBlock>
 
 Four shades of the same base colour, but nothing ties them together.
 Change one and the others drift.
 
 ## The Solution
 
-<Tabs groupId="json5-yaml">
-  <TabItem value="json5" label="JSON5" default>
+<CodeBlock lang="yaml">{`
 
-```json
-{
-  vars: {
-    bg: "#1a1a2e",
-    "bg.panel": "lighten($(bg), 15)",
-    "bg.status": "darken($(bg), 10)",
-  }
-}
-```
+  vars:
+    bg: "#1a1a2e"
+    bg.panel: lighten($(bg), 15)
+    bg.status: darken($(bg), 10)
 
-  </TabItem>
-  <TabItem value="yaml" label="YAML">
+`}</CodeBlock>
 
-```yaml
-vars:
-  bg: "#1a1a2e"
-  bg.panel: lighten($(bg), 15)
-  bg.status: darken($(bg), 10)
-```
-
-  </TabItem>
-</Tabs>
-
-Sassy lets you define themes using **variables**, **colour functions**, and **semantic layers** — then compiles them into standard `.color-theme.json`
+Sassy lets you define themes using **variables**, **colour functions**, and
+**semantic layers** — then compiles them into standard `.color-theme.json`
 files that VS Code understands.
 
 Instead of scattering hex codes, you build a design system:
@@ -66,7 +55,8 @@ Sassy gives you:
 
 ## What You'll Build
 
-By the end of this guide, you'll have a complete dark theme built from scratch — with a colour palette, semantic variables, derived colours, syntax
+By the end of this guide, you'll have a complete dark theme built from scratch —
+with a colour palette, semantic variables, derived colours, syntax
 highlighting, and UI styling. Each page adds one concept and ends with a
 working build.
 

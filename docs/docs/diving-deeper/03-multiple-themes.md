@@ -3,7 +3,7 @@ sidebar_position: 3
 title: "Multiple Themes, One System"
 ---
 
-# Multiple Themes, One System
+import CodeBlock from "@site/src/components/CodeBlock"
 
 This is the power move. You have a design system with palette colours, semantic tokens, and scope mappings. Now you'll create a second theme that reuses the entire system -- just with different colours.
 
@@ -13,71 +13,73 @@ Create a new file alongside your ocean theme:
 
 **sunset.yaml**:
 
-```yaml
-config:
-  name: "Sunset"
-  type: dark
-  import:
-    - "./shared/variables.yaml"
+<CodeBlock lang="yaml">{`
 
-vars:
-  # Override the palette
-  colors:
-    blue: "#8b4513"
-    cyan: "#ff8c42"
-    gray: "#4a3728"
-    white: "#f5e6d3"
-    red: "#e74c3c"
-    green: "#27ae60"
-    yellow: "#f39c12"
+  config:
+    name: "Sunset"
+    type: dark
+    import:
+      - "./shared/variables.yaml"
 
-  # Override the semantic anchors
-  accent: $(colors.cyan)
-  main: $(colors.white)
-  std:
-    bg: "#1a1008"
+  vars:
+    # Override the palette
+    colors:
+      blue: "#8b4513"
+      cyan: "#ff8c42"
+      gray: "#4a3728"
+      white: "#f5e6d3"
+      red: "#e74c3c"
+      green: "#27ae60"
+      yellow: "#f39c12"
 
-theme:
-  colors:
-    editor.background: $(std.bg)
-    editor.foreground: $(std.fg)
-    editorCursor.foreground: $(std.fg.accent)
-    sideBar.background: $(std.bg.panel)
-    sideBarSectionHeader.background: $(std.bg.panel.inner)
-    activityBar.background: $(std.bg.panel)
-    focusBorder: $(std.outline)
-    widget.shadow: $(std.shadow)
+    # Override the semantic anchors
+    accent: $(colors.cyan)
+    main: $(colors.white)
+    std:
+      bg: "#1a1008"
 
-    editorError.foreground: $(status.error)
-    editorWarning.foreground: $(status.warning)
-    editorInfo.foreground: $(status.info)
+  theme:
+    colors:
+      editor.background: $(std.bg)
+      editor.foreground: $(std.fg)
+      editorCursor.foreground: $(std.fg.accent)
+      sideBar.background: $(std.bg.panel)
+      sideBarSectionHeader.background: $(std.bg.panel.inner)
+      activityBar.background: $(std.bg.panel)
+      focusBorder: $(std.outline)
+      widget.shadow: $(std.shadow)
 
-  tokenColors:
-    - name: Comments
-      scope: comment
-      settings:
-        foreground: $(scope.comment)
-    - name: Keywords
-      scope: keyword
-      settings:
-        foreground: $(scope.keyword)
-    - name: Strings
-      scope: string
-      settings:
-        foreground: $(scope.string)
-    - name: Numbers
-      scope: constant.numeric
-      settings:
-        foreground: $(scope.number)
-    - name: Functions
-      scope: entity.name.function
-      settings:
-        foreground: $(scope.function)
-    - name: Types
-      scope: entity.name.type
-      settings:
-        foreground: $(scope.type)
-```
+      editorError.foreground: $(status.error)
+      editorWarning.foreground: $(status.warning)
+      editorInfo.foreground: $(status.info)
+
+    tokenColors:
+      - name: Comments
+        scope: comment
+        settings:
+          foreground: $(scope.comment)
+      - name: Keywords
+        scope: keyword
+        settings:
+          foreground: $(scope.keyword)
+      - name: Strings
+        scope: string
+        settings:
+          foreground: $(scope.string)
+      - name: Numbers
+        scope: constant.numeric
+        settings:
+          foreground: $(scope.number)
+      - name: Functions
+        scope: entity.name.function
+        settings:
+          foreground: $(scope.function)
+      - name: Types
+        scope: entity.name.type
+        settings:
+          foreground: $(scope.type)
+
+`}</CodeBlock>
 
 ## How Override Cascading Works
 
@@ -94,9 +96,11 @@ You only override what changes. The derived values cascade.
 
 Build both themes in one command:
 
-```bash
-npx @gesslar/sassy build ocean.yaml sunset.yaml
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy build ocean.yaml sunset.yaml
+
+`}</CodeBlock>
 
 Each gets its own `.color-theme.json` output. Same structure, completely different feel.
 
@@ -106,43 +110,47 @@ If your themes use identical tokenColors, extract them into a shared file:
 
 **shared/tokens.yaml**:
 
-```yaml
-theme:
-  tokenColors:
-    - name: Comments
-      scope: comment
-      settings:
-        foreground: $(scope.comment)
-    - name: Keywords
-      scope: keyword
-      settings:
-        foreground: $(scope.keyword)
-    - name: Strings
-      scope: string
-      settings:
-        foreground: $(scope.string)
-    - name: Numbers
-      scope: constant.numeric
-      settings:
-        foreground: $(scope.number)
-    - name: Functions
-      scope: entity.name.function
-      settings:
-        foreground: $(scope.function)
-    - name: Types
-      scope: entity.name.type
-      settings:
-        foreground: $(scope.type)
-```
+<CodeBlock lang="yaml">{`
+
+  theme:
+    tokenColors:
+      - name: Comments
+        scope: comment
+        settings:
+          foreground: $(scope.comment)
+      - name: Keywords
+        scope: keyword
+        settings:
+          foreground: $(scope.keyword)
+      - name: Strings
+        scope: string
+        settings:
+          foreground: $(scope.string)
+      - name: Numbers
+        scope: constant.numeric
+        settings:
+          foreground: $(scope.number)
+      - name: Functions
+        scope: entity.name.function
+        settings:
+          foreground: $(scope.function)
+      - name: Types
+        scope: entity.name.type
+        settings:
+          foreground: $(scope.type)
+
+`}</CodeBlock>
 
 Then both themes import it:
 
-```yaml
-config:
-  import:
-    - "./shared/variables.yaml"
-    - "./shared/tokens.yaml"
-```
+<CodeBlock lang="yaml">{`
+
+  config:
+    import:
+      - "./shared/variables.yaml"
+      - "./shared/tokens.yaml"
+
+`}</CodeBlock>
 
 Remember: tokenColors from imports append in order, and the main file's tokenColors come last. This lets you add theme-specific overrides after the shared rules.
 
@@ -150,9 +158,11 @@ Remember: tokenColors from imports append in order, and the main file's tokenCol
 
 During development, watch all your themes at once:
 
-```bash
-npx @gesslar/sassy build --watch ocean.yaml sunset.yaml
-```
+<CodeBlock lange="shell">{`
+
+  npx @gesslar/sassy build --watch ocean.yaml sunset.yaml
+
+`}</CodeBlock>
 
 Edit `shared/variables.yaml` and both themes rebuild. Edit a palette override in `sunset.yaml` and only that theme rebuilds. Sassy tracks dependencies and rebuilds only what changed.
 
