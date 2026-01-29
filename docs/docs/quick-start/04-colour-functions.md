@@ -70,7 +70,7 @@ Add more properties using the derived colours:
 
 ## Build It
 
-<CodeBlock lang="shell"shell">{`
+<CodeBlock lang="shell">{`
 
   npx @gesslar/sassy build ocean.yaml
 
