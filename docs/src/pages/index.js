@@ -97,13 +97,19 @@ function useScrollShrink() {
   const [shrunk, setShrunk] = useState(false);
 
   useEffect(() => {
-    const threshold = 80;
+    const shrinkAt = 80;
+    const unshrinkAt = 40;
     let ticking = false;
 
     const onScroll = () => {
       if(!ticking) {
         window.requestAnimationFrame(() => {
-          setShrunk(window.scrollY > threshold);
+          const y = window.scrollY;
+          setShrunk(prev => {
+            if(!prev && y > shrinkAt) return true;
+            if(prev && y < unshrinkAt) return false;
+            return prev;
+          });
           ticking = false;
         });
         ticking = true;
@@ -127,13 +133,10 @@ function useScrollReveal() {
     const observer = new IntersectionObserver(
       entries => {
         for(const entry of entries) {
-          if(entry.isIntersecting) {
-            entry.target.classList.add(styles.revealed);
-            observer.unobserve(entry.target);
-          }
+          entry.target.classList.toggle(styles.revealed, entry.isIntersecting);
         }
       },
-      {threshold: 0.1, rootMargin: '0px 0px -40px 0px'}
+      {threshold: 0.15, rootMargin: '0px 0px -100px 0px'}
     );
 
     observer.observe(el);
@@ -228,6 +231,9 @@ function Features() {
   return (
     <RevealSection className={styles.features}>
       <div className="container">
+        <Heading as="h2" className={styles.sectionTitle}>
+          Express yourself
+        </Heading>
         <div className={styles.featureGrid}>
           {features.map((props, idx) => (
             <Feature key={idx} {...props} />
