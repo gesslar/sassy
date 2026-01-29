@@ -9,7 +9,7 @@ Tweaking colours one build at a time gets old fast. Watch mode rebuilds your the
 
 ## Start Watching
 
-<CodeBlock lang="shell"shell">{`
+<CodeBlock lang="shell">{`
 
   npx @gesslar/sassy build ocean.yaml --watch
 
@@ -25,7 +25,7 @@ Sassy computes a SHA-256 hash of the output before writing. If nothing actually 
 
 **`--output-dir`** — Write the compiled theme to a specific directory instead of alongside the source file. Handy for writing directly into your VS Code extensions folder:
 
-<CodeBlock lang="shell"shell">{`
+<CodeBlock lang="shell">{`
 
   npx @gesslar/sassy build ocean.yaml --watch --output-dir ~/.vscode/extensions/ocean-theme/
 
@@ -33,7 +33,7 @@ Sassy computes a SHA-256 hash of the output before writing. If nothing actually 
 
 **`--dry-run`** — Process the theme and report results without writing any files. Useful for validating your theme before committing changes.
 
-<CodeBlock lang="shell"shell">{`
+<CodeBlock lang="shell">{`
 
   npx @gesslar/sassy build ocean.yaml --dry-run
 
