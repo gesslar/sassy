@@ -268,6 +268,9 @@ function Audiences() {
   );
 }
 
+/**
+ * The home page!
+ */
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
