@@ -29,8 +29,6 @@ const config = {
   onBrokenAnchors: "throw",
   onDuplicateRoutes: "throw",
 
-  trailingSlash: false,
-
   i18n: {
     defaultLocale: "en",
     locales: ["en"],
@@ -74,12 +72,6 @@ const config = {
       scrollToTop: true,
       scrollToTopOptions: {
         zIndex: 100,
-      },
-
-      docs: {
-        sidebar: {
-          hideable: true
-        },
       },
 
       navbar: {
