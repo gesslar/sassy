@@ -12,7 +12,7 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "update": "npx npm-check-updates -u && npm install"
+    "update": "pnpm self-update && pnpx npm-check-updates -u && pnpm install"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
