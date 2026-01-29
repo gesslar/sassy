@@ -15,5 +15,13 @@ export default [
       "node": "src/**/*.{cj}?js",
       "react": "docs/**/*.js{x}?",
     }
-  })
+  }),
+  {
+    files: ["docs/**/*.js", "docs/**/*.jsx"],
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {jsx: true},
+      },
+    },
+  }
 ]

@@ -19,7 +19,8 @@ VS Code themes are painful to maintain. A typical theme file is 800+ lines of di
 }
 ```
 
-Four shades of the same base colour, but nothing ties them together. Change one and the others drift.
+Four shades of the same base colour, but nothing ties them together.
+Change one and the others drift.
 
 ## The Solution
 
@@ -49,7 +50,8 @@ vars:
   </TabItem>
 </Tabs>
 
-Sassy lets you define themes using **variables**, **colour functions**, and **semantic layers** — then compiles them into standard `.color-theme.json` files that VS Code understands.
+Sassy lets you define themes using **variables**, **colour functions**, and **semantic layers** — then compiles them into standard `.color-theme.json`
+files that VS Code understands.
 
 Instead of scattering hex codes, you build a design system:
 
@@ -64,7 +66,9 @@ Sassy gives you:
 
 ## What You'll Build
 
-By the end of this guide, you'll have a complete dark theme built from scratch — with a colour palette, semantic variables, derived colours, syntax highlighting, and UI styling. Each page adds one concept and ends with a working build.
+By the end of this guide, you'll have a complete dark theme built from scratch — with a colour palette, semantic variables, derived colours, syntax
+highlighting, and UI styling. Each page adds one concept and ends with a
+working build.
 
 ## Prerequisites
 

@@ -61,11 +61,14 @@ That's a valid Sassy theme. Let's break it down.
 **`config`** tells Sassy about your theme:
 
 - `name` — the display name VS Code shows in the theme picker
-- `type` — `dark` or `light`, so VS Code picks the right defaults for properties you don't set
+- `type` — `dark` or `light`, so VS Code picks the right defaults for
+  properties you don't set
 
-**`vars`** is where you define variables. Here we have two: `bg` and `fg`. These are just names pointing to hex colours.
+**`vars`** is where you define variables. Here we have two: `bg` and `fg`.
+These are just names pointing to hex colours.
 
-**`theme.colors`** maps VS Code UI properties to values. The `$(bg)` syntax references the variable `bg` — Sassy resolves it to `#1a1a2e` at build time.
+**`theme.colors`** maps VS Code UI properties to values. The `$(bg)` syntax
+references the variable `bg` — Sassy resolves it to `#1a1a2e` at build time.
 
 ## Build It
 
@@ -89,4 +92,5 @@ Sassy creates `ocean.color-theme.json` alongside your source file. Open it up:
 }
 ```
 
-Variables resolved, standard VS Code format. Two colours isn't much of a theme yet, but the pipeline works. Next, we'll build a proper palette.
+Variables resolved, standard VS Code format. Two colours isn't much of a theme
+yet, but the pipeline works. Next, we'll build a proper palette.
