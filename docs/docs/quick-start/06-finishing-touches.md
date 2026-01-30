@@ -188,7 +188,7 @@ Alternatively, use the [Yeoman VS Code Extension Generator](https://code.visuals
 
 ## Build It
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy build ocean.yaml
 

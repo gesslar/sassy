@@ -72,7 +72,7 @@ Here's the idea: extract your `vars` section into a shared file, and keep the ma
 
 Build it the same way you always have:
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy build ocean.yaml
 

@@ -3,7 +3,7 @@ sidebar_position: 3
 title: "Colour Functions"
 ---
 
-# Colour Functions
+import CodeBlock from "@site/src/components/CodeBlock"
 
 Sassy provides colour manipulation functions powered by [Culori](https://culorijs.org/). Functions can be used anywhere a colour value is expected -- in `vars`, `colors`, `tokenColors`, and `semanticTokenColors`.
 
@@ -39,38 +39,39 @@ The `colour` parameter in transformation functions accepts:
 
 ## Examples
 
-```yaml
-vars:
-  base: "#1a1a2e"
-  accent: "#56b6c2"
+<CodeBlock lang="yaml">{`
+  vars:
+    base: "#1a1a2e"
+    accent: "#56b6c2"
 
-theme:
-  colors:
-    # Lighten the base by 30%
-    editor.background: lighten($(base), 30)
+  theme:
+    colors:
+      # Lighten the base by 30%
+      editor.background: lighten($(base), 30)
 
-    # Set exact alpha
-    editor.selectionBackground: alpha($(accent), 0.3)
+      # Set exact alpha
+      editor.selectionBackground: alpha($(accent), 0.3)
 
-    # Mix two colours equally
-    panel.background: mix($(base), $(accent))
+      # Mix two colours equally
+      panel.background: mix($(base), $(accent))
 
-    # Mix with custom ratio (80% first colour, 20% second)
-    sideBar.background: mix($(base), $(accent), 80)
+      # Mix with custom ratio (80% first colour, 20% second)
+      sideBar.background: mix($(base), $(accent), 80)
 
-    # Reduce opacity by half
-    editorLineNumber.foreground: fade($(accent), 0.5)
+      # Reduce opacity by half
+      editorLineNumber.foreground: fade($(accent), 0.5)
 
-    # Invert lightness
-    badge.foreground: invert($(base))
+      # Invert lightness
+      badge.foreground: invert($(base))
 
-    # Named CSS colour
-    errorForeground: css(crimson)
+      # Named CSS colour
+      errorForeground: css(crimson)
 
-    # Colour space constructors
-    statusBar.background: oklch(0.5, 30, 250)
-    button.background: hsl(200, 80, 50)
-```
+      # Colour space constructors
+      statusBar.background: oklch(0.5, 30, 250)
+      button.background: hsl(200, 80, 50)
+
+`}</CodeBlock>
 
 ## Passthrough Behaviour
 

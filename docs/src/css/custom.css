@@ -10,7 +10,6 @@
 :root {
   --ifm-font-family-base: "Quicksand";
   --ifm-heading-font-family: "Lato";
-  --ifm-heading-font-weight: 300 !important;
 
   --ifm-font-family-monospace: "Victor Mono";
 
@@ -29,8 +28,8 @@
   --ifm-color-warning: #ffba00;
   --ifm-color-danger: #fa3e3e;
 
-  --ifm-color-white: #fff;
-  --ifm-color-black: #000;
+  --ifm-color-white: #ffffff;
+  --ifm-color-black: #000000;
 
   /* ── Gray scale ── */
   --ifm-color-gray-0: #fff;
@@ -60,12 +59,12 @@
 
   /* ── Content colours ── */
   --ifm-color-content: var(--ifm-color-emphasis-900);
-  --ifm-color-content-secondary: rgba(0, 0, 0, 0.68);
+  --ifm-color-content-secondary: var(--ifm-color-emphasis-200);
   --ifm-color-content-inverse: var(--ifm-color-emphasis-1000);
 
   /* ── Background ── */
-  --ifm-background-color: #fff;
-  --ifm-background-surface-color: #fff;
+  --ifm-background-color: var(--ifm-color-emphasis-100);
+  --ifm-background-surface-color: var(--ifm-color-emphasis-0);
 
   /* ── Font colours ── */
   --ifm-font-color-base: var(--ifm-color-content);
@@ -77,8 +76,8 @@
   --ifm-link-hover-color: var(--ifm-link-color);
 
   /* ── Hover / HR ── */
-  --ifm-hover-overlay: rgba(0, 0, 0, 0.05);
-  --ifm-hr-background-color: var(--ifm-color-gray-500);
+  --ifm-hover-overlay: rgb(from var(--ifm-color-primary-lightest) r g b / 10%);
+  --ifm-hr-background-color: rgb(from var(--ifm-color-primary-dark) r g b / 15%);
 
   /* ── Blockquote ── */
   --ifm-blockquote-color: var(--ifm-color-emphasis-800);
@@ -120,8 +119,6 @@
   --ifm-dropdown-font-weight: 500;
 
   /* ── Footer ── */
-  --ifm-footer-background-color: #303846;
-  --ifm-footer-color: inherit;
   --ifm-footer-link-color: var(--ifm-color-secondary);
   --ifm-footer-link-hover-color: var(--ifm-color-primary);
   --ifm-footer-title-color: var(--ifm-color-white);
@@ -158,8 +155,8 @@
   --ifm-pills-color-background-active: var(--ifm-hover-overlay);
 
   /* ── TOC ── */
-  --ifm-toc-border-color: var(--ifm-color-emphasis-300);
-  --ifm-toc-link-color: var(--ifm-color-content-secondary);
+  --ifm-toc-border-color: var(--ifm-hr-background-color);
+  --ifm-toc-link-color: var(--ifm-color-emphasis-800);
 
   /* ── Tabs ── */
   --ifm-tabs-color: var(--ifm-color-secondary);
@@ -168,16 +165,27 @@
 
   /* ── Code / Pre ── */
   --ifm-code-font-size: 95%;
+  --ifm-code-background: rgb(from var(--ifm-color-primary-dark) r g b / 10%);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 
   /* ── Headings ── */
   --ifm-heading-color: inherit;
-  --ifm-heading-font-weight: 700;
+  --ifm-heading-font-weight: 300;
   --ifm-heading-margin-bottom: 1rem;
 
   /* ── Tables ── */
-  --ifm-table-background: transparent;
-  --ifm-table-stripe-background: rgba(0, 0, 0, 0.03);
+  --ifm-table-head-background: rgb(from var(--ifm-color-primary-lightest) r g b / 25%);
+  --ifm-table-background: rgb(from var(--ifm-color-primary-dark) r g b / 25%);
+  --ifm-table-stripe-background: rgb(from var(--ifm-color-primary-darkest) r g b / 25%);
+
+  --ifm-table-head-color: inherit;
+  --ifm-table-head-font-weight: var(--ifm-font-weight-bold);
+
+  --ifm-table-cell-padding: 0.75rem;
+
+  --ifm-table-border-width: 1px;
+  --ifm-table-border-color: rgb(from var(--ifm-color-primary-darkest) r g b / 50%);
+
 
   /* ── Typography ── */
   --ifm-font-weight-base: 400;
@@ -189,52 +197,8 @@
   --ifm-spacing-horizontal: 1rem;
 
   --test: #ff0000ee;
-
-  main {
-    border-top: 1px solid rgb(from var(--ifm-color-primary-light) r g b / 25%);
-  }
-
-  .header-svg {
-    transform: translateY(0.3rem) translateX(0.25rem);
-    filter: invert(0%);
-  }
-
-  .theme-doc-sidebar-container {
-    background-color: rgb(from var(--ifm-background-surface-color) r g b / 50%);
-  }
-
-  [class*="docSidebarContainer_"] {
-    border-color: rgb(from var(--ifm-color-primary-light) r g b / 25%);
-  }
-
-  [class*="table-of-contents__left-border"] {
-    border-color: rgb(from var(--ifm-color-primary-light) r g b / 25%);
-  }
-
-  [class*="theme-code-block"] {
-    pre code {
-      border: 0.25rem solid rgb(from var(--ifm-color-primary-dark) r g b / 10%);
-    }
-  }
-
-  .pagination-nav__link--next,
-  .pagination-nav__link--prev {
-    border: 0.15rem solid rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
-
-    &:hover {
-      border-color: var(--ifm-pagination-nav-color-hover);
-    }
-  }
-
-  .footer {
-    --ifm-footer-color: var(--ifm-color-primary-darker);
-    --ifm-footer-background-color: rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
-  }
-
-
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
 
   /* ── Semantic colours ── */
@@ -252,22 +216,6 @@
   --ifm-color-warning: #ffba00;
   --ifm-color-danger: #fa3e3e;
 
-  --ifm-color-white: #ffffff;
-  --ifm-color-black: #000000;
-
-  /* ── Gray scale ── */
-  --ifm-color-gray-0: #fff;
-  --ifm-color-gray-100: #f5f6f7;
-  --ifm-color-gray-200: #ebedf0;
-  --ifm-color-gray-300: #dadde1;
-  --ifm-color-gray-400: #ccd0d5;
-  --ifm-color-gray-500: #bec3c9;
-  --ifm-color-gray-600: #8d949e;
-  --ifm-color-gray-700: #606770;
-  --ifm-color-gray-800: #444950;
-  --ifm-color-gray-900: #1c1e21;
-  --ifm-color-gray-1000: #000;
-
   /* ── Emphasis scale ── */
   --ifm-color-emphasis-0: var(--ifm-color-gray-1000);
   --ifm-color-emphasis-100: var(--ifm-color-gray-900);
@@ -280,156 +228,90 @@
   --ifm-color-emphasis-800: var(--ifm-color-gray-200);
   --ifm-color-emphasis-900: var(--ifm-color-gray-100);
   --ifm-color-emphasis-1000: var(--ifm-color-gray-0);
-
-  /* ── Content colours ── */
-  --ifm-color-content: #d1d1d1;
-  --ifm-color-content-secondary: #e1e1e1;
-  --ifm-color-content-inverse: var(--ifm-color-emphasis-0);
-
-  /* ── Background ── */
-  --ifm-background-color: oklch(0.2046 0 0);
-  --ifm-background-surface-color: oklch(0.1638 0 0);
-
-  /* ── Font colours ── */
-  --ifm-font-color-base: var(--ifm-color-content);
-  --ifm-font-color-secondary: var(--ifm-color-content-secondary);
-  --ifm-font-color-base-inverse: var(--ifm-color-content-inverse);
-
-  /* ── Links ── */
-  --ifm-link-color: var(--ifm-color-primary);
-  --ifm-link-hover-color: var(--ifm-link-color);
-
-  /* ── Hover / HR ── */
-  --ifm-hover-overlay: rgb(from var(--ifm-color-primary-lightest) r g b / 10%);
-  --ifm-hr-background-color: var(--ifm-color-primary-darker);
-
-  /* ── Blockquote ── */
-  --ifm-blockquote-color: var(--ifm-color-emphasis-800);
-  --ifm-blockquote-border-color: var(--ifm-color-emphasis-300);
-  --ifm-blockquote-font-size: 100%;
-
-  /* ── Alert ── */
-  --ifm-alert-background-color: inherit;
-  --ifm-alert-border-color: inherit;
-  --ifm-alert-color: var(--ifm-font-color-base);
-  --ifm-alert-padding-vertical: 1rem;
-  --ifm-alert-padding-horizontal: 1rem;
-
-  /* ── Badge ── */
-  --ifm-badge-background-color: inherit;
-  --ifm-badge-border-color: inherit;
-  --ifm-badge-color: var(--ifm-color-white);
-  --ifm-badge-padding-vertical: 0.25rem;
-  --ifm-badge-padding-horizontal: 0.5rem;
-
-  /* ── Breadcrumb ── */
-  --ifm-breadcrumb-color-active: var(--ifm-color-primary);
-  --ifm-breadcrumb-item-background-active: var(--ifm-hover-overlay);
-
-  /* ── Button ── */
-  --ifm-button-background-color: inherit;
-  --ifm-button-border-color: var(--ifm-button-background-color);
-  --ifm-button-color: var(--ifm-font-color-base-inverse);
-  --ifm-button-font-weight: 700;
-
-  /* ── Card ── */
-  --ifm-card-background-color: var(--ifm-background-surface-color);
-  --ifm-card-vertical-spacing: 1rem;
-  --ifm-card-horizontal-spacing: 1rem;
-
-  /* ── Dropdown ── */
-  --ifm-dropdown-link-color: var(--ifm-font-color-base);
-  --ifm-dropdown-hover-background-color: var(--ifm-hover-overlay);
-  --ifm-dropdown-font-weight: 500;
-
-  /* ── Footer ── */
-  --ifm-footer-background-color: #303846;
-  --ifm-footer-color: inherit;
-  --ifm-footer-link-color: var(--ifm-color-secondary);
-  --ifm-footer-link-hover-color: var(--ifm-color-primary);
-  --ifm-footer-title-color: var(--ifm-color-white);
-  --ifm-footer-padding-vertical: 2rem;
-
-  /* ── Hero ── */
-  --ifm-hero-background-color: var(--ifm-background-surface-color);
-  --ifm-hero-text-color: var(--ifm-color-emphasis-800);
-
-  /* ── Menu / Sidebar ── */
-  --ifm-menu-color: var(--ifm-color-emphasis-700);
-  --ifm-menu-color-active: var(--ifm-color-primary);
-  --ifm-menu-color-background-active: var(--ifm-hover-overlay);
-  --ifm-menu-color-background-hover: var(--ifm-hover-overlay);
-
-  /* ── Navbar ── */
-  --ifm-navbar-background-color: var(--ifm-background-surface-color);
-  --ifm-navbar-link-color: var(--ifm-font-color-base);
-  --ifm-navbar-link-hover-color: var(--ifm-color-primary);
-  --ifm-navbar-link-active-color: var(--ifm-link-color);
-  --ifm-navbar-search-input-background-color: var(--ifm-color-emphasis-200);
-  --ifm-navbar-search-input-color: var(--ifm-color-emphasis-800);
-  --ifm-navbar-search-input-placeholder-color: var(--ifm-color-emphasis-500);
-  --ifm-navbar-padding-vertical: 0.5rem;
-  --ifm-navbar-padding-horizontal: 1rem;
-
-  /* ── Pagination ── */
-  --ifm-pagination-color-active: var(--ifm-color-primary);
-  --ifm-pagination-padding-vertical: 0.25rem;
-  --ifm-pagination-padding-horizontal: 1rem;
-
-  /* ── Pills ── */
-  --ifm-pills-color-active: var(--ifm-color-primary);
-  --ifm-pills-color-background-active: var(--ifm-hover-overlay);
-
-  /* ── TOC ── */
-  --ifm-toc-border-color: var(--ifm-color-emphasis-300);
-  --ifm-toc-link-color: var(--ifm-color-content-secondary);
-
-  /* ── Tabs ── */
-  --ifm-tabs-color: var(--ifm-color-secondary);
-  --ifm-tabs-color-active: var(--ifm-color-primary);
-  --ifm-tabs-color-active-border: var(--ifm-tabs-color-active);
-
-  /* ── Code / Pre ── */
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-
-  /* ── Headings ── */
-  --ifm-heading-color: inherit;
-  --ifm-heading-font-weight: 700;
-  --ifm-heading-margin-bottom: 1rem;
-
-  /* ── Tables ── */
-  --ifm-table-background: transparent;
-  --ifm-table-stripe-background: #ffffff12;
-
-  /* ── Typography ── */
-  --ifm-font-weight-base: 400;
-  --ifm-leading: 1.25rem;
-  --ifm-paragraph-margin-bottom: 1.25rem;
-
-  /* ── Spacing ── */
-  --ifm-spacing-vertical: 1rem;
-  --ifm-spacing-horizontal: 1rem;
-
-  .header-svg {
-    filter: invert(75%);
-  }
 }
 
-main {
-  animation: fadeIn 150ms ease-in;
+body {
+  nav {
+    .header-svg {
+      transform: translateY(0.3rem) translateX(0.25rem);
+      filter: invert(0%);
+    }
 
-  .markdown {
-    --ifm-link-decoration: underline dotted var(--ifm-color-primary-darkest);
-
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+    .header-svg {
+      filter: invert(75%);
+    }
   }
 
-  to {
-    opacity: 1;
+  aside {
+    background-color: rgb(from var(--ifm-background-surface-color) r g b / 50%);
+
+    [class*="docSidebarContainer_"] {
+      border-color: rgb(from var(--ifm-color-primary-light) r g b / 25%);
+    }
+
+    /* [class*="table-of-contents__left-border"] {
+      border-color: rgb(from var(--ifm-color-primary-light) r g b / 25%);
+    } */
+  }
+
+  main {
+    border-top: 1px solid rgb(from var(--ifm-color-primary-light) r g b / 25%);
+    animation: fadeIn 150ms ease-in;
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    article {
+      --ifm-link-decoration: underline dotted var(--ifm-color-primary-darkest);
+
+      small.fenced-label {
+        text-transform: uppercase;
+      }
+
+      [class*="theme-code-block"] {
+        pre code {
+          border: 0.25rem solid rgb(from var(--ifm-color-primary-dark) r g b / 10%);
+        }
+      }
+
+
+    }
+
+    /*
+    div.col:has(> div > ul.table-of-contents) {
+      border: 5px red solid;
+    }
+ */
+    /* ul.table-of-contents {
+      border-left: 0.01rem solid var(--ifm-hr-background-color);
+    } */
+
+    nav.pagination-nav {
+
+      .pagination-nav__link--next,
+      .pagination-nav__link--prev {
+        border: 0.15rem solid rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
+
+        &:hover {
+          border-color: var(--ifm-color-primary-darkest);
+        }
+      }
+    }
+  }
+
+  footer {
+    --ifm-footer-color: var(--ifm-color-primary-darker);
+    --ifm-footer-background-color: rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
+    --ifm-footer-link-color: var(--ifm-color-secondary);
+    --ifm-footer-link-hover-color: var(--ifm-color-primary);
+    --ifm-footer-title-color: var(--ifm-color-emphasis-100);
+    --ifm-footer-padding-vertical: 2rem;
   }
 }

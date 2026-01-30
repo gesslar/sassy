@@ -15,7 +15,7 @@ The resolve command takes your theme file and one of three flags:
 
 ### Trace a colour property
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy resolve ocean.yaml --color std.fg.inactive
 
@@ -40,7 +40,7 @@ You can read it top to bottom: `std.fg.inactive` is defined as `fade($(std.fg), 
 
 ### Trace a tokenColors scope
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword
 
@@ -75,7 +75,7 @@ If multiple `tokenColors` entries match the same scope, Sassy shows a disambigua
 
 Then resolve the specific one:
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword.1
 
@@ -83,7 +83,7 @@ Then resolve the specific one:
 
 ### Trace a semanticTokenColors scope
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy resolve ocean.yaml --semanticTokenColor variable.readonly
 
@@ -107,12 +107,14 @@ When a resolved colour includes an alpha channel, Sassy shows two swatches: the 
 
 To preview against a specific background instead, use `--bg`:
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
-  # Resolve the background colour first
+# Resolve the background colour first
+
   npx @gesslar/sassy resolve my-theme.yaml --color editor.background
 
-  # Then use it to preview an alpha colour in context
+# Then use it to preview an alpha colour in context
+
   npx @gesslar/sassy resolve my-theme.yaml --color listFilterWidget.noMatchesOutline --bg 1a1a1a
 
 `}</CodeBlock>

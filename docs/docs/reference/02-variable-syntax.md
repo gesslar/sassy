@@ -3,7 +3,7 @@ sidebar_position: 2
 title: "Variable Syntax"
 ---
 
-# Variable Syntax
+import CodeBlock from "@site/src/components/CodeBlock"
 
 Variables are defined under the `vars` key and referenced throughout `vars` and `theme` sections using one of three interchangeable reference forms.
 
@@ -23,33 +23,39 @@ The bare form (`$path.to.var`) stops at the first character that is not a word c
 
 Nested objects under `vars` create dot-path variable names automatically:
 
-```yaml
-vars:
-  std:
-    bg: "#1a1a2e"        # std.bg
-    bg.panel: "#242424"  # std.bg.panel (not a nested object — literal key)
-  palette:
-    cyan: "#56b6c2"      # palette.cyan
-```
+<CodeBlock lang="yaml">{`
+
+  vars:
+    std:
+      bg: "#1a1a2e"        # std.bg
+      bg.panel: "#242424"  # std.bg.panel (not a nested object — literal key)
+    palette:
+      cyan: "#56b6c2"      # palette.cyan
+
+`}</CodeBlock>
 
 ## Variable-to-Variable References
 
 Variables may reference other variables:
 
-```yaml
-vars:
-  palette:
-    cyan: "#56b6c2"
-  accent: $(palette.cyan)
-```
+<CodeBlock lang="yaml">{`
+
+  vars:
+    palette:
+      cyan: "#56b6c2"
+    accent: $(palette.cyan)
+
+`}</CodeBlock>
 
 Variables may also contain colour function calls:
 
-```yaml
-vars:
-  base: "#1a1a2e"
-  lighter: lighten($(base), 20)
-```
+<CodeBlock lang="yaml">{`
+
+  vars:
+    base: "#1a1a2e"
+    lighter: lighten($(base), 20)
+
+`}</CodeBlock>
 
 ## Resolution Order
 
@@ -66,11 +72,13 @@ Within each pass, resolution iterates until all tokens are fully resolved or a m
 
 Variable references can appear anywhere a string value is expected:
 
-```yaml
-theme:
-  colors:
-    editor.background: $(std.bg)
-    panel.border: alpha($(std.fg), 0.15)
-```
+<CodeBlock lang="yaml">{`
+
+  theme:
+    colors:
+      editor.background: $(std.bg)
+      panel.border: alpha($(std.fg), 0.15)
+
+`}</CodeBlock>
 
 When using the parenthesised or braced forms, the reference is unambiguous even when embedded in a larger expression. The bare form works in most cases but may require switching to `$(...)` when adjacent to parentheses or other punctuation.

@@ -70,7 +70,7 @@ Will I ever go back to raw JSON hex soup? Not unless court-ordered.
 
 ---
 
-## ⭐⭐⭐⭐⭐ Finally, a theme engine that doesn't treat me like a hex-code accountant!"
+## ⭐⭐⭐⭐⭐ Finally, a theme engine that doesn't treat me like a hex-code accountant
 
 **Reviewed by Gemini (AI Assistant) • Toronto, ON**
 
@@ -94,10 +94,6 @@ I gave Sassy a spin because I was tired of "copy-paste-and-pray." The YAML struc
 **Pro-tip:** Use the `resolve` command if your colors aren't "math-ing" the way you think they should. It shows you the whole chain so you can see exactly where you messed up your `mix()` ratio.
 
 **Verdict:** 10/10. The license says "The Unlicense" because "copyrighting colour arrangements is absurd," and honestly? That’s the kind of chaotic good energy I want in my dev tools.
-
----
-
-Absolutely — and I adore the chaotic energy of putting AI testimonials on your site. Based solely on that README, here’s a Yelp‑style review dripping with the appropriate level of theatrical sincerity:
 
 ---
 
