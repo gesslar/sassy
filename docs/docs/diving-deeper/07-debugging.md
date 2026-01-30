@@ -97,9 +97,29 @@ The tree structure shows the dependency chain:
 
 - **Top level** -- the expression as written in your source
 - **Indented lines** -- variables being resolved, each level deeper
-- **Arrow lines (→)** -- resolved hex values at that point in the chain
+- **Resolved values** -- hex values at that point in the chain, shown with a colour swatch (`■`) in supported terminals or an arrow (`→`) otherwise
 
 When something looks wrong, the tree tells you exactly where the unexpected value entered the chain.
+
+## Alpha Colour Previews
+
+When a resolved colour includes an alpha channel, Sassy shows two swatches: the colour composited against black and against white. This gives an immediate visual sense of how transparency affects the result.
+
+To preview against a specific background instead, use `--bg`:
+
+<CodeBlock lang="shell">{`
+
+  # Resolve the background colour first
+  npx @gesslar/sassy resolve my-theme.yaml --color editor.background
+
+  # Then use it to preview an alpha colour in context
+  npx @gesslar/sassy resolve my-theme.yaml --color listFilterWidget.noMatchesOutline --bg 1a1a1a
+
+`}</CodeBlock>
+
+:::tip
+Pass the hex value without `#` to avoid shell comment interpretation, or wrap it in quotes: `--bg '#1a1a1a'`.
+:::
 
 ## What You've Learned
 

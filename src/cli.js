@@ -80,14 +80,13 @@ void (async function main() {
     c.alias.set("loc", "{F148}")
 
     // Resolve command
-    c.alias.set("head", "{F220}")
-    c.alias.set("leaf", "{F151}")
-    c.alias.set("func", "{F111}")
-    c.alias.set("parens", "{F098}")
-    c.alias.set("line", "{F142}")
-    c.alias.set("hex", "{F140}")
-    c.alias.set("hash", "{F147}{<B}")
-    c.alias.set("hexAlpha", "{F127}{<I}")
+    c.alias.set("head", "{F250}")
+    c.alias.set("leaf", "{F243}")
+    c.alias.set("func", "{<B}")
+    c.alias.set("parens", "{F208}")
+    c.alias.set("hash", "{F172}")
+    c.alias.set("hex", "{F025}")
+    c.alias.set("hexAlpha", "{F073}{<I}")
     c.alias.set("arrow", "{F033}")
 
     const cache = new Cache()

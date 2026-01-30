@@ -14,6 +14,9 @@ import Theme from "./Theme.js"
  * Provides introspection into the theme resolution process and variable dependencies.
  */
 export default class ResolveCommand extends Command {
+  #extraOptions = null
+  #bg = null
+
   /**
    * Creates a new ResolveCommand instance.
    *
@@ -28,6 +31,22 @@ export default class ResolveCommand extends Command {
       "tokenColor": ["-t, --tokenColor <scope>", "resolve a tokenColors scope to its final evaluated value"],
       "semanticTokenColor": ["-s, --semanticTokenColor <scope>", "resolve a semanticTokenColors scope to its final evaluated value"],
     })
+    this.#extraOptions = {
+      "bg": ["--bg <hex>", "background colour for alpha swatch preview (e.g. 1a1a1a or '#1a1a1a')"],
+    }
+  }
+
+  /**
+   * Builds the CLI command, adding extra options that are not mutually exclusive.
+   *
+   * @param {object} program - The commander.js program instance
+   * @returns {Promise<this>} Returns this instance for method chaining
+   */
+  async buildCli(program) {
+    await super.buildCli(program)
+    this.addCliOptions(this.#extraOptions, false)
+
+    return this
   }
 
   /**
@@ -57,6 +76,16 @@ export default class ResolveCommand extends Command {
       throw Sass.new(
         `No valid option provided. Please specify one of: ${cliOptionNames.join(", ")}.`
       )
+    }
+
+    if(options.bg) {
+      const bg = options.bg.startsWith("#") ? options.bg : `#${options.bg}`
+
+      if(!Colour.isHex(bg)) {
+        throw Sass.new(`Invalid --bg colour: ${options.bg}`)
+      }
+
+      this.#bg = Colour.normaliseHex(bg)
     }
 
     const resolveFunctionName = `resolve${Util.capitalize(optionName)}`
@@ -334,6 +363,18 @@ export default class ResolveCommand extends Command {
         }
       }
 
+      // For function tokens embedded in a larger expression, show the
+      // direct function output before showing the full substituted result
+      const funcResult = token.getFunctionResult?.()
+
+      if(funcResult && !steps.some(s => s.value === funcResult)) {
+        steps.push({
+          value: funcResult,
+          type: "result",
+          level
+        })
+      }
+
       // Add final result for this token
       if(rawValue !== finalValue && !steps.some(s => s.value === finalValue)) {
         steps.push({
@@ -387,13 +428,13 @@ export default class ResolveCommand extends Command {
       const {value, depth, type} = step
       const [line, kind] = this.#formatLeaf(value)
 
-      // Simple logic: only hex results get extra indentation with arrow, everything else is clean
+      // Simple logic: only hex results get extra indentation with arrow/swatch, everything else is clean
       if(type === "result" && kind === "hex") {
-        // Hex results are indented one extra level with just spaces and arrow
+        // Hex results are indented one extra level with swatch or arrow
         const prefix = "   ".repeat(depth + 1)
-        const arrow = c`{arrow}→{/} `
+        const indicator = this.#makeIndicator(value, this.#bg)
 
-        out.push(`${prefix}${arrow}${line}`)
+        out.push(`${prefix}${indicator} ${line}`)
       } else {
         // Everything else just gets clean indentation
         const prefix = "   ".repeat(depth)
@@ -408,6 +449,59 @@ export default class ResolveCommand extends Command {
   #func = /^(?<func>\w+)(?<open>\()(?<args>.*)(?<close>\)$)$/
   #sub = Evaluator.sub
   #hex = value => Colour.isHex(value)
+
+  /**
+   * Creates a truecolor swatch glyph from a hex value.
+   *
+   * @private
+   * @param {string} hex - A 6- or 8-digit hex colour.
+   * @returns {string} A truecolor `■` character.
+   */
+  #swatch(hex) {
+    const solid = Colour.parseHexColour(hex).colour
+    const r = parseInt(solid.slice(1, 3), 16)
+    const g = parseInt(solid.slice(3, 5), 16)
+    const b = parseInt(solid.slice(5, 7), 16)
+
+    return `\x1b[38;2;${r};${g};${b}m■\x1b[0m`
+  }
+
+  /**
+   * Creates a colour swatch or fallback arrow indicator for a hex value.
+   * When the colour has alpha and no --bg is provided, shows two swatches
+   * (against black and white). With --bg, shows a single swatch composited
+   * against the specified background.
+   *
+   * @private
+   * @param {string} hex - The hex colour value.
+   * @param {string|null} bg - Optional background hex for alpha compositing.
+   * @returns {string} Swatch indicator(s) or styled arrow.
+   */
+  #makeIndicator(hex, bg = null) {
+    if(!Term.hasColor) {
+      return c`{arrow}→{/}`
+    }
+
+    const parsed = Colour.parseHexColour(hex)
+    const hasAlpha = !!parsed.alpha
+
+    if(!hasAlpha) {
+      return this.#swatch(hex)
+    }
+
+    const alphaPercent = Math.round(parsed.alpha.decimal * 100)
+
+    if(bg) {
+      const composited = Colour.mix(parsed.colour, bg, alphaPercent)
+
+      return this.#swatch(composited)
+    }
+
+    const onBlack = Colour.mix(parsed.colour, "#000000", alphaPercent)
+    const onWhite = Colour.mix(parsed.colour, "#ffffff", alphaPercent)
+
+    return `${this.#swatch(onBlack)}${this.#swatch(onWhite)}`
+  }
 
   /**
    * Formats a single ThemeToken for display in the theme resolution output,
@@ -432,12 +526,12 @@ export default class ResolveCommand extends Command {
     }
 
     if(this.#func.test(value)) {
-      const result = Evaluator.extractFunctionCall(value)
+      const match = this.#func.exec(value)
 
-      if(!result)
+      if(!match?.groups)
         return [c`{leaf}${value}{/}`, "literal"]
 
-      const {func, args} = result
+      const {func, args} = match.groups
 
       return [
         c`{func}${func}{/}{parens}${"("}{/}{leaf}${args}{/}{parens}${")"}{/}`,
