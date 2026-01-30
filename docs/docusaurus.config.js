@@ -121,7 +121,7 @@ const config = {
       footer: {
         style: 'dark',
         links: [],
-        copyright: `🙅🏻<del>Copyright ©${new Date().getFullYear()}</del>🙅🏻<br /><a href="https://unlicense.org"/>Unlicense</a>. Built with <a href="https://docusaurus.io/">Docusaurus</a>.`,
+        copyright: `<del title="lololol">Copyright ©${new Date().getFullYear()}</del><br /><a href="https://unlicense.org/">Unlicense</a>. Built with <a href="https://docusaurus.io/">Docusaurus</a>.`,
       },
       prism: {
         additionalLanguages: [
@@ -146,6 +146,9 @@ const config = {
         darkTheme: PrismDark,
       },
     }),
+  clientModules: [
+    "./src/clientModules/routeTransition.js",
+  ],
   scripts: [
     {
       src: "https://kit.fontawesome.com/9ecaefec6a.js",
