@@ -393,7 +393,7 @@ export default class ResolveCommand extends Command {
 
     steps.forEach(step => {
       if(!levelMap.has(step.level)) {
-        levelMap.set(step.level, Math.min(normalizedLevel++, 4)) // Cap at depth 4
+        levelMap.set(step.level, normalizedLevel++)
       }
 
       step.depth = levelMap.get(step.level)
