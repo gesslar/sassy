@@ -113,7 +113,17 @@ const config = {
           },
           {
             type: "html",
-            value: `<a href="https://github.com/gesslar/sassy"><img class="header-svg" src="/img/line-md--github-loop.svg" /></a>`,
+            value: `<a href="https://github.com/gesslar/sassy" target="_blank"><img class="header-svg" src="/img/line-md--github-loop.svg" /></a>`,
+            position: "right",
+          },
+          {
+            type: "html",
+            value: `<a href="/docs/testimonials"><img class="header-svg" src="/img/hugeicons--promotion.svg" /></a>`,
+            position: "right",
+          },
+          {
+            type: "html",
+            value: `|`,
             position: "right",
           },
         ],

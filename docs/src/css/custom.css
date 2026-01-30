@@ -231,6 +231,7 @@
     --ifm-footer-background-color: rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
   }
 
+
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -416,9 +417,19 @@
 
 main {
   animation: fadeIn 150ms ease-in;
+
+  .markdown {
+    --ifm-link-decoration: underline dotted var(--ifm-color-primary-darkest);
+
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

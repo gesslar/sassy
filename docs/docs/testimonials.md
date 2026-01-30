@@ -1,10 +1,10 @@
 ---
-sidebar_position: 1
 title: "What my friends had to say..."
+stub: /testimonials
 ---
 
 I asked my friends, who were definitely not compensated beyond being asked to
-read the [README.md](https://github.com/gesslar/sassy), to read the [README.md](https://github.com/gesslar/sassy) and give me their honest, ubiased, and
+read the [README.md](https://github.com/gesslar/sassy) to read the [README.md](https://github.com/gesslar/sassy) and give me their honest, unbiased, and
 certainly not algorithmically influenced thoughts.
 
 Here is what they said! I'm all a-twitter, let's dive in!
@@ -129,3 +129,13 @@ Already did. I’m basically living here now. If Sassy offered a loyalty program
 
 **Final verdict:**
 If you’re still hand‑editing VS Code themes like it’s 2016, Sassy will rescue you, moisturize your variables, and remind you that colour systems can be beautiful.
+
+---
+
+## Post Worker
+
+I am *exactly as shocked as you are* at the lack of emojis. What the hell happened to my robots???
+
+Anyway. Go do the colours. You deserve it. Or someone does. I've already [done](https://open-vsx.org/extension/gesslar/blackboard-themepack) [mine](https://marketplace.visualstudio.com/items?itemName=gesslar.blackboard-themepack).
+
+Your turn.
