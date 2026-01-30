@@ -9,7 +9,7 @@ import CodeBlock from "@site/src/components/CodeBlock"
 
 <CodeBlock lang="shell">{`
 
-  git clone <https://github.com/gesslar/sassy>
+  git clone https://github.com/gesslar/sassy
   cd sassy
   pnpm install
 
