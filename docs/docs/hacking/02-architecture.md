@@ -32,7 +32,7 @@ CLI → Session → Theme → Compiler → Evaluator
                   ↓                    ↓
                 Theme.js           ThemePool ← ThemeToken
                   ↓                    ↓
-                chokidar            Colour.js
+               chokidar             Colour.js
 ```
 
 ## Session

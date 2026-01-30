@@ -3,7 +3,7 @@ sidebar_position: 7
 title: "Lint Rules"
 ---
 
-# Lint Rules
+import CodeBlock from "@site/src/components/CodeBlock"
 
 The `sassy lint` command performs static analysis on compiled theme data. It reports issues at three severity levels: **error** (high), **warning** (medium), and **info** (low).
 
@@ -21,19 +21,21 @@ Lint always exits with code 0, even when issues are found.
 
 **Example problem:**
 
-```yaml
-theme:
-  tokenColors:
-    - name: Strings
-      scope: string
-      settings:
-        foreground: "#98c379"
-    - name: String Literals
-      scope: string
-      settings:
-        foreground: "#e5c07b"
-        fontStyle: italic
-```
+<CodeBlock lang="yaml">{`
+
+  theme:
+    tokenColors:
+      - name: Strings
+        scope: string
+        settings:
+          foreground: "#98c379"
+      - name: String Literals
+        scope: string
+        settings:
+          foreground: "#e5c07b"
+          fontStyle: italic
+
+`}</CodeBlock>
 
 The second rule never applies because `string` was already matched by the first.
 
@@ -51,15 +53,17 @@ The second rule never applies because `string` was already matched by the first.
 
 **Example problem:**
 
-```yaml
-vars:
-  palette:
-    blue: "#61afef"
+<CodeBlock lang="yaml">{`
 
-theme:
-  colors:
-    editor.foreground: $(palette.white)  # "white" not defined
-```
+  vars:
+    palette:
+      blue: "#61afef"
+
+  theme:
+    colors:
+      editor.foreground: $(palette.white)  # "white" not defined
+
+`}</CodeBlock>
 
 **Fix:** Define the missing variable, correct the typo, or remove the reference.
 
@@ -73,22 +77,24 @@ theme:
 
 **Why it matters:** Unused variables are dead code. They may indicate a typo in a variable name or a leftover from a previous revision.
 
-:::note
+:::info
 This check only examines references in the `theme` section (colours, tokenColors, semanticTokenColors). Variables referenced only by other variables are not flagged -- they participate in the variable resolution chain even if they do not appear directly in theme output.
 :::
 
 **Example problem:**
 
-```yaml
-vars:
-  palette:
-    cyan: "#56b6c2"
-    magenta: "#c678dd"   # never referenced anywhere in theme
+<CodeBlock lang="yaml">{`
 
-theme:
-  colors:
-    editor.foreground: $(palette.cyan)
-```
+  vars:
+    palette:
+      cyan: "#56b6c2"
+      magenta: "#c678dd"   # never referenced anywhere in theme
+
+  theme:
+    colors:
+      editor.foreground: $(palette.cyan)
+
+`}</CodeBlock>
 
 **Fix:** Remove the unused variable or add a reference where intended.
 
@@ -106,7 +112,7 @@ When both scopes are in the same rule (same index), the severity is reduced to i
 
 **Example problem:**
 
-```yaml
+<CodeBlock lang="yaml">{`
 theme:
   tokenColors:
     - name: All Keywords
@@ -118,25 +124,25 @@ theme:
       settings:
         foreground: "#e06c75"
         fontStyle: bold
-```
+`}</CodeBlock>
 
 `keyword.control` is a child of `keyword`. Because the broad `keyword` rule comes first, `keyword.control` never matches.
 
 **Fix:** Reorder rules from most specific to least specific:
 
-```yaml
+<CodeBlock lang="yaml">{`
 theme:
-  tokenColors:
-    - name: Control Keywords
-      scope: keyword.control
-      settings:
-        foreground: "#e06c75"
-        fontStyle: bold
-    - name: All Keywords
-      scope: keyword
-      settings:
-        foreground: "#c678dd"
-```
+    tokenColors:
+      - name: Control Keywords
+        scope: keyword.control
+        settings:
+          foreground: "#e06c75"
+          fontStyle: bold
+      - name: All Keywords
+        scope: keyword
+        settings:
+          foreground: "#c678dd"
+`}</CodeBlock>
 
 ### Scope Hierarchy
 

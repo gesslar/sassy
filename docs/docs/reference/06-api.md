@@ -3,15 +3,17 @@ sidebar_position: 6
 title: "Programmatic API"
 ---
 
-# Programmatic API
+import CodeBlock from "@site/src/components/CodeBlock"
 
 Sassy exposes its core classes for programmatic use. The API is **experimental** and the interface may change between minor versions.
 
 ## Installation
 
-```bash
-npm install @gesslar/sassy
-```
+<CodeBlock lang="bash">{`
+
+    npm install @gesslar/sassy
+
+`}</CodeBlock>
 
 ## Package Exports
 
@@ -22,28 +24,30 @@ npm install @gesslar/sassy
 
 ## Basic Usage
 
-```javascript
-import {FileObject, DirectoryObject, Cache} from '@gesslar/toolkit'
-import {Theme} from '@gesslar/sassy'
+<CodeBlock lang="javascript">{`
 
-const cwd = DirectoryObject.fromCwd()
-const file = new FileObject('my-theme.yaml', cwd)
-const cache = new Cache()
+    import {FileObject, DirectoryObject, Cache} from '@gesslar/toolkit'
+    import {Theme} from '@gesslar/sassy'
 
-const theme = new Theme(file, cwd, {
-  outputDir: './dist',
-  dryRun: false,
-  silent: false,
-})
+    const cwd = DirectoryObject.fromCwd()
+    const file = new FileObject('my-theme.yaml', cwd)
+    const cache = new Cache()
 
-theme.setCache(cache)
+    const theme = new Theme(file, cwd, {
+      outputDir: './dist',
+      dryRun: false,
+      silent: false,
+    })
 
-await theme.load()
-await theme.build()
+    theme.setCache(cache)
 
-const output = theme.getOutput()  // compiled theme object
-await theme.write()               // write to disk
-```
+    await theme.load()
+    await theme.build()
+
+    const output = theme.getOutput()  // compiled theme object
+    await theme.write()               // write to disk
+
+`}</CodeBlock>
 
 ## Exported Classes
 
@@ -63,9 +67,11 @@ await theme.write()               // write to disk
 
 ### Constructor
 
-```javascript
-new Theme(fileObject, cwd, options)
-```
+<CodeBlock lang="javascript">{`
+
+    new Theme(fileObject, cwd, options)
+
+`}</CodeBlock>
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -94,25 +100,27 @@ new Theme(fileObject, cwd, options)
 
 ## LintCommand (Programmatic Linting)
 
-```javascript
-import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
-import {Theme, LintCommand} from '@gesslar/sassy'
+<CodeBlock lang="javascript">{`
 
-const cwd = DirectoryObject.fromCwd()
-const cache = new Cache()
-const file = new FileObject('my-theme.yaml', cwd)
+    import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
+    import {Theme, LintCommand} from '@gesslar/sassy'
 
-const theme = new Theme(file, cwd, {})
-theme.setCache(cache)
-await theme.load()
-await theme.build()
+    const cwd = DirectoryObject.fromCwd()
+    const cache = new Cache()
+    const file = new FileObject('my-theme.yaml', cwd)
 
-const linter = new LintCommand({cwd, packageJson: {}})
-linter.setCache(cache)
+    const theme = new Theme(file, cwd, {})
+    theme.setCache(cache)
+    await theme.load()
+    await theme.build()
 
-const results = await linter.lint(theme)
-// results.tokenColors     - array of tokenColors issues
-// results.semanticTokenColors - array of semanticTokenColors issues
-// results.colors          - array of colors issues
-// results.variables       - array of variable issues
-```
+    const linter = new LintCommand({cwd, packageJson: {}})
+    linter.setCache(cache)
+
+    const results = await linter.lint(theme)
+    // results.tokenColors          - array of tokenColors issues
+    // results.semanticTokenColors  - array of semanticTokenColors issues
+    // results.colors               - array of colors issues
+    // results.variables            - array of variable issues
+
+`}</CodeBlock>

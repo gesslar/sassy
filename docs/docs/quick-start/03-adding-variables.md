@@ -76,11 +76,42 @@ Update `theme.colors` to use the semantic layer:
 
 ## Build It
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   npx @gesslar/sassy build ocean.yaml
 
 `}</CodeBlock>
+
+### Nesting `theme.colors`
+
+Sassy allows you to nest your theme colors definition. This can provide
+clarity, as to the relationship of different groupings. In Microsoft's most
+excellent design decisioning, not every expected nesting is supported, and it
+is somewhat of a grab bag of conventions. However, most are nestable and here
+is an example of the above theme conveyed in such a manner.
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    colors:
+      editor:
+        background: $(std.bg)
+        foreground: $(std.fg)
+
+      editorGroupHeader:
+        tabsBackground: $(std.bg.panel)
+
+      tab:
+        activeBackground: $(std.bg)
+        activeForeground: $(std.fg)
+        inactiveBackground: $(std.bg.panel)
+        inactiveForeground: $(colors.gray)
+
+`}</CodeBlock>
+
+For demonstration purposes, the continued examples will be in the first,
+flattened pattern, but know that just like in your variables, Sassy doesn't
+really care, as long as they collapse correctly, everything's good!
 
 Check the output — every reference resolves to a concrete hex value. The theme
 now has tabs and panels styled consistently from a single palette. But we're

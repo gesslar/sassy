@@ -7,7 +7,7 @@ import CodeBlock from "@site/src/components/CodeBlock"
 
 ## Clone and Install
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   git clone https://github.com/gesslar/sassy
   cd sassy
@@ -19,7 +19,7 @@ Sassy requires **Node.js >= 22** and uses **pnpm** as its package manager. The p
 
 ## Run from Source
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
 node ./src/cli.js build examples/simple/midnight-ocean-yaml.yaml
 
@@ -31,7 +31,7 @@ This runs the CLI directly without installing globally. All subcommands (`build`
 
 Run the full test suite:
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
   pnpm test
 
@@ -39,16 +39,16 @@ Run the full test suite:
 
 Run a single test file:
 
-```bash
+<CodeBlock lang="bash">{`
 node --test tests/Colour.test.js
 node --test tests/Compiler.test.js
-```
+`}</CodeBlock>
 
 Tests use the Node.js built-in test runner (`node:test`) with `assert/strict`.
 
 ## Linting
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
 pnpm lint
 
@@ -66,7 +66,7 @@ Do not suggest style changes. ESLint handles all formatting.
 
 ## Type Generation
 
-<CodeBlock lang="shell">{`
+<CodeBlock lang="bash">{`
 
 pnpm types
 

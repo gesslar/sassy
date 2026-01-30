@@ -3,17 +3,19 @@ sidebar_position: 5
 title: "CLI Reference"
 ---
 
-# CLI Reference
+import CodeBlock from "@site/src/components/CodeBlock"
 
 ## Installation
 
-```bash
-# Global install
-npm install -g @gesslar/sassy
+<CodeBlock lang="bash">{`
 
-# Or use via npx
-npx @gesslar/sassy build my-theme.yaml
-```
+    # Global install
+    npm install -g @gesslar/sassy
+
+    # Or use via npx
+    npx @gesslar/sassy build my-theme.yaml
+
+`}</CodeBlock>
 
 ## Commands
 
@@ -21,9 +23,11 @@ npx @gesslar/sassy build my-theme.yaml
 
 Compile one or more theme files into VS Code `.color-theme.json` output.
 
-```
-sassy build [options] <file...>
-```
+<CodeBlock lang="bash">{`
+
+    sassy build [options] <file...>
+
+`}</CodeBlock>
 
 | Option | Short | Description |
 |--------|-------|-------------|
@@ -35,19 +39,20 @@ sassy build [options] <file...>
 
 **Examples:**
 
-```bash
-# Build a single theme
-sassy build my-theme.yaml
+<CodeBlock lang="bash">{`
+    # Build a single theme
+    sassy build my-theme.yaml
 
-# Build multiple themes
-sassy build theme-dark.yaml theme-light.yaml
+    # Build multiple themes
+    sassy build theme-dark.yaml theme-light.yaml
 
-# Build with watch mode and custom output directory
-sassy build --watch --output-dir ./dist my-theme.yaml
+    # Build with watch mode and custom output directory
+    sassy build --watch --output-dir ./dist my-theme.yaml
 
-# Preview output without writing
-sassy build --dry-run my-theme.json5
-```
+    # Preview output without writing
+    sassy build --dry-run my-theme.json5
+
+`}</CodeBlock>
 
 **Output naming:** An input file named `midnight-ocean.yaml` produces `midnight-ocean.color-theme.json`.
 
@@ -66,9 +71,11 @@ sassy build --dry-run my-theme.json5
 
 Inspect the resolution trail of a specific colour, tokenColor scope, or semanticTokenColor.
 
-```
-sassy resolve [options] <file>
-```
+<CodeBlock lang="bash">{`
+
+    sassy resolve [options] <file>
+
+`}</CodeBlock>
 
 | Option | Short | Description |
 |--------|-------|-------------|
@@ -86,13 +93,15 @@ In colour-capable terminals, resolved hex values are displayed with a colour swa
 
 Use `--bg` to composite against a specific background colour instead:
 
-```bash
-# First, find out what the background is
-sassy resolve --color editor.background my-theme.yaml
+<CodeBlock lang="bash">{`
 
-# Then use that value to preview an alpha colour in context
-sassy resolve --color listFilterWidget.noMatchesOutline my-theme.yaml --bg 1a1a1a
-```
+    # First, find out what the background is
+    sassy resolve --color editor.background my-theme.yaml
+
+    # Then use that value to preview an alpha colour in context
+    sassy resolve --color listFilterWidget.noMatchesOutline my-theme.yaml --bg 1a1a1a
+
+`}</CodeBlock>
 
 :::tip
 Pass the hex value without `#` to avoid shell comment interpretation, or wrap it in quotes: `--bg '#1a1a1a'`.
@@ -100,17 +109,19 @@ Pass the hex value without `#` to avoid shell comment interpretation, or wrap it
 
 **Examples:**
 
-```bash
-# Resolve a colour
-sassy resolve --color editor.background my-theme.yaml
+<CodeBlock lang="bash">{`
 
-# Resolve a token colour scope
-sassy resolve --tokenColor keyword.control my-theme.yaml
+    # Resolve a colour
+    sassy resolve --color editor.background my-theme.yaml
 
-# When multiple tokenColors entries match the same scope,
-# Sassy prompts for disambiguation:
-sassy resolve --tokenColor entity.name.class.2 my-theme.yaml
-```
+    # Resolve a token colour scope
+    sassy resolve --tokenColor keyword.control my-theme.yaml
+
+    # When multiple tokenColors entries match the same scope,
+    # Sassy prompts for disambiguation:
+    sassy resolve --tokenColor entity.name.class.2 my-theme.yaml
+
+`}</CodeBlock>
 
 ---
 
@@ -118,9 +129,11 @@ sassy resolve --tokenColor entity.name.class.2 my-theme.yaml
 
 Validate a theme file for common issues.
 
-```
-sassy lint [options] <file>
-```
+<CodeBlock lang="bash">{`
+
+    sassy lint [options] <file>
+
+`}</CodeBlock>
 
 | Option | Description |
 |--------|-------------|
@@ -128,9 +141,11 @@ sassy lint [options] <file>
 
 **Example:**
 
-```bash
-sassy lint my-theme.yaml
-```
+<CodeBlock lang="bash">{`
+
+    sassy lint my-theme.yaml
+
+`}</CodeBlock>
 
 See [Lint Rules](./07-lint-rules.md) for details on each check.
 
