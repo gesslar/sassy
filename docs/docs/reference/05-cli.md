@@ -75,9 +75,28 @@ sassy resolve [options] <file>
 | `--color <key>` | `-c` | Resolve a colour property (e.g., `editor.background`) |
 | `--tokenColor <scope>` | `-t` | Resolve a tokenColors scope (e.g., `keyword.control`) |
 | `--semanticTokenColor <token>` | `-s` | Resolve a semantic token colour |
+| `--bg <hex>` | | Background colour for alpha swatch preview (e.g. `1a1a1a` or `'#1a1a1a'`) |
 | `--nerd` | | Show full error stack traces |
 
-Options are mutually exclusive -- specify exactly one per invocation.
+The resolver options (`--color`, `--tokenColor`, `--semanticTokenColor`) are mutually exclusive -- specify exactly one per invocation.
+
+#### Colour swatches
+
+In colour-capable terminals, resolved hex values are displayed with a colour swatch (`■`) instead of an arrow. When a colour includes an alpha channel, two swatches are shown: the colour composited against black and against white, giving a quick visual sense of how transparency affects the result.
+
+Use `--bg` to composite against a specific background colour instead:
+
+```bash
+# First, find out what the background is
+sassy resolve --color editor.background my-theme.yaml
+
+# Then use that value to preview an alpha colour in context
+sassy resolve --color listFilterWidget.noMatchesOutline my-theme.yaml --bg 1a1a1a
+```
+
+:::tip
+Pass the hex value without `#` to avoid shell comment interpretation, or wrap it in quotes: `--bg '#1a1a1a'`.
+:::
 
 **Examples:**
 

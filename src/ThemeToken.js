@@ -30,6 +30,7 @@ export default class ThemeToken {
   #parentTokenKey = null
   #trail = new Array()
   #parsedColor = null
+  #functionResult = null
 
   /**
    * Constructs a ThemeToken with a given token name.
@@ -240,6 +241,28 @@ export default class ThemeToken {
    */
   getParsedColor() {
     return this.#parsedColor
+  }
+
+  /**
+   * Sets the direct result of a colour function evaluation, before
+   * substitution back into the enclosing expression.
+   *
+   * @param {string} result - The direct function output.
+   * @returns {ThemeToken} This token instance.
+   */
+  setFunctionResult(result) {
+    this.#functionResult = result
+
+    return this
+  }
+
+  /**
+   * Gets the direct result of a colour function evaluation.
+   *
+   * @returns {string|null} The direct function output or null.
+   */
+  getFunctionResult() {
+    return this.#functionResult
   }
 
   /**

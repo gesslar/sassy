@@ -318,11 +318,16 @@ export default class Evaluator {
       return null
 
     const resolved = value.replace(captured, applied)
-
-    return new ThemeToken(value)
+    const token = new ThemeToken(value)
       .setKind("function")
       .setRawValue(captured)
       .setValue(resolved)
+
+    if(resolved !== applied) {
+      token.setFunctionResult(applied)
+    }
+
+    return token
   }
 
   /**
