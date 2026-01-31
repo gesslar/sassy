@@ -5,7 +5,7 @@ title: "Variable Syntax"
 
 import CodeBlock from "@site/src/components/CodeBlock"
 
-Variables are defined under the `vars` key and referenced throughout `vars` and `theme` sections using one of three interchangeable reference forms.
+Variables are defined under `vars` (or `palette`) and referenced throughout `vars` and `theme` sections using one of three interchangeable reference forms. Palette values have a dedicated alias syntax using `$$`.
 
 ## Reference Forms
 
@@ -19,9 +19,33 @@ All three resolve identically and can be mixed freely within the same file. The 
 
 The bare form (`$path.to.var`) stops at the first character that is not a word character or a dot. This can cause ambiguity when a variable reference is immediately followed by text.
 
+## Palette Alias Syntax
+
+The `$$` prefix is shorthand for referencing `palette.*` values. It works with all three reference forms:
+
+| Written | Expands to |
+|---------|------------|
+| `$$cyan` | `$palette.cyan` |
+| `$($cyan)` | `$(palette.cyan)` |
+| `${$cyan}` | `${palette.cyan}` |
+
+This expansion happens before any variable resolution. After expansion, the reference resolves through the normal variable lookup. The `$$` alias works anywhere — in `palette`, `vars`, `theme.colors`, `tokenColors`, `semanticTokenColors`, and inside colour function arguments.
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    cyan: "#56b6c2"
+    blue: "#2d5a87"
+
+  vars:
+    accent: $$cyan                      # expands to $palette.cyan
+    bg.accent: darken($$blue, 70)       # palette ref inside function
+
+`}</CodeBlock>
+
 ## Dot-Path Hierarchies
 
-Nested objects under `vars` create dot-path variable names automatically:
+Nested objects under `vars` (and `palette`) create dot-path variable names automatically:
 
 <CodeBlock lang="yaml">{`
 
@@ -29,21 +53,20 @@ Nested objects under `vars` create dot-path variable names automatically:
     std:
       bg: "#1a1a2e"        # std.bg
       bg.panel: "#242424"  # std.bg.panel (not a nested object — literal key)
-    palette:
-      cyan: "#56b6c2"      # palette.cyan
 
 `}</CodeBlock>
 
 ## Variable-to-Variable References
 
-Variables may reference other variables:
+Variables may reference other variables, including palette values:
 
 <CodeBlock lang="yaml">{`
 
+  palette:
+    cyan: "#56b6c2"
+
   vars:
-    palette:
-      cyan: "#56b6c2"
-    accent: $(palette.cyan)
+    accent: $$cyan
 
 `}</CodeBlock>
 
@@ -59,10 +82,11 @@ Variables may also contain colour function calls:
 
 ## Resolution Order
 
-Resolution happens in two distinct passes to ensure deterministic scoping:
+Resolution happens in three distinct passes to ensure deterministic scoping:
 
-1. **Variable pass** -- every entry under `vars` is resolved using only the variable set itself. Variables never see theme values during this pass.
-2. **Theme pass** -- entries under `theme` (colours, tokenColors, semanticTokenColors) are resolved against the union of the fully-resolved variables and the theme entries.
+1. **Palette pass** — every entry under `palette` is resolved using only the palette set itself. Palette entries cannot reference `vars` or `theme` values.
+2. **Variable pass** — every entry under `vars` is resolved using the fully-resolved palette plus the variable set. Variables never see theme values during this pass.
+3. **Theme pass** — entries under `theme` (colours, tokenColors, semanticTokenColors) are resolved against the union of the fully-resolved palette, variables, and the theme entries.
 
 Variables never see partially-resolved theme state. This guarantees that a variable always evaluates to the same value regardless of where it is referenced in the theme.
 

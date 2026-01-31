@@ -1,20 +1,21 @@
 # Theme Config
 config:
-  schema: vscode://schemas/color-theme
+  $schema: vscode://schemas/color-theme
   name: corporate
   type: dark
 
   import:
+    - import/palette-$(type).yaml
     - import/variables.yaml
     - import/colors.yaml
-    - import/tokenColors-dark.yaml
+    - import/tokenColors-$(type).yaml
 
   custom:
     semanticHighlighting: false
-    colorSpaceName: oklch
+    colorSpaceName: sRGB
 
 vars:
-  main: $colors.white
+  main: $$white
   inverse:
     invert($main)
 
@@ -27,7 +28,7 @@ vars:
 
   theme:
     fg: $main
-    bg: lighten($colors.black, 20)
-    accent: $colors.teal
-    accentSecondary: lighten($colors.blue, 15)
+    bg: lighten($$black, 20)
+    accent: $$teal
+    accentSecondary: lighten($$blue, 15)
     shadow: alpha($accent, 0.25)

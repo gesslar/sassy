@@ -33,11 +33,16 @@ Write themes like a human, compile for VS Code:
 **After (Sassy):**
 
 ```yaml
+palette:
+  blue: "#4b8ebd"
+  white: "#e6e6e6"
+  dark: "#1a1a1a"
+
 vars:
-  accent: "#4b8ebd"
+  accent: $$blue
   std:
-    fg: "#e6e6e6"
-    bg: "#1a1a1a"
+    fg: $$white
+    bg: $$dark
     bg.panel: lighten($(std.bg), 15)
     bg.accent: darken($(accent), 15)
 
@@ -233,16 +238,23 @@ config:
   name: "My Awesome Theme"
   type: dark
 
-vars:
-  # Your colour palette
-  primary: "#4b8ebd"
-  success: "#4ab792"
-  error: "#b74a4a"
+palette:
+  # Raw colour values — self-contained, evaluated first
+  blue: "#4b8ebd"
+  green: "#4ab792"
+  red: "#b74a4a"
+  white: "#e6e6e6"
+  dark: "#1a1a1a"
 
-  # Build semantic relationships
+vars:
+  # Semantic relationships referencing palette via $$
+  primary: $$blue
+  success: $$green
+  error: $$red
+
   std:
-    fg: "#e6e6e6"
-    bg: "#1a1a1a"
+    fg: $$white
+    bg: $$dark
     accent: $(primary)
     bg.accent: darken($(accent), 15)
 
@@ -271,17 +283,18 @@ While Sassy provides common functions like `lighten()`, `darken()`, and
 `mix()`, you have access to the entire spectrum of colour formats:
 
 ```yaml
-vars:
+palette:
   # Use any colour space Culori understands
   lab_colour: lab(50 20 -30)           # LAB colour space
   hwb_colour: hwb(180 30% 20%)         # HWB (Hue-Whiteness-Blackness)
   lch_colour: lch(70 40 180)           # LCH colour space
   p3_colour: color(display-p3 0.4 0.8 0.2)  # Display P3 gamut
   rec2020: color(rec2020 0.42 0.85 0.31)    # Rec. 2020 colour space
-
-  # Mix and match freely
   primary: oklch(0.6, 20, 220)
-  secondary: mix($(primary), lab(80 -20 40), 30)
+
+vars:
+  # Mix and match freely
+  secondary: mix($$primary, lab(80 -20 40), 30)
   accent: lighten(hwb(240 20% 10%), 15)
 ```
 
@@ -326,15 +339,16 @@ function (`rgba(255, 100, 200, 0.5)`, `darken($(bg), 20)`,
 Use CSS colour names with the `css()` function:
 
 ```yaml
-vars:
+palette:
   # CSS named colours
   danger: css(crimson)
   ocean: css(deepskyblue)
   nature: css(forestgreen)
 
-  # Mix named colours with functions
-  muted_red: fade(css(tomato), 0.6)
-  light_blue: lighten(css(navy), 40)
+vars:
+  # Mix palette colours with functions
+  muted_red: fade($$danger, 0.6)
+  light_blue: lighten($$ocean, 40)
 ```
 
 > **Reference:** See the complete list of CSS named colours at [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/named-color) or [Wikipedia](https://en.wikipedia.org/wiki/Web_colors#HTML_color_names).
@@ -352,6 +366,24 @@ vars:
   variant2: $accent            # Short form
   variant3: ${accent}          # Braced form
 ```
+
+### Palette Aliases
+
+The `$$` prefix is shorthand for referencing `palette.*` values:
+
+```yaml
+palette:
+  cyan: "#56b6c2"
+
+vars:
+  # All equivalent — resolve to palette.cyan:
+  a: $$cyan
+  b: $($cyan)
+  c: ${$cyan}
+```
+
+This expansion happens before any variable resolution, so downstream tools
+(resolve, lint) see the canonical `$palette.cyan` form.
 
 ## Theme Development Workflow
 
@@ -400,13 +432,12 @@ extension.
 Break your themes into reusable components using the import system:
 
 ```yaml
-# colours.yaml
-vars:
-  palette:
-    primary: "#4b8ebd"
-    success: "#4ab792"
-    error: "#b74a4a"
-    warning: "#b36b47"
+# palette.yaml
+palette:
+  blue: "#4b8ebd"
+  green: "#4ab792"
+  red: "#b74a4a"
+  orange: "#b36b47"
 
 ---
 
@@ -415,11 +446,11 @@ config:
   name: "My Theme"
   type: dark
   import:
-    - "./colours.yaml"
+    - "./palette.yaml"
 
 vars:
-  # Use imported colours
-  accent: $(palette.primary)
+  # Use imported palette via $$ alias
+  accent: $$blue
 
   # Build your design system
   std:
@@ -459,7 +490,7 @@ Imports are a simple array of file paths. Each file gets merged into your theme:
 
 The merge behaviour depends on the type of theme content:
 
-**Objects (composable):** `colors`, `semanticTokenColors`, `vars`, `config`
+**Objects (composable):** `palette`, `colors`, `semanticTokenColors`, `vars`, `config`
 
 1. Imported files (merged in import order)
 2. Your theme file's own definitions (final override)
@@ -499,41 +530,40 @@ Now edit your YAML file and watch VS Code update automatically!
 ### Start with Meaning, Not Colours
 
 ```yaml
-# ❌ Don't start with random colours
-vars:
-  red: "#ff0000"
-  blue: "#0000ff"
+# ✅ Raw colours go in palette
+palette:
+  red: "#b74a4a"
+  green: "#4ab792"
+  dark: "#1a1a1a"
 
-# ✅ Start with semantic meaning
+# ✅ Semantic meaning goes in vars
 vars:
   status:
-    error: "#b74a4a"
-    success: "#4ab792"
+    error: $$red
+    success: $$green
 
   ui:
-    background: "#1a1a1a"
+    background: $$dark
     surface: lighten($(ui.background), 15)
 ```
 
 ### Use Mathematical Relationships
 
 ```yaml
-# Colours that harmonize automatically
-vars:
+palette:
   base: "#4b8ebd"
+  gray: "#808080"
+  # OKLCH for perceptually uniform colours
+  primary: oklch(0.6, 20, 220)
+  accent: oklch(0.7, 25, 45)
 
+vars:
+  # Colours that harmonize automatically
   harmonies:
-    lighter: lighten($(base), 20)
-    darker: darken($(base), 20)
-    complement: mix($(base), invert($(base)), 50)
-    muted: mix($(base), "#808080", 30)
-
-  # OKLCH colours for perceptually uniform adjustments
-  oklch_palette:
-    primary: oklch(0.6, 20, 220)        # Blue with controlled chroma
-    accent: oklch(0.7, 25, 45)          # Warm orange complement
-    muted: oklch(0.5, 8, 220)           # Desaturated blue
-    bright: oklcha(0.8, 30, 220, 0.9)   # Bright blue with transparency
+    lighter: lighten($$base, 20)
+    darker: darken($$base, 20)
+    complement: mix($$base, invert($$base), 50)
+    muted: mix($$base, $$gray, 30)
 ```
 
 ### Test with Real Code

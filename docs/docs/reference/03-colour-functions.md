@@ -33,7 +33,8 @@ Sassy provides colour manipulation functions powered by [Culori](https://culorij
 The `colour` parameter in transformation functions accepts:
 
 - **Hex values**: `#ff0000`, `#f00`, `#ff000080` (with alpha)
-- **Variable references**: `$(accent)`, `$palette.cyan`
+- **Variable references**: `$(accent)`, `$std.fg`
+- **Palette references**: `$$cyan`, `$($blue)` (shorthand for `$palette.cyan`, `$(palette.blue)`)
 - **CSS names via css()**: `css(tomato)`
 - **Nested function calls**: `darken($(bg), 20)`
 

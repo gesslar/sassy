@@ -10,18 +10,25 @@ during theme compilation.
 
 ## Regex Patterns
 
-Two static patterns drive token detection:
+Three static patterns drive token detection:
 
 - **`Evaluator.sub`** — matches variable references in three syntaxes: `$(var)`,
   `$var`, `${var}`
 - **`Evaluator.func`** — matches function calls: `functionName(args)`
+- **`Evaluator.paletteAlias`** — matches palette alias syntax: `$$name`,
+  `$($name)`, `${$name}`. These are expanded to `$palette.name`, `$(palette.name)`,
+  `${palette.name}` before resolution begins.
 
 ## evaluate(decomposed)
 
 The main entry point. Takes an array of `{flatPath, value}` entries and
 resolves them in-place.
 
-Resolution is iterative:
+Before the resolution loop begins, a pre-pass expands all palette aliases
+(`$$name` → `$palette.name`) via `expandPaletteAliases()`. This ensures palette
+references are in their canonical form before any resolution attempts.
+
+Resolution is then iterative:
 
 1. Loop through all entries, calling `#evaluateValue()` on each string value.
 2. `#evaluateValue()` dispatches based on the value's form:

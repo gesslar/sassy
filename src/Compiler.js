@@ -35,6 +35,7 @@ export default class Compiler {
     try {
       const source = theme.getSource()
       const {config: sourceConfig} = source ?? {}
+      const {palette: sourcePalette} = source
       const {vars: sourceVars} = source
       const {theme: sourceTheme} = source
 
@@ -71,6 +72,7 @@ export default class Compiler {
       const merged = Data.mergeObject({},
         imported,
         {
+          palette: sourcePalette ?? {},
           vars: sourceVars ?? {},
           colors: sourceTheme?.colors ?? {},
           semanticTokenColors: sourceTheme?.semanticTokenColors ?? {},
@@ -79,6 +81,11 @@ export default class Compiler {
 
       // Add tokenColors after merging to avoid mergeObject processing
       merged.tokenColors = mergedTokenColors
+
+      // Palette first — self-contained, cannot reach outside itself
+      const palette = this.#decomposeObject({palette: merged.palette ?? {}})
+
+      evaluate(palette)
 
       // Shred them up! Kinda. And evaluate the variables in place
       const vars = this.#decomposeObject(merged.vars)
@@ -142,6 +149,7 @@ export default class Compiler {
    */
   async #import(imports, theme) {
     const imported = {
+      palette: {},
       vars: {},
       colors: {},
       tokenColors: [],
@@ -191,18 +199,22 @@ export default class Compiler {
     }
 
     loaded.forEach((load, file) => {
+      const palette = load?.palette ?? {}
       const vars = load?.vars ?? {}
       const colors = load?.theme?.colors ?? {}
       const tokenColors = load?.theme?.tokenColors ?? []
       const semanticTokenColors = load?.theme?.semanticTokenColors ?? {}
 
       importByFile.set(file, new Map([
+        ["palette", palette],
         ["vars", vars],
         ["colors", colors],
         ["tokenColors", tokenColors],
         ["semanticTokenColors", semanticTokenColors]
       ]))
 
+      imported.palette =
+        Data.mergeObject(imported.palette, palette)
       imported.vars =
         Data.mergeObject(imported.vars, vars)
       imported.colors =

@@ -1,0 +1,12 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Palette Func Test
+  type: dark
+palette:
+  blue: "#2d5a87"
+  lightBlue: "lighten($$blue, 20)"
+vars:
+  accent: "$$lightBlue"
+theme:
+  colors:
+    "editor.background": $(accent)

@@ -642,7 +642,7 @@ theme:
     editorCodeLens:
       foreground: $std.fg.accent.secondary.faint
     editorLightBulb:
-      foreground: $colors.gold
+      foreground: $$gold
     editorLightBulbAutoFix:
       foreground: $std.fg.info
 
@@ -890,11 +890,11 @@ theme:
       remoteBackground: $std.bg.success
     # Icons for various metadata
     extensionIcon:
-      starForeground: $colors.gold
-      verifiedForeground: $colors.green
-      preReleaseForeground: $colors.purple
-      sponsorForeground: $colors.pink
-      privateForeground: $colors.red
+      starForeground: $$gold
+      verifiedForeground: $$green
+      preReleaseForeground: $$purple
+      sponsorForeground: $$pink
+      privateForeground: $$red
 
     # Quick picker colors
     # Quick Picker Group Labels & Borders (e.g. "recently used", "commands")
@@ -935,23 +935,23 @@ theme:
     inlineEdit:
       gutterIndicator:
         primaryBorder: $accent
-        primaryForeground: $colors.teal
+        primaryForeground: $$teal
         primaryBackground: fade($accent, 0.20)
         secondaryBorder: $status.success
-        secondaryForeground: $colors.yellow
+        secondaryForeground: $$yellow
         secondaryBackground: fade($accent, 0.07)
         successfulBorder: $status.success
         successfulForeground: $status.success
         successfulBackground: fade($accent, 0.13)
         background: $std.bg.panel.outer
       originalBackground: fade($accent, 0.20)
-      modifiedBackground: fade($colors.teal, 0.20)
+      modifiedBackground: fade($$teal, 0.20)
       originalChangedLineBackground: fade($accent, 0.27)
       originalChangedTextBackground: fade($accent, 0.20)
       modifiedChangedLineBackground: fade($accent, 0.20)
-      modifiedChangedTextBackground: fade($colors.teal, 0.27)
+      modifiedChangedTextBackground: fade($$teal, 0.27)
       originalBorder: $accent
-      modifiedBorder: $colors.teal
+      modifiedBorder: $$teal
       tabWillAcceptModifiedBorder: $status.success
       tabWillAcceptOriginalBorder: $status.success
 
@@ -1021,7 +1021,7 @@ theme:
       background: fade($accent, 0.07)
 
     peekViewEditor:
-      matchHighlightBackground: fade($colors.teal, 0.20)
+      matchHighlightBackground: fade($$teal, 0.20)
       matchHighlightBorder: fade($accent, 0.47)
       background: fade($std.bg.panel.inner, 0.50)
 
@@ -1085,7 +1085,7 @@ theme:
       foreground: $status.success
       border: fade($accent, 0.20)
       warningBackground: darken($status.warning, 60)
-      warningForeground: $colors.yellow
+      warningForeground: $$yellow
       errorBackground: darken($status.error, 60)
       errorForeground: $status.error
 
@@ -1110,16 +1110,16 @@ theme:
       exceptionLabelForeground: $std.fg
       exceptionLabelBackground: $status.error
       stateLabelForeground: $std.bg.panel.inner
-      stateLabelBackground: $colors.yellow
-      valueChangedHighlight: fade($colors.teal, 0.40)
+      stateLabelBackground: $$yellow
+      valueChangedHighlight: fade($$teal, 0.40)
 
     debugTokenExpression:
       name: $std.fg
-      value: $colors.teal
-      string: $colors.pink
+      value: $$teal
+      string: $$pink
       boolean: $status.error
-      number: $colors.yellow
-      error: $colors.pink
+      number: $$yellow
+      error: $$pink
       type: fade($std.fg.secondary, 0.67)
 
     # Testing colors
@@ -1128,9 +1128,9 @@ theme:
       iconErrored: $status.error
       iconFailed: $status.error
       iconPassed: $status.success
-      iconQueued: $colors.yellow
+      iconQueued: $$yellow
       iconUnset: fade($std.fg.secondary, 0.67)
-      iconSkipped: $colors.blue
+      iconSkipped: $$blue
       peekBorder: fade($accent, 0.53)
       peekHeaderBackground: fade($std.bg.panel.inner, 0.47)
       messagePeekBorder: fade($accent, 0.53)
@@ -1151,39 +1151,39 @@ theme:
           badgeBorder: fade($status.error, 0.53)
           badgeForeground: $std.bg.panel.inner
         info:
-          decorationForeground: $colors.blue
-          lineBackground: fade($colors.blue, 0.13)
+          decorationForeground: $$blue
+          lineBackground: fade($$blue, 0.13)
 
     # Retired testing icons (same but faded)
     testing.iconErrored.retired: fade($status.error, 0.40)
     testing.iconFailed.retired: fade($status.error, 0.40)
     testing.iconPassed.retired: fade($status.success, 0.40)
-    testing.iconQueued.retired: fade($colors.yellow, 0.40)
+    testing.iconQueued.retired: fade($$yellow, 0.40)
     testing.iconUnset.retired: fade($std.fg.secondary, 0.33)
-    testing.iconSkipped.retired: fade($colors.blue, 0.40)
+    testing.iconSkipped.retired: fade($$blue, 0.40)
 
     # Debug Icons colors
     debugIcon:
       breakpointForeground: $status.error
       breakpointDisabledForeground: $std.fg.inactive
       breakpointUnverifiedForeground: fade($status.error, 0.47)
-      breakpointCurrentStackframeForeground: $colors.gold
+      breakpointCurrentStackframeForeground: $$gold
       breakpointStackframeForeground: $status.success
       startForeground: $accent
-      pauseForeground: $colors.yellow
+      pauseForeground: $$yellow
       stopForeground: $status.error
       disconnectForeground: $std.fg.secondary
-      restartForeground: $colors.teal
-      stepOverForeground: $colors.blue
+      restartForeground: $$teal
+      stepOverForeground: $$blue
       stepIntoForeground: $status.success
-      stepOutForeground: $colors.teal
+      stepOutForeground: $$teal
       continueForeground: $status.success
-      stepBackForeground: $colors.pink
+      stepBackForeground: $$pink
 
     # Debug Console colors
     debugConsole:
-      infoForeground: $colors.teal
-      warningForeground: $colors.yellow
+      infoForeground: $$teal
+      warningForeground: $$yellow
       errorForeground: $status.error
       sourceForeground: $accent
 
@@ -1196,10 +1196,10 @@ theme:
       lines: $accent
       red: $status.error
       blue: $accent
-      yellow: $colors.yellow
-      orange: $colors.orange
+      yellow: $$yellow
+      orange: $$orange
       green: $status.success
-      purple: $colors.purple
+      purple: $$purple
 
     chart:
       line: $accent
@@ -1208,7 +1208,7 @@ theme:
 
     # Chat colors
     chat:
-      editedFileForeground: $colors.yellow
+      editedFileForeground: $$yellow
       slashCommandBackground: $std.bg.panel.inner
       slashCommandForeground: $accent
 

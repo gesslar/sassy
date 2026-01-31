@@ -5,7 +5,7 @@ title: "Theme File Anatomy"
 
 import CodeBlock from "@site/src/components/CodeBlock"
 
-A Sassy theme file is a YAML or JSON5 document with three top-level keys. When compiled, it produces a `<name>.color-theme.json` file suitable for VS Code.
+A Sassy theme file is a YAML or JSON5 document with up to four top-level keys. When compiled, it produces a `<name>.color-theme.json` file suitable for VS Code.
 
 ## Top-Level Structure
 
@@ -13,6 +13,9 @@ A Sassy theme file is a YAML or JSON5 document with three top-level keys. When c
   config:
     name: "My Theme"
     type: dark
+
+  palette:
+    # colour definitions
 
   vars:
     # variable definitions
@@ -26,6 +29,7 @@ A Sassy theme file is a YAML or JSON5 document with three top-level keys. When c
 | Key | Type | Required | Description |
 |-----|------|----------|-------------|
 | `config` | object | Yes | Theme metadata and import declarations |
+| `palette` | object | No | Colour definitions — a declarative, self-contained scope evaluated before `vars` |
 | `vars` | object | No | Variable definitions for reuse throughout the theme |
 | `theme` | object | Yes | VS Code theme content: colours, token colours, semantic token colours |
 
@@ -51,30 +55,70 @@ A Sassy theme file is a YAML or JSON5 document with three top-level keys. When c
 
 `}</CodeBlock>
 
-## `vars`
+## `palette`
 
-An arbitrary nested object. Keys become dot-path variable names; values are strings (hex colours, colour expressions, or variable references) or nested objects that extend the dot-path.
+A declarative, self-contained scope for raw colour definitions. Palette is evaluated before `vars` and cannot reference anything outside itself — only its own entries. Other scopes (`vars`, `theme`) can reference palette values using the `$$` alias syntax.
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    cyan: "#56b6c2"
+    grey: "#5c6370"
+    accent: lighten($$cyan, 20)
+
+`}</CodeBlock>
+
+The above produces the following palette paths (internally prefixed as `palette.*`):
+
+- `palette.cyan`
+- `palette.grey`
+- `palette.accent`
+
+### Referencing Palette Values
+
+The `$` prefix inside variable references is shorthand for `palette.`:
+
+| Written | Expands to |
+|---------|------------|
+| `$$cyan` | `$palette.cyan` |
+| `$($cyan)` | `$(palette.cyan)` |
+| `${$cyan}` | `${palette.cyan}` |
+
+This expansion happens before variable resolution, so downstream tools (resolve, lint) always see the canonical `palette.*` form.
 
 <CodeBlock lang="yaml">{`
 
   vars:
-    palette:
-      cyan: "#56b6c2"
-      grey: "#5c6370"
+    accent: $$cyan          # resolves palette.cyan
+    bg.accent: darken($$accent, 70)   # palette value in a function
+
+`}</CodeBlock>
+
+### Palette Isolation
+
+Palette entries can reference other palette entries (using `$$` syntax), but they **cannot** reference `vars` or `theme` values. This is enforced by evaluation order — the palette is fully resolved before any other scope is processed.
+
+## `vars`
+
+An arbitrary nested object. Keys become dot-path variable names; values are strings (hex colours, colour expressions, or variable references) or nested objects that extend the dot-path. Variables can reference palette values using the `$$` alias.
+
+<CodeBlock lang="yaml">{`
+
+  vars:
+    accent: $$cyan
     std:
       bg: "#1a1a2e"
       fg: "#abb2bf"
-      accent: $(palette.cyan)
+      fg.accent: $(accent)
 
 `}</CodeBlock>
 
 The above produces the following variable paths:
 
-- `palette.cyan`
-- `palette.grey`
+- `accent`
 - `std.bg`
 - `std.fg`
-- `std.accent`
+- `std.fg.accent`
 
 See [Variable Syntax](./02-variable-syntax.md) for reference forms and resolution order.
 
@@ -107,12 +151,12 @@ An array of TextMate token colour rules. Each entry has `name`, `scope`, and `se
       - name: Comments
         scope: comment, punctuation.definition.comment
         settings:
-          foreground: $(palette.grey)
+          foreground: $$grey
           fontStyle: italic
       - name: Keywords
         scope: keyword
         settings:
-          foreground: $(palette.cyan)
+          foreground: $$cyan
 
 `}</CodeBlock>
 
@@ -127,7 +171,7 @@ An object mapping semantic token types to colour expressions.
       variable.declaration:
         foreground: $(std.fg)
       function.declaration:
-        foreground: $(palette.cyan)
+        foreground: $$cyan
 
 `}</CodeBlock>
 

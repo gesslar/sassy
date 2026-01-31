@@ -14,7 +14,7 @@ gets unwieldy. Let's fix that.
 Sassy lets you split your theme across multiple files using `config.import`.
 Each import path is resolved relative to the main theme file.
 
-Here's the idea: extract your `vars` section into a shared file, and keep the main theme file focused on structure.
+Here's the idea: extract your `palette` and `vars` into shared files, and keep the main theme file focused on structure.
 
 **ocean.yaml** (trimmed down):
 
@@ -24,6 +24,7 @@ Here's the idea: extract your `vars` section into a shared file, and keep the ma
     name: "Ocean"
     type: dark
     import:
+      - "./shared/palette.yaml"
       - "./shared/variables.yaml"
 
   theme:
@@ -50,13 +51,24 @@ Here's the idea: extract your `vars` section into a shared file, and keep the ma
 
 `}</CodeBlock>
 
+**shared/palette.yaml**:
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    cyan: "#4a9eff"
+    white: "#e0e0e0"
+    green: "#a8d8a8"
+
+`}</CodeBlock>
+
 **shared/variables.yaml**:
 
 <CodeBlock lang="yaml">{`
 
   vars:
-    accent: "#4a9eff"
-    main: "#e0e0e0"
+    accent: $$cyan
+    main: $$white
 
     std:
       fg: $(main)
@@ -66,7 +78,7 @@ Here's the idea: extract your `vars` section into a shared file, and keep the ma
     scope:
       comment: fade($(std.fg), 60)
       keyword: $(accent)
-      string: "#a8d8a8"
+      string: $$green
 
 `}</CodeBlock>
 
@@ -84,7 +96,7 @@ The output is identical. The organisation is just better.
 
 When Sassy processes imports, it follows two rules:
 
-1. **Objects deep-merge.** If both the imported file and the main file define `vars.std.bg`, the main file's value wins. Later values override earlier ones at every nesting level.
+1. **Objects deep-merge.** If both the imported file and the main file define `vars.std.bg` (or `palette.cyan`), the main file's value wins. Later values override earlier ones at every nesting level.
 
 2. **Arrays append.** If both files define `tokenColors`, the imported entries come first, followed by the main file's entries. Nothing gets replaced -- both sets appear in the output. Applying these as fallbacks to whatever is missing or not covered by the imports.
 

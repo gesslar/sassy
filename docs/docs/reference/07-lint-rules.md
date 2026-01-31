@@ -47,7 +47,7 @@ The second rule never applies because `string` was already matched by the first.
 
 **Severity:** error
 
-**What it detects:** A variable reference (`$(var.name)`, `$var.name`, or `${var.name}`) that refers to a name not defined in `vars` or any imported file.
+**What it detects:** A variable reference (`$(var.name)`, `$var.name`, `${var.name}`, or palette alias `$$name`) that refers to a name not defined in `palette`, `vars`, or any imported file.
 
 **Why it matters:** Undefined variables are not resolved during compilation. The raw variable syntax passes through to the output, producing broken colour values in the generated theme.
 

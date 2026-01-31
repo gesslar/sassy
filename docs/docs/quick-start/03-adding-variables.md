@@ -8,36 +8,50 @@ import CodeBlock from "@site/src/components/CodeBlock"
 Two colours won't get us far. Let's build a proper palette and introduce
 variable nesting.
 
-## Colour Palette and Semantic Layer
+## The Palette
 
-Replace your `vars` section with this:
+Sassy has a dedicated `palette` section for raw colour definitions. Add it between `config` and `vars`:
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    blue: "#2d5a87"
+    cyan: "#4a9eff"
+    gray: "#3c3c3c"
+    white: "#e6e6e6"
+    red: "#ff6b6b"
+    green: "#51cf66"
+    yellow: "#ffd93d"
+
+`}</CodeBlock>
+
+Palette is a first-class, declarative section — it's evaluated before everything else and can only reference its own entries. This keeps your colour definitions clean and separate from the logic in `vars`.
+
+## Referencing Palette Values
+
+Use the `$$` prefix to reference palette entries from `vars` or `theme`:
 
 <CodeBlock lang="yaml">{`
 
   vars:
-    colors:
-      blue: "#2d5a87"
-      cyan: "#4a9eff"
-      gray: "#3c3c3c"
-      white: "#e6e6e6"
-      red: "#ff6b6b"
-      green: "#51cf66"
-      yellow: "#ffd93d"
-
-    accent: $(colors.cyan)
+    accent: $$cyan
 
     std:
-      fg: $(colors.white)
+      fg: $$white
       bg: "#1a1a2e"
       bg.panel: "#242440"
 
 `}</CodeBlock>
 
+The `$$cyan` syntax is shorthand for `$palette.cyan`. It works with all three reference forms: `$$cyan`, `$($cyan)`, `${$cyan}`.
+
+## Semantic Naming
+
 There are two ideas at work here.
 
-**Nested variables** — `colors` is a group containing `blue`, `cyan`, and so
-on. You reference them with dot-paths: `$(colors.cyan)`, `$(colors.red)`.
-Nesting is purely organizational — group however you like.
+**Palette isolation** — `palette` holds raw colour values with no opinion about
+usage. It's purely declarative. The palette cannot reference `vars` or `theme`
+values — only its own entries.
 
 **Semantic naming** — `accent` and `std.fg` describe *purpose*, not appearance.
 Your theme properties should reference these semantic names. Later, changing
@@ -49,11 +63,19 @@ Sassy supports three ways to reference variables:
 
 | Syntax | Example |
 | -------- | --------- |
-| `$(var)` | `$(colors.cyan)` |
-| `$var` | `$colors.cyan` |
-| `${var}` | `${colors.cyan}` |
+| `$(var)` | `$(std.bg)` |
+| `$var` | `$std.bg` |
+| `${var}` | `${std.bg}` |
 
-All three work identically. This guide uses `$(var)` throughout — it's the most
+And three ways to reference palette values:
+
+| Syntax | Example | Expands to |
+| -------- | --------- | ---------- |
+| `$$name` | `$$cyan` | `$palette.cyan` |
+| `$($name)` | `$($cyan)` | `$(palette.cyan)` |
+| `${$name}` | `${$cyan}` | `${palette.cyan}` |
+
+This guide uses `$(var)` and `$$name` throughout — they're the most
 readable and least ambiguous, especially inside colour functions.
 
 ## Update Your Theme Colours
@@ -70,7 +92,7 @@ Update `theme.colors` to use the semantic layer:
       tab.activeBackground: $(std.bg)
       tab.activeForeground: $(std.fg)
       tab.inactiveBackground: $(std.bg.panel)
-      tab.inactiveForeground: $(colors.gray)
+      tab.inactiveForeground: $$gray
 
 `}</CodeBlock>
 
@@ -105,7 +127,7 @@ is an example of the above theme conveyed in such a manner.
         activeBackground: $(std.bg)
         activeForeground: $(std.fg)
         inactiveBackground: $(std.bg.panel)
-        inactiveForeground: $(colors.gray)
+        inactiveForeground: $$gray
 
 `}</CodeBlock>
 

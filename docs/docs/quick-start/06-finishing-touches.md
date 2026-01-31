@@ -15,10 +15,10 @@ Add a `status` group to your variables:
 
   vars:
     status:
-      error: $(colors.red)
-      warning: $(colors.yellow)
-      success: $(colors.green)
-      info: $(colors.cyan)
+      error: $$red
+      warning: $$yellow
+      success: $$green
+      info: $$cyan
 
 `}</CodeBlock>
 
@@ -59,20 +59,20 @@ Here's the full `ocean.yaml` at this point:
     name: "Ocean"
     type: dark
 
-  vars:
-    colors:
-      blue: "#2d5a87"
-      cyan: "#4a9eff"
-      gray: "#3c3c3c"
-      white: "#e6e6e6"
-      red: "#ff6b6b"
-      green: "#51cf66"
-      yellow: "#ffd93d"
+  palette:
+    blue: "#2d5a87"
+    cyan: "#4a9eff"
+    gray: "#3c3c3c"
+    white: "#e6e6e6"
+    red: "#ff6b6b"
+    green: "#51cf66"
+    yellow: "#ffd93d"
 
-    accent: $(colors.cyan)
+  vars:
+    accent: $$cyan
 
     std:
-      fg: $(colors.white)
+      fg: $$white
       fg.inactive: fade($(std.fg), 60)
       bg: "#1a1a2e"
       bg.panel: lighten($(std.bg), 15)
@@ -81,10 +81,10 @@ Here's the full `ocean.yaml` at this point:
       shadow: fade($(std.bg), 80)
 
     status:
-      error: $(colors.red)
-      warning: $(colors.yellow)
-      success: $(colors.green)
-      info: $(colors.cyan)
+      error: $$red
+      warning: $$yellow
+      success: $$green
+      info: $$cyan
 
   theme:
     colors:
@@ -133,22 +133,22 @@ Here's the full `ocean.yaml` at this point:
       - name: Strings
         scope: string
         settings:
-          foreground: $(colors.green)
+          foreground: $$green
 
       - name: Numbers
         scope: constant.numeric
         settings:
-          foreground: $(colors.yellow)
+          foreground: $$yellow
 
       - name: Functions
         scope: entity.name.function
         settings:
-          foreground: $(colors.cyan)
+          foreground: $$cyan
 
       - name: Classes
         scope: entity.name.class, entity.name.type
         settings:
-          foreground: $(colors.blue)
+          foreground: $$blue
           fontStyle: bold
 
 `}</CodeBlock>

@@ -9,31 +9,37 @@ You've split your theme into files. Now let's make that shared variables file ac
 
 ## The Three Layers
 
-A well-structured variable file has three layers:
+A well-structured theme has three layers:
 
-1. **Palette** -- raw colour values with no opinion about usage
-2. **Semantic tokens** -- meaning-based names that reference the palette
-3. **Scope mappings** -- syntax highlighting colours that reference semantic tokens
+1. **Palette** — raw colour values in a dedicated `palette` section, with no opinion about usage
+2. **Semantic tokens** — meaning-based names under `vars` that reference the palette via `$$`
+3. **Scope mappings** — syntax highlighting colours that reference semantic tokens
 
 Here's what that looks like in practice:
+
+**shared/palette.yaml**:
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    blue: "#2d5a87"
+    cyan: "#4a9eff"
+    gray: "#808080"
+    white: "#e0e0e0"
+    red: "#e74c3c"
+    green: "#a8d8a8"
+    yellow: "#f0c674"
+
+`}</CodeBlock>
 
 **shared/variables.yaml**:
 
 <CodeBlock lang="yaml">{`
 
   vars:
-    colors:
-      blue: "#2d5a87"
-      cyan: "#4a9eff"
-      gray: "#808080"
-      white: "#e0e0e0"
-      red: "#e74c3c"
-      green: "#a8d8a8"
-      yellow: "#f0c674"
-
     # Semantic tokens -- what colours mean
-    accent: $(colors.cyan)
-    main: $(colors.white)
+    accent: $$cyan
+    main: $$white
 
     std:
       fg: $(main)
@@ -48,25 +54,27 @@ Here's what that looks like in practice:
       shadow: fade($(std.bg), 80)
 
     status:
-      error: $(colors.red)
-      warning: $(colors.yellow)
-      success: $(colors.green)
-      info: $(colors.cyan)
+      error: $$red
+      warning: $$yellow
+      success: $$green
+      info: $$cyan
 
     # Scope mappings -- syntax concepts to colours
     scope:
       comment: $(std.fg.inactive)
       keyword: $(accent)
-      string: $(colors.green)
-      number: $(colors.yellow)
-      function: $(colors.cyan)
-      type: $(colors.blue)
+      string: $$green
+      number: $$yellow
+      function: $$cyan
+      type: $$blue
 
 `}</CodeBlock>
 
 ## Why This Structure Matters
 
-The `scope.*` variables decouple syntax highlighting from your palette. Your `tokenColors` entries reference `$(scope.keyword)`, not `$(colors.cyan)`. If you later decide keywords should be yellow, you change one line in the scope mappings. Every tokenColors rule that uses `$(scope.keyword)` updates automatically.
+The `palette` section is a first-class citizen — it's declarative, self-contained, and evaluated before anything else. It cannot reach into `vars` or `theme`, which keeps your colour definitions clean and predictable.
+
+The `scope.*` variables decouple syntax highlighting from your palette. Your `tokenColors` entries reference `$(scope.keyword)`, not `$$cyan`. If you later decide keywords should be yellow, you change one line in the scope mappings. Every tokenColors rule that uses `$(scope.keyword)` updates automatically.
 
 The same principle applies to the semantic layer. `$(std.fg.inactive)` is defined as `fade($(std.fg), 60)`. If you change `$(main)` from white to cream, every derived colour -- foreground, inactive, muted -- recalculates.
 
@@ -82,6 +90,7 @@ Your main theme file stays clean:
     name: "Ocean"
     type: dark
     import:
+      - "./shared/palette.yaml"
       - "./shared/variables.yaml"
 
   theme:

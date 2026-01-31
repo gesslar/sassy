@@ -55,6 +55,36 @@ describe("Evaluator", () => {
     })
   })
 
+  describe("expandPaletteAliases()", () => {
+    it("expands $$name to $palette.name", () => {
+      assert.equal(Evaluator.expandPaletteAliases("$$blue"), "$palette.blue")
+    })
+
+    it("expands $$dotted.path to $palette.dotted.path", () => {
+      assert.equal(Evaluator.expandPaletteAliases("$$colors.blue"), "$palette.colors.blue")
+    })
+
+    it("expands $($name) to $(palette.name)", () => {
+      assert.equal(Evaluator.expandPaletteAliases("$($blue)"), "$(palette.blue)")
+    })
+
+    it("expands ${$name} to ${palette.name}", () => {
+      assert.equal(Evaluator.expandPaletteAliases("${$blue}"), "${palette.blue}")
+    })
+
+    it("expands palette aliases inside function calls", () => {
+      assert.equal(
+        Evaluator.expandPaletteAliases("lighten($$blue, 20)"),
+        "lighten($palette.blue, 20)"
+      )
+    })
+
+    it("leaves non-palette references untouched", () => {
+      assert.equal(Evaluator.expandPaletteAliases("$std.fg"), "$std.fg")
+      assert.equal(Evaluator.expandPaletteAliases("$(std.fg)"), "$(std.fg)")
+    })
+  })
+
   describe("evaluate()", () => {
     it("resolves simple variable references", () => {
       const evaluator = new Evaluator()
@@ -105,6 +135,46 @@ describe("Evaluator", () => {
       evaluator.evaluate(decomposed)
 
       assert.ok(decomposed[2].value.startsWith("#"))
+    })
+
+    it("resolves palette aliases via $$name syntax", () => {
+      const evaluator = new Evaluator()
+      // First evaluate palette entries (registered as palette.*)
+      const palette = [
+        {flatPath: "palette.blue", value: "#2d5a87"},
+        {flatPath: "palette.cyan", value: "#4a9eff"},
+      ]
+
+      evaluator.evaluate(palette)
+
+      // Now evaluate vars that reference palette via $$
+      const vars = [
+        {flatPath: "accent", value: "$$cyan"},
+        {flatPath: "main", value: "$$blue"},
+      ]
+
+      evaluator.evaluate(vars)
+
+      assert.equal(vars[0].value, "#4a9eff")
+      assert.equal(vars[1].value, "#2d5a87")
+    })
+
+    it("resolves palette aliases inside colour functions", () => {
+      const evaluator = new Evaluator()
+      const palette = [
+        {flatPath: "palette.blue", value: "#2d5a87"},
+      ]
+
+      evaluator.evaluate(palette)
+
+      const vars = [
+        {flatPath: "lighter", value: "lighten($$blue, 20)"},
+      ]
+
+      evaluator.evaluate(vars)
+
+      assert.ok(vars[0].value.startsWith("#"))
+      assert.notEqual(vars[0].value, "#2d5a87")
     })
 
     it("throws on circular references", () => {

@@ -51,6 +51,76 @@ describe("Compiler", () => {
       assert.ok(output.colors["editor.foreground"].startsWith("#"))
     })
 
+    it("resolves palette references via $$ syntax", async() => {
+      const testThemeContent = `config:
+  $schema: vscode://schemas/color-theme
+  name: Palette Test
+  type: dark
+palette:
+  blue: "#2d5a87"
+  cyan: "#4a9eff"
+vars:
+  accent: "$$cyan"
+  main: "$$blue"
+theme:
+  colors:
+    "editor.background": $(main)
+    "editor.foreground": $(accent)
+`
+
+      const testPath = TestUtils.getFixturePath("palette-theme.yaml")
+      await TestUtils.createTestFile(testPath, testThemeContent)
+
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/palette-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const output = theme.getOutput()
+      assert.equal(output.colors["editor.background"], "#2d5a87")
+      assert.equal(output.colors["editor.foreground"], "#4a9eff")
+    })
+
+    it("resolves palette self-references and colour functions", async() => {
+      const testThemeContent = `config:
+  $schema: vscode://schemas/color-theme
+  name: Palette Func Test
+  type: dark
+palette:
+  blue: "#2d5a87"
+  lightBlue: "lighten($$blue, 20)"
+vars:
+  accent: "$$lightBlue"
+theme:
+  colors:
+    "editor.background": $(accent)
+`
+
+      const testPath = TestUtils.getFixturePath("palette-func-theme.yaml")
+      await TestUtils.createTestFile(testPath, testThemeContent)
+
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/palette-func-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const output = theme.getOutput()
+      assert.ok(output.colors["editor.background"].startsWith("#"))
+      assert.notEqual(output.colors["editor.background"], "#2d5a87")
+    })
+
     it("handles colour functions", async() => {
       const testThemeContent = `config:
   $schema: vscode://schemas/color-theme

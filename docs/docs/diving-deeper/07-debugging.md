@@ -29,14 +29,16 @@ This resolves a variable from your `vars` or `colors` sections. The output shows
   fade($(std.fg), 60)
     $(std.fg)
         $(main)
-          $(colors.white)
+          $(palette.white)
               → #e0e0e0
         → #e0e0e066
 
   Resolution: #e0e0e066
 `}</CodeBlock>
 
-You can read it top to bottom: `std.fg.inactive` is defined as `fade($(std.fg), 60)`. That references `$(std.fg)`, which references `$(main)`, which references `$(colors.white)`, which resolves to `#e0e0e0`. Back up the chain, the fade function produces `#e0e0e066`.
+You can read it top to bottom: `std.fg.inactive` is defined as `fade($(std.fg), 60)`. That references `$(std.fg)`, which references `$(main)`, which references `$(palette.white)` (from the `palette` section), which resolves to `#e0e0e0`. Back up the chain, the fade function produces `#e0e0e066`.
+
+Note that `$$` aliases are expanded before resolution, so the trail always shows the canonical `palette.*` form — even if the source file used `$$white`.
 
 ### Trace a tokenColors scope
 
@@ -54,7 +56,7 @@ This finds the `tokenColors` entry matching the given scope and traces its foreg
 
   $(scope.keyword)
     $(accent)
-        $(colors.cyan)
+        $(palette.cyan)
           → #4a9eff
     → #4a9eff
 

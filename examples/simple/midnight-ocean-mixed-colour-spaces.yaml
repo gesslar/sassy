@@ -4,20 +4,19 @@ config:
   name: Midnight Ocean Mixed Color Spaces
   type: dark
 
-vars:
-  # Base palette using different color spaces
-  colors:
-    blue: "#2d5a87" # hex
-    cyan: rgb(74 158 255) # rgb
-    gray: hsl(0 0 24) # hsl
-    white: oklch(0.91 0.0 0) # oklch - near white
-    red: fade(css(tomato), 0.5)
-    green: oklch(0.75 0.13 142) # oklch - green
-    yellow: hsl(48 100 60) # hsl - yellow
+palette:
+  blue: "#2d5a87" # hex
+  cyan: rgb(74 158 255) # rgb
+  gray: hsl(0 0 24) # hsl
+  white: oklch(0.91 0.0 0) # oklch - near white
+  red: fade(css(tomato), 0.5)
+  green: oklch(0.75 0.13 142) # oklch - green
+  yellow: hsl(48 100 60) # hsl - yellow
 
+vars:
   # Semantic foundation - mixing color spaces
-  main: $(colors.white) # oklch white
-  accent: $(colors.cyan) # rgb cyan
+  main: $($white) # oklch white
+  accent: $($cyan) # rgb cyan
 
   # Build the design system mixing different spaces
   std:
@@ -34,10 +33,10 @@ vars:
 
   # Status colors using mixed spaces
   status:
-    error: $(colors.red) # tomato, tomato
-    warning: $(colors.yellow) # hsl yellow
-    success: $(colors.green) # oklch green
-    info: $(colors.cyan) # rgb cyan
+    error: $($red) # tomato, tomato
+    warning: $($yellow) # hsl yellow
+    success: $($green) # oklch green
+    info: $($cyan) # rgb cyan
 
 theme:
   colors:
@@ -98,20 +97,20 @@ theme:
     - name: Strings
       scope: string
       settings:
-        foreground: $(colors.green)
+        foreground: $($green)
 
     - name: Numbers
       scope: constant.numeric
       settings:
-        foreground: $(colors.yellow)
+        foreground: $($yellow)
 
     - name: Functions
       scope: entity.name.function
       settings:
-        foreground: $(colors.cyan)
+        foreground: $($cyan)
 
     - name: Classes
       scope: entity.name.class, entity.name.type
       settings:
-        foreground: $(colors.blue)
+        foreground: $($blue)
         fontStyle: bold

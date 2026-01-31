@@ -122,17 +122,17 @@ Any colour expression that Culori understands works as a passthrough. Sassy reco
 
 ## Building Harmonious Palettes
 
-Combine functions to derive entire palettes from a single base colour:
+Combine functions to derive entire palettes from a single base colour. The `palette` section is ideal for this since it's self-contained:
 
 <CodeBlock lang="yaml">{`
 
-  vars:
+  palette:
     base: oklch(0.6, 0.15, 220)
-    lighter: lighten($(base), 20)
-    darker: darken($(base), 20)
-    complement: mix($(base), invert($(base)), 50)
-    ghost: alpha($(base), 0.15)
-    warm-tint: mix($(base), css(coral), 15)
+    lighter: lighten($$base, 20)
+    darker: darken($$base, 20)
+    complement: mix($$base, invert($$base), 50)
+    ghost: alpha($$base, 0.15)
+    warm-tint: mix($$base, css(coral), 15)
 
 `}</CodeBlock>
 

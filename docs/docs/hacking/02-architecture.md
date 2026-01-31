@@ -10,19 +10,24 @@ import CodeBlock from "@site/src/components/CodeBlock"
 Sassy uses a phase-based compilation pipeline to transform YAML/JSON5 theme
 definitions into VS Code `.color-theme.json` files:
 
-1. **Import Resolution** — load and merge modular theme files. Objects (vars,
-   colours, semanticTokenColors) are deep-merged; arrays (tokenColors) are
-    appended. The main file is applied last, giving it override semantics.
-2. **Variable Decomposition** — flatten nested objects into dot-notation paths
-    (e.g., `{std: {bg: "#1a1a2e"}}` becomes `[{flatPath: "std.bg", value: "#1a1a2e"}]`).
-3. **Token Evaluation** — resolve `$(variable)` references via the ThemePool
-   registry. Variables are resolved first (self-contained), then theme entries
-   resolve against the union of variables and other theme entries.
-4. **Function Application** — execute colour functions (`lighten`, `darken`,
+1. **Import Resolution** — load and merge modular theme files. Objects (palette,
+   vars, colours, semanticTokenColors) are deep-merged; arrays (tokenColors)
+   are appended. The main file is applied last, giving it override semantics.
+2. **Palette Alias Expansion** — expand `$$name` shorthand to `$palette.name`
+   in all values before resolution begins.
+3. **Palette Decomposition & Evaluation** — flatten the `palette` object (prefixed
+   as `palette.*`) and resolve it in isolation. Palette cannot reference `vars`
+   or `theme` — only its own entries.
+4. **Variable Decomposition & Evaluation** — flatten `vars` and resolve against
+   the union of palette and variables.
+5. **Token Evaluation** — resolve `$(variable)` references via the ThemePool
+   registry. Theme entries (colours, tokenColors, semanticTokenColors) resolve
+   against the union of palette, variables, and other theme entries.
+6. **Function Application** — execute colour functions (`lighten`, `darken`,
    `mix`, etc.) backed by Culori.
-5. **Dependency Resolution** — the ThemePool builds a token dependency graph
+7. **Dependency Resolution** — the ThemePool builds a token dependency graph
    and resolves values in order, tracking resolution trails for debugging.
-6. **Theme Assembly** — recompose flat paths into the nested VS Code theme JSON
+8. **Theme Assembly** — recompose flat paths into the nested VS Code theme JSON
    structure.
 
 ## Class Relationships

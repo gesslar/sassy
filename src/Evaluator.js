@@ -93,6 +93,35 @@ export default class Evaluator {
   }
 
   /**
+   * Regular expression for expanding palette alias syntax. The `$` prefix
+   * inside variable references is shorthand for `palette.`:
+   *  - `$$name`    → `$palette.name`
+   *  - `$($name)`  → `$(palette.name)`
+   *  - `${$name}`  → `${palette.name}`
+   *
+   * @type {RegExp}
+   */
+  static paletteAlias = /\$\(\$([^()]+)\)|\$\{\$([^{}]+)\}|\$\$([\w]+(?:\.[\w]+)*)/g
+
+  /**
+   * Expands palette alias references in a string value.
+   * Converts `$$name`, `$($name)`, and `${$name}` to their
+   * full `palette.` equivalents before variable resolution.
+   *
+   * @param {string} value - The string potentially containing palette aliases
+   * @returns {string} The string with palette aliases expanded
+   */
+  static expandPaletteAliases(value) {
+    return value.replace(Evaluator.paletteAlias, (match, parens, braces, bare) => {
+      if(parens) return `$(palette.${parens})`
+      if(braces) return `\${palette.${braces}}`
+      if(bare) return `$palette.${bare}`
+
+      return match
+    })
+  }
+
+  /**
    * Resolve variables and theme token entries in two distinct passes to ensure
    * deterministic scoping and to prevent partially-resolved values from
    * leaking between stages:
@@ -126,6 +155,12 @@ export default class Evaluator {
    * // decomposed[2].value === '#5588dd' (lightened color)
    */
   evaluate(decomposed) {
+    // Expand palette aliases before resolution
+    decomposed.forEach(item => {
+      if(typeof item.value === "string")
+        item.value = Evaluator.expandPaletteAliases(item.value)
+    })
+
     let it = 0
 
     do {
