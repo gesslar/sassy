@@ -5,16 +5,17 @@ config:
   type: dark
 
   import:
+    - import/palette-$(type).yaml
     - import/variables.yaml
     - import/colors.yaml
     - import/tokenColors-$(type).yaml
 
   custom:
     semanticHighlighting: false
-    colorSpaceName: oklch
+    colorSpaceName: sRGB
 
 vars:
-  main: $colors.white
+  main: $$white
   inverse: invert($main)
 
   # The following define primary basics that can be relied upon by the
@@ -26,7 +27,7 @@ vars:
 
   theme:
     fg: $main
-    bg: $colors.black
-    accent: $colors.pink
-    accentSecondary: darken($colors.pink, 60)
+    bg: $$black
+    accent: $$pink
+    accentSecondary: darken($$pink, 60)
     shadow: alpha($theme.accent, 0.25)

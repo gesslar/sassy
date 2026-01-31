@@ -1,19 +1,5 @@
 # Variables for later substitution
 vars:
-  colors:
-    black: oklch(.145 0 0)
-    white: oklch(0.8 0 90)
-    blue: oklch(0.5 0.2 210)
-    red: oklch(0.672 0.215 25.1)
-    yellow: oklch(0.921 0.148 98.1)
-    orange: oklch(0.7 0.152 70)
-    green: oklch(0.765 0.125 167.8)
-    green2: oklch(0.767 0.177 136.6)
-    purple: oklch(0.641 0.21 327.7)
-    pink: oklch(0.8 0.2 340)
-    teal: oklch(0.6 0.05 240)
-    gold: oklch(0.86 0.168 87.8)
-
   # The following define secondary basics that can be relied upon by the
   # theme's definition.
   std:
@@ -73,11 +59,11 @@ vars:
         match: $transparent
       bg:
         accent: alpha($std.bg.accent, 0.25)
-        read: alpha($colors.green, 0.25)
-        write: alpha($colors.orange, 0.25)
-        delete: alpha($colors.red, 0.25)
-        rename: alpha($colors.purple, 0.25)
-        match: $colors.green2
+        read: alpha($$green, 0.25)
+        write: alpha($$orange, 0.25)
+        delete: alpha($$red, 0.25)
+        rename: alpha($$purple, 0.25)
+        match: $$green2
 
     outline: darken($std.line, 15)
     outline.strong: $std.line.strong
@@ -102,10 +88,10 @@ vars:
     shadow.sticky: fade($shadow, 0.25)
 
   status:
-    success: $colors.green
-    info: $colors.teal
-    warning: $colors.orange
-    error: $colors.red
+    success: $$green
+    info: $$teal
+    warning: $$orange
+    error: $$red
 
     added: lighten($status.success, 20)
     modified: lighten($status.warning, 20)
@@ -113,10 +99,10 @@ vars:
     ignored: darken($main, 50)
 
   ops:
-    read: $colors.green
-    write: $colors.blue
-    delete: $colors.red
-    rename: $colors.purple
+    read: $$green
+    write: $$blue
+    delete: $$red
+    rename: $$purple
 
   accent: $theme.accent
   accent.secondary: $theme.accentSecondary
@@ -126,7 +112,7 @@ vars:
   control:
     base: darken($accent, 25)
 
-    fg: $colors.white
+    fg: $$white
     fg.inverse: invert($control.fg)
     fg.secondary: $control.fg
     fg.secondary.hover: $control.fg
@@ -147,14 +133,14 @@ vars:
 
   # Used for various level-related things.
   level:
-    - $colors.orange
-    - $colors.yellow
-    - $colors.green
-    - $colors.teal
-    - $colors.blue
-    - $colors.purple
-    - $colors.pink
-    - $colors.red
+    - $$orange
+    - $$yellow
+    - $$green
+    - $$teal
+    - $$blue
+    - $$purple
+    - $$pink
+    - $$red
 
   # Use this to find stupid elements that cannot be found.
   test: "#ff0000ee"

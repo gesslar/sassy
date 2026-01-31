@@ -1,101 +1,71 @@
 vars:
-  colors:
-    tc:
-      grey: oklch(0.765 0 89.9)
-      green: oklch(0.679 0.092 138.1)
-      blue: oklch(0.686 0.064 255.3)
-      pink: oklch(0.703 0.071 332.1)
-      orange: oklch(0.693 0.099 79.6)
-      red: oklch(0.6059 0.1502 18.01)
-      pink2: oklch(0.6 0.1 0)
-      peach: oklch(0.679 0.088 40.8)
-      yellow: oklch(0.803 0.077 103.6)
-      apricot: oklch(0.73 0.072 66.3)
-      petal: oklch(0.725 0.068 347.5)
-      purple: oklch(0.656 0.070 307.3)
-      gold: oklch(0.8 0.16 90)
-      white: oklch(0.8 0.03 102)
-      variableBlue: oklch(0.701 0.056 255.3)
-      constantGreen: oklch(0.684 0.082 138)
-      classGold: oklch(0.747 0.069 91.8)
-      keywordPurple: oklch(0.714 0.061 331.9)
-      headerOrange: oklch(0.704 0.075 47.6)
-      fadedGrey: oklch(0.624 0 89.9)
-
-  deg:
-    faint: 5
-    weak: 15
-    mid: 50
-    strong: 85
-    major: 95
-
   scope:
     # Basic structural elements
-    comment: mix($std.fg.accent, $colors.tc.pink, 75)
-    text: $colors.tc.blue
-    punctuation: $colors.tc.blue
-    baseText: $colors.tc.white
+    comment: mix($std.fg.accent, $$tc.pink, 75)
+    text: $$tc.blue
+    punctuation: $$tc.blue
+    baseText: $$tc.white
 
     # Universal "self" concepts (this, self, base, super)
-    selfRef: $colors.tc.peach
+    selfRef: $$tc.peach
 
     # Universal literals
-    string: $colors.tc.green
-    number: $colors.tc.blue
-    boolean: $colors.tc.green
+    string: $$tc.green
+    number: $$tc.blue
+    boolean: $$tc.green
 
     # Universal identifiers
-    variable: $colors.tc.variableBlue
-    parameter: $colors.tc.variableBlue
-    property: $colors.tc.pink2
-    constant: $colors.tc.constantGreen
+    variable: $$tc.variableBlue
+    parameter: $$tc.variableBlue
+    property: $$tc.pink2
+    constant: $$tc.constantGreen
 
     # Universal callables
-    function: $colors.tc.orange
-    method: $colors.tc.orange
+    function: $$tc.orange
+    method: $$tc.orange
 
     # Universal type system
-    types: $colors.tc.constantGreen
-    class: $colors.tc.classGold
-    namespace: $colors.tc.classGold
+    types: $$tc.constantGreen
+    class: $$tc.classGold
+    namespace: $$tc.classGold
 
     # Universal language constructs
-    keyword: $colors.tc.keywordPurple
-    storage: $colors.tc.blue
-    storage.modifier: $colors.tc.purple
-    operator: $colors.tc.purple
-    operator2: $colors.tc.keywordPurple
+    keyword: $$tc.keywordPurple
+    storage: $$tc.blue
+    storage.modifier: $$tc.purple
+    operator: $$tc.purple
+    operator2: $$tc.keywordPurple
 
     # Universal structural
-    attribute: $colors.tc.gold
-    declaration: $colors.tc.classGold
-    embeddedLanguage: $colors.tc.classGold
+    attribute: $$tc.gold
+    declaration: $$tc.classGold
+    embeddedLanguage: $$tc.classGold
 
     # Markup and documentation
-    header: $colors.tc.headerOrange
-    code: $colors.teal
-    link: $colors.tc.gold
+    header: $$tc.headerOrange
+    code: $$teal
+    link: $$tc.gold
 
     # String interpolation (different from strings)
-    interpolation: $colors.tc.keywordPurple
+    interpolation: $$tc.keywordPurple
 
     # Language-specific snowflakes
-    rustOwnership: $colors.tc.keywordPurple
-    rubyGlobal: $colors.tc.headerOrange
-    rubyClass: $colors.tc.variableBlue
-    rubyInstance: $colors.tc.variableBlue
-    rubyLocal: $colors.tc.constantGreen
+    rustOwnership: $$tc.keywordPurple
+    rubyGlobal: $$tc.headerOrange
+    rubyClass: $$tc.variableBlue
+    rubyInstance: $$tc.variableBlue
+    rubyLocal: $$tc.constantGreen
 
     # CSS-specific
-    cssSelector: $colors.tc.keywordPurple
-    cssProperty: $colors.tc.constantGreen
-    cssValue: $colors.tc.variableBlue
+    cssSelector: $$tc.keywordPurple
+    cssProperty: $$tc.constantGreen
+    cssValue: $$tc.variableBlue
 
     # Legacy/migration
-    text2: $colors.tc.fadedGrey
-    constant2: $colors.tc.classGold
-    className: $colors.tc.orange
-    self: $colors.tc.peach
+    text2: $$tc.fadedGrey
+    constant2: $$tc.classGold
+    className: $$tc.orange
+    self: $$tc.peach
 
 theme:
   tokenColors:
@@ -156,7 +126,7 @@ theme:
         keyword.other.crate, meta.use, keyword.package, keyword.function,
         keyword.interface, entity.name.goto-label
       settings:
-        foreground: $colors.tc.pink
+        foreground: $$tc.pink
 
     - name: Self/This/etc
       scope: variable.parameter.function.language.special.self,

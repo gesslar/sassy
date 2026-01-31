@@ -1,20 +1,21 @@
 # Theme Config
 config:
-  schema: vscode://schemas/color-theme
+  $schema: vscode://schemas/color-theme
   name: blackboard
   type: dark
 
   import:
+    - import/palette-$(type).yaml
     - import/variables.yaml
     - import/colors.yaml
     - import/tokenColors-$(type).yaml
 
   custom:
     semanticHighlighting: false
-    colorSpaceName: oklch
+    colorSpaceName: sRGB
 
 vars:
-  main: $colors.white
+  main: $$white
   inverse: invert($main)
 
   # The following define primary basics that can be relied upon by the
@@ -24,7 +25,7 @@ vars:
 
   theme:
     fg: $main
-    bg: $colors.black
-    accent: $colors.blue
-    accentSecondary: $colors.teal
+    bg: $$black
+    accent: $$blue
+    accentSecondary: $$teal
     shadow: alpha($theme.accent, 0.25)

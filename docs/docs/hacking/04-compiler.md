@@ -14,16 +14,17 @@ processes it through all phases.
    name, type, imports).
 2. **Load imports** — resolve `config.import` entries. Each import file is
    loaded (with cache support) and its contents merged into the working data.
-3. **Merge** — deep-merge imported data with the main source. Objects (vars,
-   colours, semanticTokenColors) are merged; arrays (tokenColors) are appended.
-   The main file always applies last.
-4. **Decompose vars** — flatten the merged `vars` object into `[{flatPath, value}]`
-   arrays.
-5. **Evaluate vars** — variables resolved only against other variables (self-
-   contained scope).
+3. **Merge** — deep-merge imported data with the main source. Objects (palette,
+   vars, colours, semanticTokenColors) are merged; arrays (tokenColors) are
+   appended. The main file always applies last.
+4. **Decompose & evaluate palette** — flatten the merged `palette` object
+   (wrapped as `{palette: ...}` so flatPaths are `palette.*`) and evaluate in
+   isolation. Palette entries can only reference each other.
+5. **Decompose & evaluate vars** — flatten `vars` and resolve against the union
+   of palette and variables.
 6. **Evaluate theme scopes** — colours, tokenColors, and semanticTokenColors
-   each decomposed and evaluated against the union of resolved vars plus their
-   own entries.
+   each decomposed and evaluated against the union of palette, resolved vars,
+   plus their own entries.
 7. **Assemble output** — reduce flat paths back into nested VS Code JSON
    structure. Combine header, custom config, colours, tokenColors, and
    semanticTokenColors.
@@ -40,7 +41,7 @@ Each import filename is resolved relative to the entry file's directory. Files a
 
 Merge behaviour:
 
-- **Objects** (vars, colours, semanticTokenColors): deep-merged via `Data.mergeObject`
+- **Objects** (palette, vars, colours, semanticTokenColors): deep-merged via `Data.mergeObject`
 - **Arrays** (tokenColors): appended — imports first, then main source entries
 - **Main file last**: the entry file's values always override imported values
 

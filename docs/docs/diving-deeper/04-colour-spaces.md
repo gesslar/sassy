@@ -23,15 +23,14 @@ Here's the ocean palette rewritten in OKLCH:
 
 <CodeBlock lang="yaml">{`
 
-  vars:
-    colors:
-      blue: oklch(0.45, 0.12, 250)
-      cyan: oklch(0.68, 0.15, 230)
-      gray: oklch(0.60, 0.00, 0)
-      white: oklch(0.90, 0.01, 250)
-      red: oklch(0.55, 0.20, 27)
-      green: oklch(0.70, 0.15, 145)
-      yellow: oklch(0.80, 0.15, 85)
+  palette:
+    blue: oklch(0.45, 0.12, 250)
+    cyan: oklch(0.68, 0.15, 230)
+    gray: oklch(0.60, 0.00, 0)
+    white: oklch(0.90, 0.01, 250)
+    red: oklch(0.55, 0.20, 27)
+    green: oklch(0.70, 0.15, 145)
+    yellow: oklch(0.80, 0.15, 85)
 
 `}</CodeBlock>
 
@@ -40,7 +39,7 @@ perceptually meaningful. When you see `oklch(0.45, ...)` and `oklch(0.68, ...)`,
 
 :::tip
 Sassy's `lighten()` and `darken()` functions already work in OKLCH internally,
-regardless of your input format. But defining your palette in OKLCH gives you
+regardless of your input format. But defining your `palette` in OKLCH gives you
 perceptual control at the source level too.
 :::
 
@@ -74,12 +73,11 @@ Sassy doesn't care if your palette mixes formats. This is perfectly valid:
 
 <CodeBlock lang="yaml">{`
 
-  vars:
-    colors:
-      blue: oklch(0.45, 0.12, 250)
-      cyan: "#4a9eff"
-      gray: hsl(0, 0%, 50%)
-      white: css(whitesmoke)
+  palette:
+    blue: oklch(0.45, 0.12, 250)
+    cyan: "#4a9eff"
+    gray: hsl(0, 0%, 50%)
+    white: css(whitesmoke)
 
 `}</CodeBlock>
 

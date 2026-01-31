@@ -16,7 +16,7 @@ Add these to your `vars.std` group:
 
   vars:
     std:
-      fg: $(colors.white)
+      fg: $$white
       fg.inactive: fade($(std.fg), 60)
       bg: "#1a1a2e"
       bg.panel: lighten($(std.bg), 15)

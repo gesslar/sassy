@@ -19,22 +19,23 @@ Create a new file alongside your ocean theme:
     name: "Sunset"
     type: dark
     import:
+      - "./shared/palette.yaml"
       - "./shared/variables.yaml"
 
-  vars:
-    # Override the palette
-    colors:
-      blue: "#8b4513"
-      cyan: "#ff8c42"
-      gray: "#4a3728"
-      white: "#f5e6d3"
-      red: "#e74c3c"
-      green: "#27ae60"
-      yellow: "#f39c12"
+  # Override the palette
+  palette:
+    blue: "#8b4513"
+    cyan: "#ff8c42"
+    gray: "#4a3728"
+    white: "#f5e6d3"
+    red: "#e74c3c"
+    green: "#27ae60"
+    yellow: "#f39c12"
 
+  vars:
     # Override the semantic anchors
-    accent: $(colors.cyan)
-    main: $(colors.white)
+    accent: $$cyan
+    main: $$white
     std:
       bg: "#1a1008"
 
@@ -83,10 +84,10 @@ Create a new file alongside your ocean theme:
 
 ## How Override Cascading Works
 
-The import loads `shared/variables.yaml` first, establishing the full design system. Then the main file's `vars` section merges on top. Because objects deep-merge:
+The imports load `shared/palette.yaml` and `shared/variables.yaml` first, establishing the full design system. Then the main file's `palette` and `vars` sections merge on top. Because objects deep-merge:
 
-- `colors.blue` changes from `#2d5a87` to `#8b4513`
-- `accent` changes from `$(colors.cyan)` (the ocean cyan) to `$(colors.cyan)` (the sunset orange -- same expression, different resolved value)
+- `palette.blue` changes from `#2d5a87` to `#8b4513`
+- `palette.cyan` changes from `#4a9eff` to `#ff8c42` — and since `accent` is `$$cyan`, it picks up the new value automatically
 - `std.bg` changes to `#1a1008`
 - Everything else -- `std.fg`, `std.bg.panel`, `scope.keyword`, all of it -- **recalculates automatically** from the new values
 
@@ -147,6 +148,7 @@ Then both themes import it:
 
   config:
     import:
+      - "./shared/palette.yaml"
       - "./shared/variables.yaml"
       - "./shared/tokens.yaml"
 

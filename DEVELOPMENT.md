@@ -232,7 +232,7 @@ Imports live under `config.import` as an array (e.g. `config.import: ["./vars.ya
 
 **Merge Behaviour:**
 
-- **Objects** (`vars`, `colors`, `semanticTokenColors`): Deep merge with later sources overriding earlier ones
+- **Objects** (`palette`, `vars`, `colors`, `semanticTokenColors`): Deep merge with later sources overriding earlier ones
 - **Arrays** (`tokenColors`): Append-only concatenation maintaining import order
 
 This distinction exists because `tokenColors` relies on sequential VS Code processing (first match wins), making composition semantically meaningless. Instead, imports provide base rules while the main source file provides catch-all/sentinel rules.
@@ -293,18 +293,23 @@ See [API_USAGE.md](./API_USAGE.md) for detailed examples and usage patterns.
 Sassy processes themes in phases:
 
 1. **Import Resolution** - Merge modular theme files using `config.import`
-   - Objects (`vars`, `colors`, `semanticTokenColors`): Deep merge with override semantics
+   - Objects (`palette`, `vars`, `colors`, `semanticTokenColors`): Deep merge with override semantics
    - Arrays (`tokenColors`): Append-only concatenation maintaining import order
-2. **Variable Decomposition** - Flatten nested object structures into dot-
-   notation paths
-3. **Token Evaluation** - Resolve `$(variable)` references through ThemePool
-  system
-4. **Function Application** - Execute colour manipulation functions (`lighten`,
+2. **Palette Alias Expansion** - Expand `$$name` shorthand to `$palette.name`
+   in all values before resolution begins
+3. **Palette Decomposition & Evaluation** - Flatten `palette` (prefixed as
+   `palette.*`) and resolve in isolation — palette cannot reference `vars` or
+   `theme`
+4. **Variable Decomposition & Evaluation** - Flatten `vars` and resolve against
+   the union of palette and variables
+5. **Token Evaluation** - Resolve `$(variable)` references through ThemePool
+  system. Theme entries resolve against palette, vars, and other theme entries
+6. **Function Application** - Execute colour manipulation functions (`lighten`,
   `darken`, `oklch`, `oklcha`, etc.) leveraging Culori's comprehensive parsing
   for automatic support of any colour format
-5. **Dependency Resolution** - Build token dependency graph and resolve in
+7. **Dependency Resolution** - Build token dependency graph and resolve in
   correct order
-6. **Theme Assembly** - Compose final VS Code theme JSON with proper structure
+8. **Theme Assembly** - Compose final VS Code theme JSON with proper structure
 
 The ThemePool/ThemeToken system tracks resolution trails, enabling debugging
 and circular dependency detection. Error handling is per-entry theme: a failure
@@ -326,11 +331,25 @@ doesn't mind); the parenthesised form is simply the most robust inside
 longer strings or when followed immediately by characters that could extend
 a bare token.
 
+### Palette Alias Syntax
+
+The `$$` prefix is shorthand for referencing `palette.*` values:
+
+| Form | Example | Expands to |
+|------|---------|------------|
+| `$$name` | `$$cyan` | `$palette.cyan` |
+| `$($name)` | `$($cyan)` | `$(palette.cyan)` |
+| `${$name}` | `${$cyan}` | `${palette.cyan}` |
+
+This expansion happens before any variable resolution via
+`Evaluator.expandPaletteAliases()`.
+
 Resolution order:
 
-1. All `vars` entries are fully resolved first (only against the variable
-   set).
-2. Theme entries are then resolved against the union of resolved vars +
+1. All `palette` entries are fully resolved first (only against the palette
+   set — self-contained).
+2. All `vars` entries are resolved against the union of palette + variables.
+3. Theme entries are then resolved against the union of palette + vars +
    theme.
 
 This guarantees variables never see partially-resolved theme state and lets

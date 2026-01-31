@@ -5,7 +5,7 @@ title: "Import System"
 
 import CodeBlock from "@site/src/components/CodeBlock"
 
-Sassy supports splitting a theme across multiple files using the `config.import` array. Imported files contribute variables, colours, token colours, and semantic token colours to the final theme.
+Sassy supports splitting a theme across multiple files using the `config.import` array. Imported files contribute palette definitions, variables, colours, token colours, and semantic token colours to the final theme.
 
 ## Syntax
 
@@ -27,6 +27,7 @@ Paths are relative to the importing file. Both `.yaml` and `.json5` formats are 
 
 | Content Type | Merge Behaviour |
 |---|---|
+| `palette` | Deep merge; later values override earlier ones |
 | `vars` | Deep merge; later values override earlier ones |
 | `colors` | Deep merge; later values override earlier ones |
 | `semanticTokenColors` | Deep merge; later values override earlier ones |
@@ -37,7 +38,7 @@ Paths are relative to the importing file. Both `.yaml` and `.json5` formats are 
 
 1. Imports are processed in array order, left to right.
 2. Each successive import is deep-merged (or appended for `tokenColors`) onto the accumulated result.
-3. The main file's own `vars`, `colors`, `semanticTokenColors`, and `tokenColors` are applied last, giving the main file final override authority.
+3. The main file's own `palette`, `vars`, `colors`, `semanticTokenColors`, and `tokenColors` are applied last, giving the main file final override authority.
 
 <CodeBlock lang="VOGON">{`
 import[0] → import[1] → ... → import[n] → main file
@@ -79,7 +80,8 @@ In watch mode (`--watch`), Sassy automatically tracks all imported files. When a
   my-theme/
   ├── theme.yaml              # Main entry: config + theme overrides
   ├── shared/
-  │   ├── variables.yaml      # Colour palette + semantic variables
+  │   ├── palette.yaml        # Colour palette definitions
+  │   ├── variables.yaml      # Semantic variables
   │   ├── colors.yaml         # VS Code colour mappings
   │   └── tokenColors.yaml    # Syntax highlighting rules
 
@@ -93,6 +95,7 @@ In watch mode (`--watch`), Sassy automatically tracks all imported files. When a
     name: "My Theme"
     type: dark
     import:
+      - ./shared/palette.yaml
       - ./shared/variables.yaml
       - ./shared/colors.yaml
       - ./shared/tokenColors.yaml
@@ -100,7 +103,17 @@ In watch mode (`--watch`), Sassy automatically tracks all imported files. When a
   theme:
     colors:
       # Override specific colours from imports
-      statusBar.background: $(palette.blue)
+      statusBar.background: $$blue
+
+`}</CodeBlock>
+
+**shared/palette.yaml**
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    blue: "#61afef"
+    cyan: "#56b6c2"
 
 `}</CodeBlock>
 
@@ -109,9 +122,7 @@ In watch mode (`--watch`), Sassy automatically tracks all imported files. When a
 <CodeBlock lang="yaml">{`
 
   vars:
-    palette:
-      blue: "#61afef"
-      cyan: "#56b6c2"
+    accent: $$cyan
     std:
       bg: "#282c34"
       fg: "#abb2bf"
@@ -138,6 +149,6 @@ theme:
     - name: Keywords
       scope: keyword
       settings:
-        foreground: $(palette.cyan)
+        foreground: $$cyan
 
 `}</CodeBlock>

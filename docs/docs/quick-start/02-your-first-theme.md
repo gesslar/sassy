@@ -35,8 +35,9 @@ That's a valid Sassy theme. Let's break it down.
   properties you don't set
 
 **`vars`** is where you define variables. Here we have two: `bg` and `fg`.
-These are just names pointing to hex colours.
-****
+These are just names pointing to hex colours. (There's also an optional
+`palette` section for raw colour definitions — we'll get to that shortly.)
+
 **`theme.colors`** maps VS Code UI properties to values. The `$(bg)` syntax
 references the variable `bg` — Sassy resolves it to `#1a1a2e` at build time.
 
