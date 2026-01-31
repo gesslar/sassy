@@ -12,8 +12,8 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
       '@gesslar/toolkit':
-        specifier: ^3.30.0
-        version: 3.30.0
+        specifier: ^3.31.0
+        version: 3.31.0
       chokidar:
         specifier: ^5.0.0
         version: 5.0.0
@@ -21,8 +21,8 @@ importers:
         specifier: ^1.1.3
         version: 1.1.3
       commander:
-        specifier: ^14.0.2
-        version: 14.0.2
+        specifier: ^14.0.3
+        version: 14.0.3
       culori:
         specifier: ^4.0.2
         version: 4.0.2
@@ -114,8 +114,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@gesslar/toolkit@3.30.0':
-    resolution: {integrity: sha512-iH0EDQVLB7enfs3+Q3NSLjV1s02c2Y9XgmoZ76cum3bTsiSOAJkOqjmDAk3BEuvr9MVgIbOdwNaqdOvhlKZcHQ==}
+  '@gesslar/toolkit@3.31.0':
+    resolution: {integrity: sha512-MLtqGSpfeIaBnTMc2ggX2awonT6ovNbM+ZDeH5PDBgYU+8PqE/5pmPno1bT0NQaF4eHVVDHHOGoPHVnApSOEzw==}
     engines: {node: '>=24.13.0'}
 
   '@gesslar/uglier@1.2.0':
@@ -275,8 +275,8 @@ packages:
     resolution: {integrity: sha512-qiBjkpbMLO/HL68y+lh4q0/O1MZFj2RX6X/KmMa3+gJD3z+WwI1ZzDHysvqHGS3mP6mznPckpXmw1nI9cJjyRg==}
     hasBin: true
 
-  commander@14.0.2:
-    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
+  commander@14.0.3:
+    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
     engines: {node: '>=20'}
 
   comment-parser@1.4.4:
@@ -791,7 +791,7 @@ snapshots:
 
   '@gesslar/colours@0.8.0': {}
 
-  '@gesslar/toolkit@3.30.0':
+  '@gesslar/toolkit@3.31.0':
     dependencies:
       '@gesslar/colours': 0.8.0
       ajv: 8.17.1
@@ -802,7 +802,7 @@ snapshots:
   '@gesslar/uglier@1.2.0(eslint@9.39.2)':
     dependencies:
       '@gesslar/colours': 0.8.0
-      '@gesslar/toolkit': 3.30.0
+      '@gesslar/toolkit': 3.31.0
       '@skarab/detect-package-manager': 1.0.0
       '@stylistic/eslint-plugin': 5.7.0(eslint@9.39.2)
       eslint: 9.39.2
@@ -959,7 +959,7 @@ snapshots:
 
   color-support@1.1.3: {}
 
-  commander@14.0.2: {}
+  commander@14.0.3: {}
 
   comment-parser@1.4.4: {}
 
