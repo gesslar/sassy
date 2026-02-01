@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import React, {useState, useEffect, useCallback} from 'react'
 import clsx from 'clsx'
 

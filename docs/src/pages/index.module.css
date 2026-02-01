@@ -6,22 +6,35 @@
 /* ── Hero ── */
 
 .heroBanner {
-  padding: 5rem 0 3rem;
+  margin: 0px 10px;
   text-align: center;
-  position: sticky;
-  top: var(--ifm-navbar-height);
   z-index: 10;
+  top: var(--ifm-navbar-height);
   overflow: hidden;
-  transition: padding 0.35s ease, box-shadow 0.35s ease;
+  position: sticky;
+  box-shadow: 0px 5px 20px var(--ifm-color-primary-darkest);
+  color: var(--ifm-color-emphasis-100);
+  opacity: 0.99;
+  transition: transform 0.3s ease, margin 0.3s ease;
+  overflow-anchor: none;
 }
 
 .heroBannerShrunk {
-  padding: 1.2rem 0 1rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-9rem);
+  margin: 0px 0px;
 }
 
 .heroInner {
-  transition: gap 0.35s ease;
+  transition: transform 0.3s ease;
+}
+
+.heroInnerShrunk {
+  transform: translateY(4.5rem);
+}
+
+/* Add ample height to a parent or sibling element to allow scrolling */
+.content-container {
+  min-height: 200vh;
 }
 
 .heroTitle {
@@ -31,34 +44,11 @@
   transition: font-size 0.35s ease, margin-bottom 0.35s ease;
 }
 
-.heroBannerShrunk .heroTitle {
-  font-size: 2.2rem;
-  margin-bottom: 0.1rem;
-}
-
 .heroSubtitle {
   font-size: 1.4rem;
   opacity: 0.9;
   margin-bottom: 0.5rem;
   transition: font-size 0.35s ease, margin-bottom 0.35s ease;
-}
-
-.heroSubtitleShrunk {
-  font-size: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-/* Collapsible section (tagline paragraph) */
-.heroCollapsible {
-  max-height: 200px;
-  opacity: 1;
-  overflow: hidden;
-  transition: max-height 0.4s ease, opacity 0.3s ease;
-}
-
-.heroCollapsibleHidden {
-  max-height: 0;
-  opacity: 0;
 }
 
 .heroTagline {
@@ -78,15 +68,6 @@
   transition: margin-bottom 0.35s ease;
 }
 
-.buttonsShrunk {
-  margin-bottom: 0.6rem;
-}
-
-.buttonsShrunk :global(.button--lg) {
-  padding: 0.4rem 1.2rem;
-  font-size: 0.9rem;
-}
-
 .buttonOutline {
   border-color: var(--ifm-color-white);
   color: var(--ifm-color-white);
@@ -97,78 +78,30 @@
   color: var(--ifm-color-white);
 }
 
-.install {
-  opacity: 0.7;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: font-size 0.35s ease;
-}
-
-.installShrunk {
-  font-size: 0.8rem;
-}
-
-.install code {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-}
-
-.copyButton {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: var(--ifm-color-white);
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1;
-  transition: background 0.2s;
-}
-
-.copyButton:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
 @media screen and (max-width: 996px) {
   .heroBanner {
     padding: 3rem 1.5rem 2rem;
-  }
-
-  .heroBannerShrunk {
-    padding: 1rem 1.5rem 0.8rem;
   }
 
   .heroTitle {
     font-size: 2.5rem;
   }
 
-  .heroBannerShrunk .heroTitle {
-    font-size: 1.8rem;
-  }
-
   .heroSubtitle {
     font-size: 1.15rem;
-  }
-
-  .heroSubtitleShrunk {
-    font-size: 0.9rem;
   }
 }
 
 /* ── Scroll reveal ── */
-
 .revealSection {
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  filter: blur(5px);
+  transition: filter 0.6s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
 .revealed {
+  filter: blur(0px);
   opacity: 1;
   transform: translateY(0);
 }
@@ -218,7 +151,8 @@
 
 .features {
   padding: 4rem 0;
-  background: var(--ifm-background-surface-color);
+  background: var(--ifm-color-primary-lightest);
+  color: var(--ifm-color-primary-darkest);
 }
 
 .featureGrid {
