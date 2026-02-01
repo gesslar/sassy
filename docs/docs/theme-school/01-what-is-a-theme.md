@@ -65,7 +65,7 @@ Custom themes must set `"semanticHighlighting": true` at the root of the theme f
 <CodeBlock lang="text">{`
   Priority (highest to lowest):
 
-  1. semanticTokenColors  — language server tokens (when available)
+  1. semanticTokenColors   — language server tokens (when available)
   2. tokenColors           — TextMate grammar scopes (always available)
   3. colors                — UI chrome (independent of the other two)
 `}</CodeBlock>
