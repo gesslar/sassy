@@ -124,7 +124,13 @@ Pass the hex value without `#` to avoid shell comment interpretation, or wrap it
     # Sassy prompts for disambiguation:
     sassy resolve --tokenColor entity.name.class.2 my-theme.yaml
 
+    # Resolve a scope that isn't explicitly defined — Sassy finds
+    # the best matching broader scope via TextMate precedence:
+    sassy resolve --tokenColor comment.block.documentation my-theme.yaml
+
 `}</CodeBlock>
+
+When no exact scope match exists, Sassy uses TextMate precedence rules to find the most specific broader scope that covers the requested scope. The output shows what was requested, what it resolved through, and the full trail.
 
 ---
 
