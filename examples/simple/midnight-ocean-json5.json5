@@ -4,6 +4,9 @@
     $schema: "vscode://schemas/color-theme",
     name: "Midnight Ocean",
     type: "dark",
+    custom: {
+      semanticHighlighting: true,
+    },
   },
   palette: {
     blue: "#2d5a87",
@@ -128,5 +131,16 @@
         },
       },
     ],
+    semanticTokenColors: {
+      "variable.declaration": {
+        foreground: "$std.fg",
+        fontStyle: "italic",
+      },
+      "function.declaration": {
+        foreground: "$accent",
+        fontStyle: "bold",
+      },
+      "string:escape": "$$yellow",
+    },
   },
 }

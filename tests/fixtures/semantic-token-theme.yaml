@@ -1,0 +1,20 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Semantic Token Test
+  type: dark
+palette:
+  yellow: "#ffd93d"
+vars:
+  accent: "#4a9eff"
+  fg: "#e6e6e6"
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    variable.declaration:
+      foreground: $(fg)
+      fontStyle: italic
+    function.declaration:
+      foreground: $(accent)
+      fontStyle: bold
+    "string:escape": $$yellow

@@ -117,7 +117,7 @@ export default class Compiler {
       // Assemble into one object with the proper keys
       const colors = workColors.reduce(reducer, {})
       const tokenColors = this.#composeArray(workTokenColors)
-      const semanticTokenColors = workSemanticTokenColors.reduce(reducer, {})
+      const semanticTokenColors = this.#composeObject(workSemanticTokenColors)
 
       // Mix and maaatch all jumbly wumbly...
       const output = Data.mergeObject(
