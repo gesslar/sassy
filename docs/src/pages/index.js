@@ -4,11 +4,14 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import CodeBlock from '@theme/CodeBlock';
 import Heading from '@theme/Heading';
-import {useEffect, useRef, useState, useCallback} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 import styles from './index.module.css';
 
-const beforeCode = `{
+const beforeCode = `
+// What even is this? How do these colours
+// relate?
+{
   "editor.background": "#1e1e1e",
   "editor.foreground": "#e6e6e6",
   "statusBar.background": "#002e63",
@@ -19,22 +22,43 @@ const beforeCode = `{
   "tab.inactiveBackground": "#2d2d2d",
   "focusBorder": "#007fd4",
   "errorForeground": "#f44747"
-}`;
+}
+// Mom? Come pick me up??
+`;
 
-const afterCode = `vars:
-  accent: "#4a9eff"
+const afterCode = `
+# Define your colour palette in one place.
+palette:
+  white: "#e6e6e6"
+  black: rgb(5, 5, 5)
+  blue: oklch(0.6929 0.1647 253.96 / 95%)
+  red: css(tomato)
+
+# Define semantic, reusable variables to use
+# throughout your theme.
+vars:
+  accent: $$blue
   std:
-    fg: "#e6e6e6"
-    bg: "#1a1a2e"
-    bg.panel: lighten($(std.bg), 15)
-    bg.accent: darken($(accent), 70)
+    fg:
+      base: $$white
+    bg:
+      base: $$black
+      panel: lighten($(std.bg), 15)
+      panelLighter: lighten($std.bg.panel, 15)
+      accent: darken($(accent), 70)
     outline: fade($(accent), 30)
 
+# Define your theme sanely using variables
+# that _mean_ something!
 theme:
   colors:
-    editor.background: $(std.bg.panel)
-    editor.foreground: $(std.fg)
-    statusBar.background: $(std.bg.accent)
+    editor:
+      background: $(std.bg.panel)
+      foreground: $(std.fg.base)
+    panel:
+      background: $(std.bg.panelLighter)
+    statusBar:
+      background: $(std.bg.accent)
     focusBorder: $(std.outline)`;
 
 const features = [
@@ -69,29 +93,6 @@ const features = [
     icon: '--w',
   },
 ];
-
-const NPX_COMMAND = 'npx @gesslar/sassy build my-theme.yaml';
-
-function CopyButton() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(NPX_COMMAND).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, []);
-
-  return (
-    <button
-      className={styles.copyButton}
-      onClick={handleCopy}
-      title="Copy to clipboard"
-      aria-label="Copy command to clipboard">
-      {copied ? '✓' : '⎘'}
-    </button>
-  );
-}
 
 function useScrollShrink() {
   const [shrunk, setShrunk] = useState(false);
@@ -161,34 +162,24 @@ function HomepageHeader() {
 
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner, shrunk && styles.heroBannerShrunk)}>
-      <div className={clsx('container', styles.heroInner)}>
+      <div className={clsx('container', styles.heroInner, shrunk && styles.heroInnerShrunk)}>
         <Heading as="h1" className={styles.heroTitle}>
           {siteConfig.title}
         </Heading>
-        <p className={clsx(styles.heroSubtitle, shrunk && styles.heroSubtitleShrunk)}>
+        <p className={clsx(styles.heroSubtitle)}>
           {siteConfig.tagline}
         </p>
-        <div className={clsx(styles.heroCollapsible, shrunk && styles.heroCollapsibleHidden)}>
-          <p className={styles.heroTagline}>
-            Stop wrestling with 800+ disconnected hex codes.<br />
-            Write themes with variables, functions, and design systems that actually make sense.
-          </p>
+        <div>
         </div>
-        <div className={clsx(styles.buttons, shrunk && styles.buttonsShrunk)}>
+        <div className={clsx(styles.buttons)}>
           <Link
-            className="button button--secondary button--lg"
-            to="/docs/quick-start/intro">
+            className="button button--primary button--lg" to="/docs/quick-start/intro">
             Get Started
           </Link>
           <Link
-            className={clsx("button button--outline button--lg", styles.buttonOutline)}
-            to="/docs/reference/theme-file">
+            className={clsx("button button--outline button--lg", styles.buttonOutline)} to="/docs/reference/theme-file">
             Reference
           </Link>
-        </div>
-        <div className={clsx(styles.install, shrunk && styles.installShrunk)}>
-          <code>{NPX_COMMAND}</code>
-          <CopyButton />
         </div>
       </div>
     </header>
@@ -204,11 +195,11 @@ function BeforeAfter() {
         </Heading>
         <div className={styles.codeComparison}>
           <div className={styles.codeBlock}>
-            <div className={styles.codeLabel}>Before — raw VS Code JSON</div>
+            <div className={styles.codeLabel}>Without Sassy — raw VS Code JSON</div>
             <CodeBlock language="json">{beforeCode}</CodeBlock>
           </div>
           <div className={styles.codeBlock}>
-            <div className={styles.codeLabel}>After — Sassy</div>
+            <div className={styles.codeLabel}>With Sassy - Structured, re-usable, just like you</div>
             <CodeBlock language="yaml">{afterCode}</CodeBlock>
           </div>
         </div>

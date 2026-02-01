@@ -22,7 +22,7 @@
   --ifm-color-primary-lighter: #ea85dd;
   --ifm-color-primary-lightest: #ef9ce9;
 
-  --ifm-color-secondary: #ebedf0;
+  --ifm-color-secondary: #010102;
   --ifm-color-success: #00a400;
   --ifm-color-info: #54c7ec;
   --ifm-color-warning: #ffba00;
@@ -59,11 +59,12 @@
 
   /* ── Content colours ── */
   --ifm-color-content: var(--ifm-color-emphasis-900);
-  --ifm-color-content-secondary: var(--ifm-color-emphasis-200);
+  --ifm-color-content-secondary: var(--ifm-color-emphasis-600);
   --ifm-color-content-inverse: var(--ifm-color-emphasis-1000);
 
   /* ── Background ── */
-  --ifm-background-color: var(--ifm-color-emphasis-100);
+  --ifm-background-color: color-mix(in oklch, var(--ifm-color-primary-lightest), transparent 80%);
+  /* --ifm-background-color: var(--ifm-color-emphasis-100); */
   --ifm-background-surface-color: var(--ifm-color-emphasis-0);
 
   /* ── Font colours ── */
@@ -103,8 +104,12 @@
   --ifm-breadcrumb-item-background-active: var(--ifm-hover-overlay);
 
   /* ── Button ── */
-  --ifm-button-background-color: inherit;
-  --ifm-button-border-color: var(--ifm-button-background-color);
+  :where(.button--primary) {
+    --ifm-button-background-color: var(--ifm-color-primary-light);
+  }
+
+  --ifm-button-background-color: var(--ifm-color-primary-light);
+  --ifm-button-border-color: var(--ifm-font-color-base-inverse);
   --ifm-button-color: var(--ifm-font-color-base-inverse);
   --ifm-button-font-weight: 700;
 
@@ -297,10 +302,10 @@ body {
 
       .pagination-nav__link--next,
       .pagination-nav__link--prev {
-        border: 0.15rem solid rgb(from var(--ifm-color-primary-darkest) r g b / 10%);
+        border: 0.15rem solid color-mix(in oklch, var(--ifm-color-primary-dark), transparent 50%);
 
         &:hover {
-          border-color: var(--ifm-color-primary-darkest);
+          border-color: color-mix(in oklch, var(--ifm-color-primary-lighter), transparent 50%);
         }
       }
     }
