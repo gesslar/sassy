@@ -46,7 +46,7 @@ export default class Evaluator {
    *
    * @type {RegExp}
    */
-  static sub = /(?<captured>\$\((?<parens>[^()]+)\)|\$(?<none>[\w]+(?:\.[\w]+)*)|\$\{(?<braces>[^()]+)\})/
+  static sub = /(?<captured>\$\((?<parens>[^()]+)\)|\$(?<none>[\w]+(?:\.[\w]+)*)|\$\{(?<braces>[^{}]+)\})/
 
   /**
    * Regular expression for matching colour / transformation function calls
