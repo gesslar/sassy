@@ -176,6 +176,17 @@ export default class ResolveCommand extends Command {
     const matches = this.#findScopeMatches(tokenColors, scopeName)
 
     if(matches.length === 0) {
+      // Try precedence-based fallback
+      const precedenceMatch = this.#findBestPrecedenceMatch(tokenColors, scopeName)
+
+      if(precedenceMatch) {
+        await this.#resolveScopeMatch(
+          theme, precedenceMatch.entry, scopeName, precedenceMatch.matchedScope
+        )
+
+        return
+      }
+
       return Term.info(`No tokenColors entries found for scope '${scopeName}'`)
     }
 
@@ -205,7 +216,50 @@ export default class ResolveCommand extends Command {
     })
   }
 
-  async #resolveScopeMatch(theme, match, displayName) {
+  /**
+   * Finds the best precedence match for a target scope that has no exact match.
+   * Uses TextMate scope hierarchy rules: a broader scope (fewer segments) that
+   * is a prefix of the target scope will match. Returns the most specific
+   * (longest) broader scope.
+   *
+   * @param {Array} tokenColors - Array of tokenColors entries
+   * @param {string} targetScope - The scope to find a precedence match for
+   * @returns {{entry: object, matchedScope: string}|null} The best match or null
+   * @private
+   */
+  #findBestPrecedenceMatch(tokenColors, targetScope) {
+    const targetSegments = targetScope.split(".")
+    let bestMatch = null
+    let bestLength = 0
+
+    for(const entry of tokenColors) {
+      if(!entry.scope)
+        continue
+
+      const scopes = entry.scope.split(",").map(s => s.trim())
+
+      for(const scope of scopes) {
+        const scopeSegments = scope.split(".")
+
+        // Must be fewer segments (broader) and a prefix of the target
+        if(scopeSegments.length >= targetSegments.length)
+          continue
+
+        const isPrefix = scopeSegments.every((seg, i) =>
+          seg === targetSegments[i]
+        )
+
+        if(isPrefix && scopeSegments.length > bestLength) {
+          bestLength = scopeSegments.length
+          bestMatch = {entry, matchedScope: scope}
+        }
+      }
+    }
+
+    return bestMatch
+  }
+
+  async #resolveScopeMatch(theme, match, displayName, resolvedVia = null) {
     const pool = theme.getPool()
     const settings = match.settings || {}
     const name = match.name || "Unnamed"
@@ -255,9 +309,13 @@ export default class ResolveCommand extends Command {
     const fullTrail = this.#buildCompleteTrail(bestToken, trail)
     const finalValue = bestToken.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
-    const output = c`{head}${displayName}{/} {hex}${(`${name}`)}{/}\n`+
-                    `${this.#formatOutput(fullTrail)}\n\n{head}`+
-                    `${"Resolution:"}{/} ${formattedFinalValue}`
+    const header = resolvedVia
+      ? c`{<BU}${displayName}{/} {<I}via{/} {<BU}${resolvedVia}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
+      : c`{<BU}${displayName}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
+
+    const output = header +
+                    `${this.#formatOutput(fullTrail)}\n\n`+
+                    c`{head}${"Resolution:"}{/} ${formattedFinalValue}`
 
     Term.info(output)
   }

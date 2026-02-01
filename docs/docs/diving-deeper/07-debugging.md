@@ -83,6 +83,34 @@ Then resolve the specific one:
 
 `}</CodeBlock>
 
+#### Precedence-based fallback
+
+If no exact match exists for the scope you request, Sassy falls back to TextMate precedence rules. It finds the most specific broader scope that would cover the requested scope:
+
+<CodeBlock lang="bash">{`
+
+  npx @gesslar/sassy resolve ocean.yaml --tokenColor comment.block.documentation
+
+`}</CodeBlock>
+
+If `comment.block.documentation` isn't explicitly defined but `comment` is, Sassy resolves through the broader scope and shows the relationship:
+
+<CodeBlock lang="log">{`
+
+  comment.block.documentation via comment in Universal Comments
+
+  $(scope.comment)
+    $(accent)
+        $(palette.cyan)
+          → #4a9eff
+    → #4a9eff
+
+  Resolution: #4a9eff
+
+`}</CodeBlock>
+
+This is useful for debugging which rule would actually apply to a given scope — even when it isn't explicitly listed in your theme.
+
 ### Trace a semanticTokenColors scope
 
 <CodeBlock lang="bash">{`
