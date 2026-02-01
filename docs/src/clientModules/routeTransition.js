@@ -1,21 +1,27 @@
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment"
 
 if(ExecutionEnvironment.canUseDOM) {
-  let lastPathname = window.location.pathname
+  window.__routeTransitionLastPathname = window.location.pathname
+}
 
-  const observer = new MutationObserver(() => {
-    const current = window.location.pathname
-    if(current !== lastPathname) {
-      lastPathname = current
-      const main = document.querySelector("main")
-      if(main) {
-        main.style.animation = "none"
-        // Force reflow to restart the animation
-        void main.offsetHeight
-        main.style.animation = ""
-      }
-    }
-  })
+/**
+ * Restarts the fadeIn animation on route changes.
+ *
+ * @param {object} params - The route update parameters.
+ * @param {object} params.location - The new location object.
+ * @returns {void}
+ */
+export function onRouteDidUpdate({location}) {
+  if(location.pathname === window.__routeTransitionLastPathname) {
+    return
+  }
 
-  observer.observe(document.body, {childList: true, subtree: true})
+  window.__routeTransitionLastPathname = location.pathname
+  const main = document.querySelector("main")
+  if(main) {
+    main.classList.remove("route-transition")
+    // Force reflow to restart the animation
+    void main.offsetHeight
+    main.classList.add("route-transition")
+  }
 }
