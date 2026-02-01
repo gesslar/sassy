@@ -105,6 +105,12 @@ const config = {
           },
           {
             type: "docSidebar",
+            sidebarId: "themeSchoolSidebar",
+            position: "left",
+            label: "Theme School",
+          },
+          {
+            type: "docSidebar",
             sidebarId: "hackingSidebar",
             position: "left",
             label: "Hacking",

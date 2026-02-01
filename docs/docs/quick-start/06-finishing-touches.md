@@ -151,6 +151,15 @@ Here's the full `ocean.yaml` at this point:
           foreground: $$blue
           fontStyle: bold
 
+    semanticTokenColors:
+      variable.declaration:
+        foreground: $(std.fg)
+        fontStyle: italic
+      function.declaration:
+        foreground: $(accent)
+        fontStyle: bold
+      "string:escape": $$yellow
+
 `}</CodeBlock>
 
 ## Installing in VS Code

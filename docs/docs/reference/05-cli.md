@@ -117,6 +117,9 @@ Pass the hex value without `#` to avoid shell comment interpretation, or wrap it
     # Resolve a token colour scope
     sassy resolve --tokenColor keyword.control my-theme.yaml
 
+    # Resolve a semantic token colour
+    sassy resolve --semanticTokenColor variable.declaration my-theme.yaml
+
     # When multiple tokenColors entries match the same scope,
     # Sassy prompts for disambiguation:
     sassy resolve --tokenColor entity.name.class.2 my-theme.yaml

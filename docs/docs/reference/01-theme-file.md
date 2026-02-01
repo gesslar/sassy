@@ -52,8 +52,14 @@ A Sassy theme file is a YAML or JSON5 document with up to four top-level keys. W
     import:
       - ./shared/variables.yaml
       - ./shared/colors.yaml
+    custom:
+      semanticHighlighting: true
 
 `}</CodeBlock>
+
+:::tip
+If your theme uses `semanticTokenColors`, set `semanticHighlighting: true` via `config.custom`. Without it, VS Code ignores semantic token rules in custom themes. See [Theme School: Semantic Token Colors](/docs/theme-school/semantic-token-colors) for details.
+:::
 
 ## `palette`
 
@@ -162,18 +168,29 @@ An array of TextMate token colour rules. Each entry has `name`, `scope`, and `se
 
 ### `semanticTokenColors`
 
-An object mapping semantic token types to colour expressions.
+An object mapping semantic token types to colour values. Each key is a semantic token selector (e.g. `variable.declaration`, `function.declaration`, `string:escape`). Values can be either:
+
+- **A string** — interpreted as the `foreground` colour
+- **An object** — with `foreground` and/or `fontStyle` properties
 
 <CodeBlock lang="yaml">{`
 
   theme:
     semanticTokenColors:
+      # Object form — foreground and fontStyle
       variable.declaration:
         foreground: $(std.fg)
+        fontStyle: italic
       function.declaration:
         foreground: $$cyan
+        fontStyle: bold
+
+      # String form — shorthand for foreground only
+      "string:escape": $$yellow
 
 `}</CodeBlock>
+
+Both forms support variable references, palette aliases, and colour functions.
 
 ## Supported File Formats
 

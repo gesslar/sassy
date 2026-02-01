@@ -78,12 +78,13 @@ In watch mode (`--watch`), Sassy automatically tracks all imported files. When a
 <CodeBlock lang="tree">{`
 
   my-theme/
-  ├── theme.yaml              # Main entry: config + theme overrides
+  ├── theme.yaml                  # Main entry: config + theme overrides
   ├── shared/
-  │   ├── palette.yaml        # Colour palette definitions
-  │   ├── variables.yaml      # Semantic variables
-  │   ├── colors.yaml         # VS Code colour mappings
-  │   └── tokenColors.yaml    # Syntax highlighting rules
+  │   ├── palette.yaml            # Colour palette definitions
+  │   ├── variables.yaml          # Semantic variables
+  │   ├── colors.yaml             # VS Code colour mappings
+  │   ├── tokenColors.yaml        # Syntax highlighting rules
+  │   └── semanticTokenColors.yaml # Semantic token styling
 
 `}</CodeBlock>
 
@@ -99,6 +100,7 @@ In watch mode (`--watch`), Sassy automatically tracks all imported files. When a
       - ./shared/variables.yaml
       - ./shared/colors.yaml
       - ./shared/tokenColors.yaml
+      - ./shared/semanticTokenColors.yaml
 
   theme:
     colors:
@@ -150,5 +152,21 @@ theme:
       scope: keyword
       settings:
         foreground: $$cyan
+
+`}</CodeBlock>
+
+**shared/semanticTokenColors.yaml**
+
+<CodeBlock lang="yaml">{`
+
+theme:
+  semanticTokenColors:
+    variable.declaration:
+      foreground: $(std.fg)
+      fontStyle: italic
+    function.declaration:
+      foreground: $(accent)
+      fontStyle: bold
+    "string:escape": $$cyan
 
 `}</CodeBlock>

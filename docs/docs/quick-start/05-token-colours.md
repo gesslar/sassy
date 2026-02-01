@@ -81,4 +81,28 @@ To see the result, install the theme in VS Code and open a source file. Comments
 Use VS Code's **Developer: Inspect Editor Tokens and Scopes** command (from the Command Palette) to see exactly which scopes apply to any token in your code. This is invaluable when fine-tuning syntax highlighting.
 :::
 
+## Semantic Token Colours
+
+VS Code also supports **semantic tokens** — language-aware tokens provided by language servers rather than TextMate grammars. These are more precise: a language server knows the difference between a variable *declaration* and a variable *reference*, for example.
+
+You style them with `semanticTokenColors`. Each key is a semantic token selector, and values can be either a string (shorthand for foreground) or an object with `foreground` and/or `fontStyle`:
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    semanticTokenColors:
+      variable.declaration:
+        foreground: $(std.fg)
+        fontStyle: italic
+      function.declaration:
+        foreground: $(accent)
+        fontStyle: bold
+      "string:escape": $$yellow
+
+`}</CodeBlock>
+
+:::tip
+Semantic tokens override `tokenColors` when a language server is active. Use `tokenColors` as the baseline and `semanticTokenColors` for precision where it matters.
+:::
+
 The theme is starting to look real. Let's finish it off with UI polish.

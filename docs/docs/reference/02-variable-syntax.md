@@ -103,6 +103,14 @@ Variable references can appear anywhere a string value is expected:
       editor.background: $(std.bg)
       panel.border: alpha($(std.fg), 0.15)
 
+    semanticTokenColors:
+      variable.declaration:
+        foreground: $(std.fg)
+        fontStyle: italic
+      "string:escape": $$yellow
+
 `}</CodeBlock>
 
 When using the parenthesised or braced forms, the reference is unambiguous even when embedded in a larger expression. The bare form works in most cases but may require switching to `$(...)` when adjacent to parentheses or other punctuation.
+
+In `semanticTokenColors`, references work identically whether the value is a string (shorthand for foreground) or a property inside an object form.

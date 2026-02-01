@@ -72,6 +72,15 @@ The `colour` parameter in transformation functions accepts:
       statusBar.background: oklch(0.5, 30, 250)
       button.background: hsl(200, 80, 50)
 
+    semanticTokenColors:
+      # Object form — function in foreground
+      variable.readonly:
+        foreground: fade($(accent), 0.3)
+        fontStyle: italic
+
+      # String form — function as shorthand foreground
+      "string:escape": lighten($$yellow, 10)
+
 `}</CodeBlock>
 
 ## Passthrough Behaviour

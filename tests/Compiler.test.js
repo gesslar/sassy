@@ -151,5 +151,58 @@ theme:
       const output = theme.getOutput()
       assert.ok(output.colors["editor.background"].startsWith("#"))
     })
+
+    it("compiles semanticTokenColors with object and string values", async() => {
+      const testThemeContent = `config:
+  $schema: vscode://schemas/color-theme
+  name: Semantic Token Test
+  type: dark
+palette:
+  yellow: "#ffd93d"
+vars:
+  accent: "#4a9eff"
+  fg: "#e6e6e6"
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    variable.declaration:
+      foreground: $(fg)
+      fontStyle: italic
+    function.declaration:
+      foreground: $(accent)
+      fontStyle: bold
+    "string:escape": $$yellow
+`
+
+      const testPath = TestUtils.getFixturePath("semantic-token-theme.yaml")
+      await TestUtils.createTestFile(testPath, testThemeContent)
+
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/semantic-token-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const output = theme.getOutput()
+
+      // Object-style entries should produce nested objects
+      assert.deepEqual(output.semanticTokenColors["variable.declaration"], {
+        foreground: "#e6e6e6",
+        fontStyle: "italic",
+      })
+      assert.deepEqual(output.semanticTokenColors["function.declaration"], {
+        foreground: "#4a9eff",
+        fontStyle: "bold",
+      })
+
+      // String-style entry should remain a plain string
+      assert.equal(output.semanticTokenColors["string:escape"], "#ffd93d")
+    })
   })
 })
