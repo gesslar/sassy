@@ -181,7 +181,8 @@ export default class ResolveCommand extends Command {
 
       if(precedenceMatch) {
         await this.#resolveScopeMatch(
-          theme, precedenceMatch.entry, scopeName, precedenceMatch.matchedScope
+          theme, precedenceMatch.entry, scopeName,
+          {scope: precedenceMatch.matchedScope, relation: "via"}
         )
 
         return
@@ -191,7 +192,19 @@ export default class ResolveCommand extends Command {
     }
 
     if(matches.length === 1) {
-      // Single match - resolve directly
+      // Check if a broader scope earlier in the array masks this exact match
+      const maskingScope = this.#findMaskingScope(tokenColors, matches[0], scopeName)
+
+      if(maskingScope) {
+        await this.#resolveScopeMatch(
+          theme, maskingScope.entry, scopeName,
+          {scope: maskingScope.matchedScope, relation: "masked by"}
+        )
+
+        return
+      }
+
+      // No masking - resolve directly
       await this.#resolveScopeMatch(theme, matches[0], scopeName)
     } else {
       // Multiple matches - show disambiguation options
@@ -259,6 +272,50 @@ export default class ResolveCommand extends Command {
     return bestMatch
   }
 
+  /**
+   * Finds a broader scope that appears earlier in the tokenColors array
+   * and would mask the given exact match entry.
+   *
+   * @param {Array} tokenColors - Array of tokenColors entries
+   * @param {object} exactMatch - The exact match entry
+   * @param {string} targetScope - The scope being resolved
+   * @returns {{entry: object, matchedScope: string}|null} The masking entry or null
+   * @private
+   */
+  #findMaskingScope(tokenColors, exactMatch, targetScope) {
+    const targetSegments = targetScope.split(".")
+    const exactIndex = tokenColors.indexOf(exactMatch)
+    let bestMatch = null
+    let bestLength = 0
+
+    for(let i = 0; i < exactIndex; i++) {
+      const entry = tokenColors[i]
+
+      if(!entry.scope)
+        continue
+
+      const scopes = entry.scope.split(",").map(s => s.trim())
+
+      for(const scope of scopes) {
+        const scopeSegments = scope.split(".")
+
+        if(scopeSegments.length >= targetSegments.length)
+          continue
+
+        const isPrefix = scopeSegments.every((seg, idx) =>
+          seg === targetSegments[idx]
+        )
+
+        if(isPrefix && scopeSegments.length > bestLength) {
+          bestLength = scopeSegments.length
+          bestMatch = {entry, matchedScope: scope}
+        }
+      }
+    }
+
+    return bestMatch
+  }
+
   async #resolveScopeMatch(theme, match, displayName, resolvedVia = null) {
     const pool = theme.getPool()
     const settings = match.settings || {}
@@ -310,7 +367,7 @@ export default class ResolveCommand extends Command {
     const finalValue = bestToken.getValue()
     const [formattedFinalValue] = this.#formatLeaf(finalValue)
     const header = resolvedVia
-      ? c`{<BU}${displayName}{/} {<I}via{/} {<BU}${resolvedVia}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
+      ? c`{<BU}${displayName}{/} {<I}${resolvedVia.relation}{/} {<BU}${resolvedVia.scope}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
       : c`{<BU}${displayName}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
 
     const output = header +
