@@ -152,6 +152,121 @@ theme:
       assert.ok(output.colors["editor.background"].startsWith("#"))
     })
 
+    it("collapses array scope in tokenColors to comma-delimited string", async() => {
+      const testThemeContent = `config:
+  $schema: vscode://schemas/color-theme
+  name: Token Array Scope Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Comments
+      scope:
+        - comment
+        - comment.block
+        - comment.line
+      settings:
+        foreground: "#888888"
+        fontStyle: italic
+`
+
+      const testPath = TestUtils.getFixturePath("token-colors-array-scope.yaml")
+      await TestUtils.createTestFile(testPath, testThemeContent)
+
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/token-colors-array-scope.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const output = theme.getOutput()
+      assert.ok(Array.isArray(output.tokenColors))
+      assert.equal(typeof output.tokenColors[0].scope, "string")
+      assert.equal(output.tokenColors[0].scope, "comment, comment.block, comment.line")
+    })
+
+    it("passes through string scope in tokenColors unchanged", async() => {
+      const testThemeContent = `config:
+  $schema: vscode://schemas/color-theme
+  name: Token String Scope Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Comments
+      scope: comment
+      settings:
+        foreground: "#888888"
+`
+
+      const testPath = TestUtils.getFixturePath("token-colors-string-scope.yaml")
+      await TestUtils.createTestFile(testPath, testThemeContent)
+
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/token-colors-string-scope.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const output = theme.getOutput()
+      assert.ok(Array.isArray(output.tokenColors))
+      assert.equal(typeof output.tokenColors[0].scope, "string")
+      assert.equal(output.tokenColors[0].scope, "comment")
+    })
+
+    it("handles mixed array and string scopes in tokenColors", async() => {
+      const testThemeContent = `config:
+  $schema: vscode://schemas/color-theme
+  name: Token Mixed Scope Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Comments
+      scope:
+        - comment
+        - comment.block
+      settings:
+        foreground: "#888888"
+    - name: Strings
+      scope: string
+      settings:
+        foreground: "#99cc99"
+`
+
+      const testPath = TestUtils.getFixturePath("token-colors-mixed-scope.yaml")
+      await TestUtils.createTestFile(testPath, testThemeContent)
+
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/token-colors-mixed-scope.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const output = theme.getOutput()
+      assert.ok(Array.isArray(output.tokenColors))
+      assert.equal(output.tokenColors[0].scope, "comment, comment.block")
+      assert.equal(output.tokenColors[1].scope, "string")
+    })
+
     it("compiles semanticTokenColors with object and string values", async() => {
       const testThemeContent = `config:
   $schema: vscode://schemas/color-theme
