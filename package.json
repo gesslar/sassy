@@ -24,7 +24,6 @@
     "vscode",
     "yaml"
   ],
-  "packageManager": "pnpm@10.28.2",
   "type": "module",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -42,41 +41,41 @@
   ],
   "scripts": {
     "clean": "rm -rfv ./dist",
-    "build": "mkdir -pv ./dist && pnpm pack --pack-destination ./dist/",
+    "build": "mkdir -pv ./dist && npm pack --pack-destination ./dist/",
     "types": "node -e \"require('fs').rmSync('types',{recursive:true,force:true});\" && tsc -p tsconfig.types.json",
     "exec": "node ./src/cli.js",
     "lint": "eslint src/",
     "test": "node --test tests/**/*.test.js",
     "test:coverage": "node --experimental-test-coverage --test tests/**/*.test.js",
-    "submit": "pnpm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
+    "submit": "npm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
     "examples": "node ./examples/validator.js",
-    "update": "pnpm self-update && pnpx npm-check-updates -u && pnpm install",
-    "docs:dev": "pnpm --dir docs start",
-    "docs:build": "pnpm --dir docs build",
+    "update": "npx npm-check-updates -u && npm install",
+    "docs:dev": "npm --dir docs start",
+    "docs:build": "npm --dir docs build",
     "docs:deploy": "gh workflow run deploy-docs.yml",
     "pr": "gt submit -p --ai",
-    "patch": "pnpm version patch",
-    "minor": "pnpm version minor",
-    "major": "pnpm version major"
+    "patch": "npm version patch",
+    "minor": "npm version minor",
+    "major": "npm version major"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
     "@gesslar/colours": "^0.8.0",
-    "@gesslar/toolkit": "^3.31.0",
+    "@gesslar/toolkit": "^3.42.0",
     "chokidar": "^5.0.0",
     "color-support": "^1.1.3",
     "commander": "^14.0.3",
     "culori": "^4.0.2",
-    "globby": "^16.1.0",
+    "globby": "^16.1.1",
     "json5": "^2.2.3",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@docusaurus/eslint-plugin": "^3.9.2",
-    "@gesslar/uglier": "^1.2.0",
-    "eslint": "^9.39.2",
+    "@gesslar/uglier": "^1.6.2",
+    "eslint": "^10.0.1",
     "typescript": "^5.9.3"
   }
 }

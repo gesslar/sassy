@@ -1,0 +1,18 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Token Mixed Scope Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Comments
+      scope:
+        - comment
+        - comment.block
+      settings:
+        foreground: "#888888"
+    - name: Strings
+      scope: string
+      settings:
+        foreground: "#99cc99"

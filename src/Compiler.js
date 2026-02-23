@@ -117,6 +117,11 @@ export default class Compiler {
       // Assemble into one object with the proper keys
       const colors = workColors.reduce(reducer, {})
       const tokenColors = this.#composeArray(workTokenColors)
+        .map(entry => {
+          if(Array.isArray(entry.scope))
+            return {...entry, scope: entry.scope.join(", ")}
+          return entry
+        })
       const semanticTokenColors = this.#composeObject(workSemanticTokenColors)
 
       // Mix and maaatch all jumbly wumbly...
@@ -282,7 +287,7 @@ export default class Compiler {
   #composeObject(decomposed) {
     const done = []
 
-    return decomposed.reduce((acc, curr, index, arr) => {
+    return decomposed.reduce((acc, curr, _, arr) => {
       // Test for an array
       if("array" in curr) {
         const array = curr.array
@@ -335,10 +340,14 @@ export default class Compiler {
           const [_, newFlatPath] = c.flatPath.match(/^\w+\.(.*)$/)
           const newPath = c.path.slice(1)
 
-          return Object.assign(c, {
-            path: newPath,
-            flatPath: newFlatPath
-          })
+          Object.assign(c, {path: newPath, flatPath: newFlatPath})
+
+          if("array" in c) {
+            const newArrayPath = c.array.path.slice(1)
+            c.array = {...c.array, path: newArrayPath, flatPath: newArrayPath.join(".")}
+          }
+
+          return c
         })
 
       return this.#composeObject(section)
