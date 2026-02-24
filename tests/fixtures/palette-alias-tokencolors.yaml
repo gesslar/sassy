@@ -1,0 +1,25 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Palette Alias Token Colors Test
+  type: dark
+
+palette:
+  tc:
+    keyword: "#4b8ebd"
+    string: "#4ab792"
+    comment: "#6a9955"
+
+theme:
+  tokenColors:
+    - name: Keywords
+      scope: keyword
+      settings:
+        foreground: "$$tc.keyword"
+    - name: Strings
+      scope: string
+      settings:
+        foreground: "$$tc.string"
+    - name: Comments
+      scope: comment
+      settings:
+        foreground: "$$tc.comment"
