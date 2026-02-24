@@ -90,6 +90,26 @@ describe("LintCommand", () => {
       assert.ok(Array.isArray(results.variables))
     })
 
+    it("does not report false positives for palette alias syntax in tokenColors", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new LintCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/palette-alias-tokencolors.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+
+      await theme.load()
+      await theme.build()
+
+      const results = await command.lint(theme)
+      const undefinedVarIssues = results[LintCommand.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === LintCommand.ISSUE_TYPES.UNDEFINED_VARIABLE)
+
+      assert.equal(undefinedVarIssues.length, 0,
+        `Expected no undefined-variable issues for palette aliases, got: ${JSON.stringify(undefinedVarIssues)}`)
+    })
+
     it("handles theme without pool", async() => {
       const cwd = new DirectoryObject(__dirname)
       const packageJson = {}

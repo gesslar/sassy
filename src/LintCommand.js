@@ -15,6 +15,8 @@
  * colour-coded reporting for different severity levels.
  */
 
+import process from "node:process"
+
 import c from "@gesslar/colours"
 // import colorSupport from "color-support"
 
@@ -79,7 +81,7 @@ export default class LintCommand extends Command {
     this.setCliOptions({
       // Future options could include:
       // "fix": ["-f, --fix", "automatically fix issues where possible"],
-      // "strict": ["--strict", "treat warnings as errors"],
+      "strict": ["--strict", "treat warnings as errors"],
       // "format": ["--format <type>", "output format (text, json)", "text"],
     })
   }
@@ -104,6 +106,14 @@ export default class LintCommand extends Command {
     const issues = await this.#lintTheme(theme)
 
     this.#reportIssues(issues)
+
+    const exitSeverities = [LC.SEVERITY.HIGH]
+
+    if(options.strict)
+      exitSeverities.push(LC.SEVERITY.MEDIUM)
+
+    if(issues.some(i => exitSeverities.includes(i.severity)))
+      process.exit(1)
   }
 
   /**
@@ -458,10 +468,11 @@ export default class LintCommand extends Command {
 
         for(const [key, value] of Object.entries(settings)) {
           if(typeof value === "string") {
-            const varName = Evaluator.extractVariableName(value)
+            const varName = Evaluator.extractVariableName(
+              Evaluator.expandPaletteAliases(value))
 
             if(!varName)
-              return
+              continue
 
             if(!definedVars.has(varName)) {
               issues.push({
@@ -510,7 +521,8 @@ export default class LintCommand extends Command {
       const currentPath = path ? `${path}.${key}` : key
 
       if(typeof value === "string") {
-        const varName = Evaluator.extractVariableName(value)
+        const varName = Evaluator.extractVariableName(
+          Evaluator.expandPaletteAliases(value))
 
         if(varName && !definedVars.has(varName)) {
           issues.push({

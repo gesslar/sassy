@@ -91,7 +91,21 @@ A clean theme produces:
 
 ## CI Integration
 
-The lint command always exits cleanly. To use it in CI, parse the output for error indicators or count the issues reported. A future `--strict` flag to treat warnings as errors is planned.
+The lint command exits `1` if any errors are found (undefined variables, cross-rule precedence masking), making it suitable for use in CI pipelines without extra configuration:
+
+<CodeBlock lang="bash">{`
+
+  sassy lint my-theme.yaml && echo "theme is clean"
+
+`}</CodeBlock>
+
+To also fail on warnings (duplicate scopes, same-rule precedence notes), use `--strict`:
+
+<CodeBlock lang="bash">{`
+
+  sassy lint --strict my-theme.yaml
+
+`}</CodeBlock>
 
 ## Tips
 

@@ -98,6 +98,9 @@ npx @gesslar/sassy build --nerd my-theme.yaml
 
 # Lint themes for potential issues
 npx @gesslar/sassy lint my-theme.yaml
+
+# Fail on warnings too (useful in CI)
+npx @gesslar/sassy lint --strict my-theme.yaml
 ```
 
 ### Build Command Options
@@ -228,6 +231,7 @@ to least specific.
 
 | Option | Description |
 | -------- | ------------- |
+| `--strict` | Treat warnings as errors — exits `1` if any warnings are found |
 | `--nerd` | Show detailed error traces if linting fails |
 
 ## Basic Theme Structure

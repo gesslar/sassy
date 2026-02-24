@@ -146,6 +146,7 @@ Validate a theme file for common issues.
 
 | Option | Description |
 |--------|-------------|
+| `--strict` | Treat warnings (duplicate scopes, precedence issues) as errors — exits `1` if any are found |
 | `--nerd` | Show full error stack traces |
 
 **Example:**
@@ -153,6 +154,9 @@ Validate a theme file for common issues.
 <CodeBlock lang="bash">{`
 
     sassy lint my-theme.yaml
+
+    # Fail on warnings too (useful in CI)
+    sassy lint --strict my-theme.yaml
 
 `}</CodeBlock>
 
@@ -164,5 +168,5 @@ See [Lint Rules](./07-lint-rules.md) for details on each check.
 
 | Code | Meaning |
 |------|---------|
-| `0` | Success. `lint` always exits 0, even when issues are found. |
-| `1` | Fatal error during compilation or file I/O. |
+| `0` | Success, or `lint` found only warnings/info. |
+| `1` | Fatal error during compilation or file I/O; or `lint` found errors; or `lint --strict` found warnings. |
