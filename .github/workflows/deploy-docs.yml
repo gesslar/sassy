@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  Zoomies:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,14 +18,11 @@ jobs:
         with:
           node-version: 22
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Install dependencies
-        run: pnpm --dir docs install --frozen-lockfile
+        run: npm --prefix docs ci
 
       - name: Build Docusaurus
-        run: pnpm --dir docs build
+        run: npm --prefix docs run build
         env:
           NODE_ENV: production
 
