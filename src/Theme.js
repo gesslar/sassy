@@ -103,6 +103,7 @@ export default class Theme {
     this.#outputHash = null
     this.#lookup = null
     this.#pool = null
+    this.#dependencies = new Set()
   }
 
   /**
