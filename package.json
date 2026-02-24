@@ -5,7 +5,7 @@
     "name": "gesslar",
     "url": "https://gesslar.dev"
   },
-  "version": "3.3.0",
+  "version": "3.4.0",
   "license": "Unlicense",
   "homepage": "https://sassy.gesslar.io",
   "repository": {
@@ -25,8 +25,6 @@
     "yaml"
   ],
   "type": "module",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
   "bin": "src/cli.js",
   "exports": {
     ".": {
@@ -50,8 +48,8 @@
     "submit": "npm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
     "examples": "node ./examples/validator.js",
     "update": "npx npm-check-updates -u && npm install",
-    "docs:dev": "npm run start --workspace=docs",
-    "docs:build": "npm run build --workspace=docs",
+    "docs:dev": "cd docs && npm run start",
+    "docs:build": "cd docs && npm run build",
     "docs:deploy": "gh workflow run deploy-docs.yml",
     "pr": "gt submit -p --ai",
     "patch": "npm version patch",
