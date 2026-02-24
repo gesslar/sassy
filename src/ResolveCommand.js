@@ -500,7 +500,7 @@ export default class ResolveCommand extends Command {
       }
     }
 
-    trail.forEach(token => processToken(token, 1))
+    trail.forEach(token => processToken(token, 0))
 
     // Normalize levels to reduce excessive nesting
     const levelMap = new Map()
