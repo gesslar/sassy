@@ -36,6 +36,7 @@ The `colour` parameter in transformation functions accepts:
 - **Variable references**: `$(accent)`, `$std.fg`
 - **Palette references**: `$$cyan`, `$($blue)` (shorthand for `$palette.cyan`, `$(palette.blue)`)
 - **CSS names via css()**: `css(tomato)`
+- **Inline colour constructors**: `oklch(0.5 0.2 220)`, `hsl(210, 60%, 40%)`, `rgb(74, 158, 255)`
 - **Nested function calls**: `darken($(bg), 20)`
 
 ## Examples
@@ -69,7 +70,7 @@ The `colour` parameter in transformation functions accepts:
       errorForeground: css(crimson)
 
       # Colour space constructors
-      statusBar.background: oklch(0.5, 30, 250)
+      statusBar.background: oklch(0.5 0.3 250)
       button.background: hsl(200, 80, 50)
 
     semanticTokenColors:
