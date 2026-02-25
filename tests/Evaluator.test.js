@@ -177,6 +177,39 @@ describe("Evaluator", () => {
       assert.notEqual(vars[0].value, "#2d5a87")
     })
 
+    it("resolves inline oklch colour constructor as function argument", () => {
+      const evaluator = new Evaluator()
+      const decomposed = [
+        {flatPath: "bg", value: "lighten(oklch(0.1 0 0), 15)"}
+      ]
+
+      evaluator.evaluate(decomposed)
+
+      assert.ok(decomposed[0].value.startsWith("#"))
+    })
+
+    it("resolves inline hsl colour constructor as function argument", () => {
+      const evaluator = new Evaluator()
+      const decomposed = [
+        {flatPath: "fg", value: "darken(hsl(210, 60%, 40%), 20)"}
+      ]
+
+      evaluator.evaluate(decomposed)
+
+      assert.ok(decomposed[0].value.startsWith("#"))
+    })
+
+    it("resolves inline rgb colour constructor as function argument", () => {
+      const evaluator = new Evaluator()
+      const decomposed = [
+        {flatPath: "accent", value: "fade(rgb(74, 158, 255), 40)"}
+      ]
+
+      evaluator.evaluate(decomposed)
+
+      assert.ok(decomposed[0].value.startsWith("#"))
+    })
+
     it("throws on circular references", () => {
       const evaluator = new Evaluator()
       const decomposed = [

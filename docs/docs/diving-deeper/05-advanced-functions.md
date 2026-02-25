@@ -107,16 +107,30 @@ Any colour expression that Culori understands works as a passthrough. Sassy reco
     # Functional notation
     from-hsl: hsl(210, 60%, 40%)
     from-rgb: rgb(45, 90, 135)
-    from-oklch: oklch(0.6, 0.15, 220)
+    from-oklch: oklch(0.6 0.15 220)
 
     # With alpha
     from-hsla: hsla(210, 60%, 40%, 0.8)
     from-rgba: rgba(45, 90, 135, 0.5)
-    from-oklcha: oklch(0.6, 0.15, 220 / 0.7)
+    from-oklcha: oklch(0.6 0.15 220 / 0.7)
 
     # CSS named colours
     named: css(deepskyblue)
     named-faded: fade(css(crimson), 40)
+
+`}</CodeBlock>
+
+Colour constructors can also be used inline as arguments to transformation functions -- no variable required:
+
+<CodeBlock lang="yaml">{`
+
+  vars:
+    # Lighten/darken an oklch colour directly
+    bg-lighter: lighten(oklch(0.1 0 0), 15)
+    accent-dark: darken(hsl(210, 60%, 40%), 20)
+
+    # Fade an rgb colour inline
+    subtle: fade(rgb(74, 158, 255), 40)
 
 `}</CodeBlock>
 
@@ -127,7 +141,7 @@ Combine functions to derive entire palettes from a single base colour. The `pale
 <CodeBlock lang="yaml">{`
 
   palette:
-    base: oklch(0.6, 0.15, 220)
+    base: oklch(0.6 0.15 220)
     lighter: lighten($$base, 20)
     darker: darken($$base, 20)
     complement: mix($$base, invert($$base), 50)
