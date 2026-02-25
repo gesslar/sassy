@@ -131,6 +131,24 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "Advanced (Corporate 2) (Override Parent)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "exec",
+        "--",
+        "build",
+        "--nerd",
+        "--output-dir",
+        "./examples/output",
+        "./examples/advanced/corporate2.yaml",
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Advanced (all YAML) (watch)",
       "type": "node",
       "request": "launch",

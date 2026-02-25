@@ -647,15 +647,28 @@ export default class ResolveCommand extends Command {
         return [c`{leaf}${value}{/}`, "literal"]
 
       const {func, args} = match.groups
+      const cleanArgs = args.replace(
+        /\$\(palette\.__prior__(?:\.__\d+__)?\.([^)]+)\)/g,
+        (_, key) => `^(${key})`
+      )
 
       return [
-        c`{func}${func}{/}{parens}${"("}{/}{leaf}${args}{/}{parens}${")"}{/}`,
+        c`{func}${func}{/}{parens}${"("}{/}{leaf}${cleanArgs}{/}{parens}${")"}{/}`,
         "function"
       ]
     }
 
     if(this.#sub.test(value)) {
       const varValue = Evaluator.extractVariableName(value) || value
+      const priorMatch = varValue.match(/^palette\.__prior__(?:\.__\d+__)?\.(.+)$/)
+
+      if(priorMatch) {
+        return [
+          c`{func}^{/}{parens}${"("}{/}{leaf}${priorMatch[1]}{/}{parens}${")"}{/}`,
+          "séance"
+        ]
+      }
+
       const {parens,none,braces} = Evaluator.sub.exec(value)?.groups || {}
       const style = (braces && ["{","}"]) || (parens && ["(",")"]) || (none && ["",""])
 

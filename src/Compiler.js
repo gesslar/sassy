@@ -1,13 +1,16 @@
 /**
  * @file Compiler.js
  *
- * Defines the Compiler class, the main engine for processing theme configuration files.
+ * Defines the Compiler class, the main engine for processing theme
+ * configuration files.
+ *
  * Handles all phases of theme compilation:
  *   1. Import resolution (merging modular theme files)
  *   2. Variable decomposition and flattening
  *   3. Token evaluation and colour function application
  *   4. Recursive resolution of references
  *   5. Output assembly for VS Code themes
+ *
  * Supports extension points for custom phases and output formats.
  */
 
@@ -56,7 +59,7 @@ export default class Compiler {
 
       // Let's get all of the imports!
       const imports = recompConfig.import ?? []
-      const {imported,importByFile} = await this.#import(imports, theme)
+      const {imported, importByFile, allPriors} = await this.#import(imports, theme)
 
       importByFile.forEach(
         (themeData, file) => theme.addDependency(file,themeData)
@@ -69,10 +72,16 @@ export default class Compiler {
         ...(sourceTheme?.tokenColors ?? [])
       ]
 
+      // Apply séance to source palette against the accumulated imported palette
+      const {transformed: transformedPalette, priors: sourcePriors} =
+        this.#séance(imported.palette, sourcePalette ?? {}, allPriors)
+
+      sourcePriors.forEach((v, k) => allPriors.set(k, v))
+
       const merged = Data.mergeObject({},
         imported,
         {
-          palette: sourcePalette ?? {},
+          palette: transformedPalette,
           vars: sourceVars ?? {},
           colors: sourceTheme?.colors ?? {},
           semanticTokenColors: sourceTheme?.semanticTokenColors ?? {},
@@ -81,6 +90,18 @@ export default class Compiler {
 
       // Add tokenColors after merging to avoid mergeObject processing
       merged.tokenColors = mergedTokenColors
+
+      // Inject prior values as real palette tokens so the evaluator can
+      // resolve séance variable references with full provenance
+      if(allPriors.size > 0) {
+        const priorTree = {}
+
+        allPriors.forEach((value, pathStr) => {
+          Data.setNestedValue(priorTree, pathStr.split("."), value)
+        })
+
+        merged.palette.__prior__ = priorTree
+      }
 
       // Palette first — self-contained, cannot reach outside itself
       const palette = this.#decomposeObject({palette: merged.palette ?? {}})
@@ -153,6 +174,7 @@ export default class Compiler {
    * @returns {Promise<object,Map>} Object containing imported data and file references
    */
   async #import(imports, theme) {
+    const importByFile = new Map()
     const imported = {
       palette: {},
       vars: {},
@@ -160,7 +182,6 @@ export default class Compiler {
       tokenColors: [],
       semanticTokenColors: {}
     }
-    const importByFile = new Map()
 
     imports = typeof imports === "string"
       ? [imports]
@@ -203,6 +224,8 @@ export default class Compiler {
       }
     }
 
+    const allPriors = new Map()
+
     loaded.forEach((load, file) => {
       const palette = load?.palette ?? {}
       const vars = load?.vars ?? {}
@@ -218,8 +241,12 @@ export default class Compiler {
         ["semanticTokenColors", semanticTokenColors]
       ]))
 
+      const {transformed, priors} = this.#séance(imported.palette, palette, allPriors)
+
+      priors.forEach((v, k) => allPriors.set(k, v))
+
       imported.palette =
-        Data.mergeObject(imported.palette, palette)
+        Data.mergeObject(imported.palette, transformed)
       imported.vars =
         Data.mergeObject(imported.vars, vars)
       imported.colors =
@@ -230,7 +257,7 @@ export default class Compiler {
         Data.mergeObject(imported.semanticTokenColors, semanticTokenColors)
     })
 
-    return {imported,importByFile}
+    return {imported, importByFile, allPriors}
   }
 
   /**
@@ -352,6 +379,65 @@ export default class Compiler {
 
       return this.#composeObject(section)
     })
+  }
+
+  /**
+   * Walks an incoming palette against an accumulated one, replacing séance
+   * operator references (`^`, `^()`, `^{}`) with synthetic variable references
+   * pointing into `palette.__prior__`, and collecting those prior values for
+   * later injection as real palette tokens.
+   *
+   * @param {object} accumulated - Already-merged palette (provides prior values).
+   * @param {object} incoming - New palette entries to process.
+   * @returns {{transformed: object, priors: Map<string, string>}} The transformed
+   *   palette and a map of dot-joined path → prior value.
+   * @private
+   */
+  #séance(accumulated, incoming, existingPriors = new Map()) {
+    const priors = new Map()
+    const isObject = this.#isObject
+
+    const syntheticKey = pathStr => {
+      if(!existingPriors.has(pathStr) && !priors.has(pathStr))
+        return pathStr
+
+      let version = 2
+
+      while(
+        existingPriors.has(`__${version}__.${pathStr}`) ||
+        priors.has(`__${version}__.${pathStr}`)
+      ) version++
+
+      return `__${version}__.${pathStr}`
+    }
+
+    const walk = (acc, obj, path) => {
+      const result = {}
+
+      for(const [key, val] of Object.entries(obj)) {
+        const fullPath = [...path, key]
+
+        if(isObject(val)) {
+          result[key] = walk(acc?.[key] ?? {}, val, fullPath)
+        } else if(
+          typeof val === "string" &&
+          /\^(?:\(\)|\{\})?/.test(val) &&
+          typeof acc?.[key] === "string"
+        ) {
+          const pathStr = fullPath.join(".")
+          const sk = syntheticKey(pathStr)
+
+          result[key] = val.replaceAll(/\^(?:\(\)|\{\})?/g, `$(palette.__prior__.${sk})`)
+          priors.set(sk, acc[key])
+        } else {
+          result[key] = val
+        }
+      }
+
+      return result
+    }
+
+    return {transformed: walk(accumulated, incoming, []), priors}
   }
 
   /**

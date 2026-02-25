@@ -69,6 +69,37 @@ Variable substitution is supported in import paths. Variables from `config` are 
 
 Here `$(type)` resolves to `dark`, producing the path `./import/tokenColors-dark.yaml`.
 
+## Séance Operator
+
+When redefining a `palette` key that already exists from a prior import, the séance operator (`^`) substitutes the accumulated prior value of that key inline.
+
+| Form | Syntax |
+|------|--------|
+| Bare | `^` |
+| Parenthesised | `^()` |
+| Braced | `^{}` |
+
+All three forms are equivalent. Use whichever reads cleanly in context.
+
+Given an imported palette that defines `black: oklch(.145 0 0)`, a later file can derive from it:
+
+<CodeBlock lang="yaml">{`
+
+  palette:
+    black: darken(^, 5)
+
+`}</CodeBlock>
+
+The `^` is replaced with the accumulated prior value of `black` before evaluation. The operator is resolved at compile time before the palette is evaluated. The prior value is captured as a synthetic palette token, which means the full derivation chain is visible in `resolve` output.
+
+**Chaining:** If multiple import layers each redefine the same key with `^`, each step captures the accumulated value to that point in the import sequence. Each layer sees the result of the previous one.
+
+**Constraints:**
+
+- Only valid in `palette` definitions.
+- Only fires on leaf (string) values — not on object nodes.
+- Silently passes through if no prior value exists for the key.
+
 ## Dependency Tracking
 
 In watch mode (`--watch`), Sassy automatically tracks all imported files. When any imported file changes, the theme is recompiled. No additional configuration is needed.

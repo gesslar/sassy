@@ -1,0 +1,40 @@
+# Theme Config
+config:
+  $schema: vscode://schemas/color-theme
+  name: corporate
+  type: dark
+
+  import:
+    - import/palette-$(type).yaml
+    - import/palette-$(type)-2.yaml
+    - import/palette-$(type)-3.yaml
+    - import/variables.yaml
+    - import/colors.yaml
+    - import/tokenColors-$(type).yaml
+
+  custom:
+    semanticHighlighting: false
+    colorSpaceName: sRGB
+
+palette:
+  black: darken(^, 5)
+  teal: lighten(^, 10)
+
+vars:
+  main: $$white
+  inverse:
+    invert($main)
+
+    # The following define primary basics that can be relied upon by the
+    # variables definitions. Dark and light themes will define these
+    # differently. Anything expressed here will override anything being
+    # imported.
+  fg:
+    main: $main
+
+  theme:
+    fg: $main
+    bg: lighten($$black, 20)
+    accent: $$teal
+    accentSecondary: lighten($$blue, 15)
+    shadow: alpha($accent, 0.25)
