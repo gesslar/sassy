@@ -347,7 +347,7 @@ export default class Evaluator {
              null
     })
 
-    const applied = this.#colourFunction(func, split, value, sourceTokens)
+    const applied = this.#colourFunction(func, split, value, sourceTokens, captured)
 
     if(!applied)
       return null
@@ -373,9 +373,10 @@ export default class Evaluator {
    * @param {Array<string>} args - Raw argument strings (numbers still as text).
    * @param {string} raw - The raw input from the source file.
    * @param {Array<ThemeToken>} sourceTokens - The tokens to apply to.
+   * @param {string} [captured] - The matched function call string (may be a nested inner call).
    * @returns {object} Object with result and colorSpace info.
    */
-  #colourFunction(func, args, raw, sourceTokens = []) {
+  #colourFunction(func, args, raw, sourceTokens = [], captured = raw) {
     return (() => {
       try {
         const sourceToken = sourceTokens[0]
@@ -406,7 +407,7 @@ export default class Evaluator {
           case "css":
             return Colour.toHex(args.toString())
           default:
-            return Colour.toHex(raw)
+            return Colour.toHex(captured)
         }
       } catch(e) {
         throw Sass.new(`Performing colour function ${raw}`, e)
