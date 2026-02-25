@@ -11,13 +11,23 @@ Sassy provides colour manipulation functions powered by [Culori](https://culorij
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
-| `lighten` | `lighten(colour, amount)` | Lighten by percentage (0--100). Uses OKLCH with multiplicative scaling for perceptual uniformity. |
-| `darken` | `darken(colour, amount)` | Darken by percentage (0--100). Uses OKLCH with multiplicative scaling. |
+| `lighten` | `lighten(colour, amount)` | Lighten by percentage (0--100). Uses OKLCH for perceptual uniformity. |
+| `darken` | `darken(colour, amount)` | Darken by percentage (0--100). Uses OKLCH for perceptual uniformity. |
+| `invert` | `invert(colour)` | Flip lightness in OKLCH space. Preserves hue and chroma. |
+| `tint` | `tint(colour, amount)` | Mix with white by percentage (0--100, default 50). |
+| `shade` | `shade(colour, amount)` | Mix with black by percentage (0--100, default 50). |
+| `saturate` | `saturate(colour, amount)` | Increase chroma by percentage (0--100). Uses OKLCH. |
+| `desaturate` | `desaturate(colour, amount)` | Decrease chroma by percentage (0--100). Uses OKLCH. |
+| `grayscale` | `grayscale(colour)` | Remove all chroma. Preserves perceptual lightness. |
+| `mute` | `mute(colour, amount)` | Move toward greyscale by percentage (0--100). Opposite of `pop`. |
+| `pop` | `pop(colour, amount)` | Move away from greyscale by percentage (0--100). Opposite of `mute`. |
+| `shiftHue` | `shiftHue(colour, degrees)` | Rotate hue by degrees (0--360). Uses OKLCH. No-op on achromatic colours. |
+| `complement` | `complement(colour)` | Return the 180° hue complement. |
+| `contrast` | `contrast(colour)` | Return `#000000` or `#ffffff`, whichever is more readable against the input. |
 | `alpha` | `alpha(colour, value)` | Set alpha to an exact value (0--1). 0 = transparent, 1 = opaque. |
 | `fade` | `fade(colour, amount)` | Reduce opacity by a relative amount (0--1). Multiplies current alpha by `(1 - amount)`. |
 | `solidify` | `solidify(colour, amount)` | Increase opacity by a relative amount (0--1). Multiplies current alpha by `(1 + amount)`. |
-| `mix` | `mix(colour1, colour2[, ratio])` | Blend two colours. Ratio 0--100 (default 50). Uses OKLCH interpolation when either input is OKLCH. |
-| `invert` | `invert(colour)` | Flip lightness in HSL space (preserves hue and saturation). |
+| `mix` | `mix(colour1, colour2[, ratio])` | Blend two colours. Ratio 0--100 (default 50). Always uses OKLCH interpolation. |
 | `css` | `css(name)` | Convert a CSS named colour to hex (e.g., `css(tomato)`). |
 | `hsl` | `hsl(h, s, l)` | Create a colour from HSL. h: 0--360, s: 0--100, l: 0--100. |
 | `hsla` | `hsla(h, s, l, a)` | HSL with alpha. a: 0--1. |
@@ -63,8 +73,26 @@ The `colour` parameter in transformation functions accepts:
       # Reduce opacity by half
       editorLineNumber.foreground: fade($(accent), 0.5)
 
-      # Invert lightness
+      # Invert lightness (OKLCH)
       badge.foreground: invert($(base))
+
+      # Tint/shade toward white or black
+      editor.lineHighlightBackground: tint($(base), 15)
+      scrollbar.shadow: shade($(base), 30)
+
+      # Chroma — mute an accent for inactive states, pop for active
+      tab.inactiveForeground: mute($(accent), 60)
+      tab.activeForeground: pop($(accent), 20)
+
+      # Greyscale — strip all colour
+      editorGutter.background: grayscale($(base))
+
+      # Automatic readable text colour
+      button.foreground: contrast($(base))
+
+      # Complement and hue shifts
+      gitDecoration.modifiedResourceForeground: complement($(accent))
+      gitDecoration.addedResourceForeground: shiftHue($(accent), 120)
 
       # Named CSS colour
       errorForeground: css(crimson)

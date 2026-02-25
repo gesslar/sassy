@@ -404,6 +404,26 @@ export default class Evaluator {
               args[1],
               args[2] ? Number(args[2]) : undefined
             )
+          case "shiftHue":
+            return Colour.shiftHue(args[0], Number(args[1]))
+          case "complement":
+            return Colour.complement(args[0])
+          case "saturate":
+            return Colour.saturate(args[0], Number(args[1]))
+          case "desaturate":
+            return Colour.saturate(args[0], -Number(args[1]))
+          case "grayscale":
+            return Colour.grayscale(args[0])
+          case "mute":
+            return Colour.mute(args[0], Number(args[1]))
+          case "pop":
+            return Colour.pop(args[0], Number(args[1]))
+          case "tint":
+            return Colour.tint(args[0], args[1] ? Number(args[1]) : undefined)
+          case "shade":
+            return Colour.shade(args[0], args[1] ? Number(args[1]) : undefined)
+          case "contrast":
+            return Colour.contrast(args[0])
           case "css":
             return Colour.toHex(args.toString())
           default:
