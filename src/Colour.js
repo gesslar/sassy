@@ -8,7 +8,6 @@ import {
   converter,
   formatHex,
   formatHex8,
-  hsl,
   interpolate,
   parse
 } from "culori"
@@ -106,6 +105,30 @@ const toUnit = r => Math.max(0, Math.min(100, r)) / 100
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 
 /**
+ * Resolves a colour input to a parsed Culori colour object and an optional
+ * hex alpha string. Accepts a ThemeToken, a Culori colour object, a hex
+ * string, or any other colour string parseable by Culori.
+ *
+ * @param {ThemeToken|object|string} tokenOrColor - The colour input to resolve
+ * @returns {{colour: object, alphaHex: string}} The resolved colour and alpha
+ * @throws {Sass} If the input cannot be resolved to a valid colour
+ */
+const resolveColour = tokenOrColor => {
+  if(typeof tokenOrColor === "string" && Colour.isHex(tokenOrColor)) {
+    const extracted = Colour.parseHexColour(tokenOrColor)
+    return {colour: asColour(extracted.colour), alphaHex: extracted.alpha?.hex ?? ""}
+  }
+
+  if(tokenOrColor?.getParsedColor)
+    return {colour: tokenOrColor.getParsedColor(), alphaHex: ""}
+
+  if(tokenOrColor?.mode)
+    return {colour: tokenOrColor, alphaHex: ""}
+
+  return {colour: asColour(tokenOrColor), alphaHex: ""}
+}
+
+/**
  * Colour manipulation utility class providing static methods for colour operations.
  * Handles hex colour parsing, alpha manipulation, mixing, and format conversions.
  */
@@ -160,27 +183,8 @@ export default class Colour {
    * @returns {string} The modified hex colour
    */
   static lightenOrDarkenWithToken(tokenOrColor, amount=0) {
-    let sourceColor
-
-    if(tokenOrColor?.getParsedColor) {
-      // It's a ThemeToken - use the parsed color
-      sourceColor = tokenOrColor.getParsedColor()
-    } else if(tokenOrColor?.mode) {
-      // It's already a parsed Culori color object
-      sourceColor = tokenOrColor
-    } else {
-      // Fallback to string parsing
-      sourceColor = parse(tokenOrColor)
-    }
-
-    if(!sourceColor) {
-      throw Sass.new(`Cannot parse color from: ${tokenOrColor}`)
-    }
-
-    // Always convert to OKLCH for lightness math (consistent perceptual results)
+    const {colour: sourceColor} = resolveColour(tokenOrColor)
     const oklchColor = converter("oklch")(sourceColor)
-
-    // Use multiplicative scaling
     const factor = 1 + (amount / 100)
 
     oklchColor.l = clamp(oklchColor.l * factor, 0, 1)
@@ -197,12 +201,12 @@ export default class Colour {
    */
   static invert(hex) {
     const extracted = Colour.parseHexColour(hex)
-    const hslColour = hsl(extracted.colour)
+    const colour = parse(extracted.colour)
+    const oklchColor = converter("oklch")(colour)
 
-    hslColour.l = 1 - hslColour.l  // culori uses 0-1 for lightness
-    const modifiedColour = formatHex(hslColour)
+    oklchColor.l = clamp(1 - oklchColor.l, 0, 1)
 
-    const result = `${modifiedColour}${extracted.alpha?.hex??""}`.toLowerCase()
+    const result = `${formatHex(oklchColor)}${extracted.alpha?.hex??""}`.toLowerCase()
 
     return result
   }
@@ -373,9 +377,8 @@ export default class Colour {
     const c1 = asColour(colourA)
     const c2 = asColour(colourB)
 
-    // colour-space mix using culori interpolation
-    const colourSpace = (c1.mode === "oklch" || c2.mode === "oklch") ? "oklch" : "rgb"
-    const interpolateFn = interpolate([c1, c2], colourSpace)
+    // Always use OKLCH for perceptually uniform mixing
+    const interpolateFn = interpolate([c1, c2], "oklch")
     const mixed = interpolateFn(t)
 
     // alpha blend too
@@ -388,6 +391,119 @@ export default class Colour {
     _mixCache.set(key, out)
 
     return out
+  }
+
+  static shiftHue(tokenOrColor, deg=0) {
+    const {colour: sourceColor, alphaHex} = resolveColour(tokenOrColor)
+    const oklchColor = converter("oklch")(sourceColor)
+
+    // if chroma is 0, hue is meaningless; leave as-is
+    if(oklchColor.c && isFinite(oklchColor.h)) {
+      oklchColor.h = (oklchColor.h + deg) % 360
+      if(oklchColor.h < 0) oklchColor.h += 360
+    }
+
+    return `${formatHex(oklchColor)}${alphaHex}`.toLowerCase()
+  }
+
+  static complement(tokenOrColor) {
+    return Colour.shiftHue(tokenOrColor, 180)
+  }
+
+  /**
+   * Adjusts the chroma (saturation) of a hex colour in OKLCH space.
+   * Positive amounts saturate, negative amounts desaturate.
+   *
+   * @param {string} hex - The hex colour code
+   * @param {number} amount - The percentage to adjust chroma (+/-)
+   * @returns {string} The adjusted hex colour with preserved alpha
+   */
+  static saturate(hex, amount=0) {
+    const extracted = Colour.parseHexColour(hex)
+    const colour = parse(extracted.colour)
+    const oklchColor = converter("oklch")(colour)
+
+    oklchColor.c = Math.max(0, oklchColor.c * (1 + amount / 100))
+
+    return `${formatHex(oklchColor)}${extracted.alpha?.hex ?? ""}`.toLowerCase()
+  }
+
+  /**
+   * Removes all chroma from a hex colour, producing a greyscale equivalent.
+   * Preserves the perceptual lightness of the original colour.
+   *
+   * @param {string} hex - The hex colour code
+   * @returns {string} The greyscale hex colour with preserved alpha
+   */
+  static grayscale(hex) {
+    const extracted = Colour.parseHexColour(hex)
+    const colour = parse(extracted.colour)
+    const oklchColor = converter("oklch")(colour)
+
+    oklchColor.c = 0
+
+    return `${formatHex(oklchColor)}${extracted.alpha?.hex ?? ""}`.toLowerCase()
+  }
+
+  /**
+   * Partially desaturates a hex colour toward greyscale by a given percentage.
+   * 0 leaves the colour unchanged; 100 is equivalent to grayscale().
+   *
+   * @param {string} hex - The hex colour code
+   * @param {number} amount - Percentage toward greyscale (0-100)
+   * @returns {string} The partially desaturated hex colour with preserved alpha
+   */
+  static mute(hex, amount=0) {
+    return Colour.saturate(hex, -amount)
+  }
+
+  /**
+   * Partially saturates a hex colour away from greyscale by a given percentage.
+   * The opposite of mute().
+   *
+   * @param {string} hex - The hex colour code
+   * @param {number} amount - Percentage of chroma increase (0-100)
+   * @returns {string} The partially saturated hex colour with preserved alpha
+   */
+  static pop(hex, amount=0) {
+    return Colour.saturate(hex, amount)
+  }
+
+  /**
+   * Mixes a hex colour with white by the given percentage.
+   *
+   * @param {string} hex - The hex colour code
+   * @param {number} amount - Percentage toward white (0-100)
+   * @returns {string} The tinted hex colour
+   */
+  static tint(hex, amount=50) {
+    return Colour.mix(hex, "#ffffff", amount)
+  }
+
+  /**
+   * Mixes a hex colour with black by the given percentage.
+   *
+   * @param {string} hex - The hex colour code
+   * @param {number} amount - Percentage toward black (0-100)
+   * @returns {string} The shaded hex colour
+   */
+  static shade(hex, amount=50) {
+    return Colour.mix(hex, "#000000", amount)
+  }
+
+  /**
+   * Returns black or white, whichever has greater contrast against the input.
+   * Uses OKLCH lightness with a threshold of 0.55 (slight bias toward white text).
+   *
+   * @param {string} hex - The hex colour code
+   * @returns {string} Either "#000000" or "#ffffff"
+   */
+  static contrast(hex) {
+    const extracted = Colour.parseHexColour(hex)
+    const colour = parse(extracted.colour)
+    const oklchColor = converter("oklch")(colour)
+
+    return oklchColor.l >= 0.55 ? "#000000" : "#ffffff"
   }
 
   static async getColourParser(name) {

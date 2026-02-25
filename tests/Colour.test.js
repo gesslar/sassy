@@ -230,4 +230,126 @@ describe("Colour", () => {
       assert.equal(Colour.decimalAlphaToHex(-10), "00")
     })
   })
+
+  describe("saturate()", () => {
+    it("increases chroma (saturates) with positive amount", () => {
+      const result = Colour.saturate("#888888", 50)
+      assert.ok(result.startsWith("#"))
+      assert.equal(result.length, 7)
+    })
+
+    it("decreases chroma (desaturates) with negative amount", () => {
+      const result = Colour.saturate("#ff0000", -50)
+      assert.ok(result.startsWith("#"))
+      assert.notEqual(result, "#ff0000")
+    })
+
+    it("preserves alpha channel", () => {
+      const result = Colour.saturate("#ff0000ff", 20)
+      assert.ok(result.endsWith("ff"))
+    })
+
+    it("does not produce negative chroma", () => {
+      const result = Colour.saturate("#ff0000", -200)
+      assert.ok(result.startsWith("#"))
+    })
+  })
+
+  describe("grayscale()", () => {
+    it("removes chroma from a coloured input", () => {
+      const result = Colour.grayscale("#ff0000")
+      assert.ok(result.startsWith("#"))
+      assert.notEqual(result, "#ff0000")
+    })
+
+    it("preserves alpha channel", () => {
+      const result = Colour.grayscale("#ff0000ff")
+      assert.ok(result.endsWith("ff"))
+    })
+
+    it("leaves an already-grey colour essentially unchanged", () => {
+      const result = Colour.grayscale("#808080")
+      assert.ok(result.startsWith("#"))
+    })
+  })
+
+  describe("mute()", () => {
+    it("partially desaturates toward grey", () => {
+      const result = Colour.mute("#ff0000", 50)
+      assert.ok(result.startsWith("#"))
+      assert.notEqual(result, "#ff0000")
+    })
+
+    it("at 100 produces the same result as grayscale()", () => {
+      assert.equal(Colour.mute("#ff0000", 100), Colour.grayscale("#ff0000"))
+    })
+
+    it("at 0 leaves the colour unchanged", () => {
+      assert.equal(Colour.mute("#ff0000", 0), Colour.saturate("#ff0000", 0))
+    })
+
+    it("preserves alpha channel", () => {
+      const result = Colour.mute("#ff0000ff", 50)
+      assert.ok(result.endsWith("ff"))
+    })
+  })
+
+  describe("pop()", () => {
+    it("partially saturates away from grey", () => {
+      const result = Colour.pop("#888888", 50)
+      assert.ok(result.startsWith("#"))
+    })
+
+    it("is the opposite direction of mute()", () => {
+      const muted = Colour.mute("#ff0000", 50)
+      const popped = Colour.pop("#ff0000", 50)
+      assert.notEqual(muted, popped)
+    })
+
+    it("preserves alpha channel", () => {
+      const result = Colour.pop("#ff0000ff", 50)
+      assert.ok(result.endsWith("ff"))
+    })
+  })
+
+  describe("tint()", () => {
+    it("lightens a colour toward white", () => {
+      const result = Colour.tint("#ff0000", 50)
+      assert.ok(result.startsWith("#"))
+      assert.notEqual(result, "#ff0000")
+    })
+
+    it("uses default ratio of 50 when none provided", () => {
+      const result = Colour.tint("#ff0000")
+      assert.ok(result.startsWith("#"))
+    })
+  })
+
+  describe("shade()", () => {
+    it("darkens a colour toward black", () => {
+      const result = Colour.shade("#ff0000", 50)
+      assert.ok(result.startsWith("#"))
+      assert.notEqual(result, "#ff0000")
+    })
+
+    it("uses default ratio of 50 when none provided", () => {
+      const result = Colour.shade("#ff0000")
+      assert.ok(result.startsWith("#"))
+    })
+  })
+
+  describe("contrast()", () => {
+    it("returns black for a light colour", () => {
+      assert.equal(Colour.contrast("#ffffff"), "#000000")
+    })
+
+    it("returns white for a dark colour", () => {
+      assert.equal(Colour.contrast("#000000"), "#ffffff")
+    })
+
+    it("always returns a 7-character hex string", () => {
+      assert.equal(Colour.contrast("#ff0000").length, 7)
+      assert.equal(Colour.contrast("#0000ff").length, 7)
+    })
+  })
 })
