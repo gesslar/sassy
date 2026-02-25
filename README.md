@@ -1,5 +1,7 @@
 # Sassy - SCSS-Style Theme Engine for VS Code
 
+**Full Documentation at <https://sassy.gesslar.io>.**
+
 **Transform VS Code theme development from tedious to delightful.**
 
 Stop wrestling with 800+ disconnected hex codes. Create beautiful,
