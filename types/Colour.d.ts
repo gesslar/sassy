@@ -112,6 +112,67 @@ export default class Colour {
      * @returns {string} The mixed hex colour with blended alpha
      */
     static mix(colourA: string, colourB: string, ratio?: number): string;
+    static shiftHue(tokenOrColor: any, deg?: number): string;
+    static complement(tokenOrColor: any): string;
+    /**
+     * Adjusts the chroma (saturation) of a hex colour in OKLCH space.
+     * Positive amounts saturate, negative amounts desaturate.
+     *
+     * @param {string} hex - The hex colour code
+     * @param {number} amount - The percentage to adjust chroma (+/-)
+     * @returns {string} The adjusted hex colour with preserved alpha
+     */
+    static saturate(hex: string, amount?: number): string;
+    /**
+     * Removes all chroma from a hex colour, producing a greyscale equivalent.
+     * Preserves the perceptual lightness of the original colour.
+     *
+     * @param {string} hex - The hex colour code
+     * @returns {string} The greyscale hex colour with preserved alpha
+     */
+    static grayscale(hex: string): string;
+    /**
+     * Partially desaturates a hex colour toward greyscale by a given percentage.
+     * 0 leaves the colour unchanged; 100 is equivalent to grayscale().
+     *
+     * @param {string} hex - The hex colour code
+     * @param {number} amount - Percentage toward greyscale (0-100)
+     * @returns {string} The partially desaturated hex colour with preserved alpha
+     */
+    static mute(hex: string, amount?: number): string;
+    /**
+     * Partially saturates a hex colour away from greyscale by a given percentage.
+     * The opposite of mute().
+     *
+     * @param {string} hex - The hex colour code
+     * @param {number} amount - Percentage of chroma increase (0-100)
+     * @returns {string} The partially saturated hex colour with preserved alpha
+     */
+    static pop(hex: string, amount?: number): string;
+    /**
+     * Mixes a hex colour with white by the given percentage.
+     *
+     * @param {string} hex - The hex colour code
+     * @param {number} amount - Percentage toward white (0-100)
+     * @returns {string} The tinted hex colour
+     */
+    static tint(hex: string, amount?: number): string;
+    /**
+     * Mixes a hex colour with black by the given percentage.
+     *
+     * @param {string} hex - The hex colour code
+     * @param {number} amount - Percentage toward black (0-100)
+     * @returns {string} The shaded hex colour
+     */
+    static shade(hex: string, amount?: number): string;
+    /**
+     * Returns black or white, whichever has greater contrast against the input.
+     * Uses OKLCH lightness with a threshold of 0.55 (slight bias toward white text).
+     *
+     * @param {string} hex - The hex colour code
+     * @returns {string} Either "#000000" or "#ffffff"
+     */
+    static contrast(hex: string): string;
     static getColourParser(name: any): Promise<any>;
     /**
      * Converts colour values from various formats to hex.
