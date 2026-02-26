@@ -437,12 +437,20 @@ export default class ResolveCommand extends Command {
       const dependency = token.getDependency()
       const kind = token.getKind()
 
+      // functionResult is only set when the captured sub-expression was
+      // embedded inside a larger call (resolved !== applied in Evaluator).
+      // That makes it a reliable proxy for "this is an inner function" —
+      // no string comparison needed.
+      const funcResult = token.getFunctionResult?.()
+      const isInnerFunction = kind === "function" && funcResult != null
+      const funcLevel = isInnerFunction ? level + 1 : level
+
       // Add the current step
       if(!steps.some(s => s.value === rawValue)) {
         steps.push({
           value: rawValue,
           type: kind === "function" ? "function" : "variable",
-          level
+          level: funcLevel
         })
       }
 
@@ -480,17 +488,17 @@ export default class ResolveCommand extends Command {
 
       // For function tokens embedded in a larger expression, show the
       // direct function output before showing the full substituted result
-      const funcResult = token.getFunctionResult?.()
 
       if(funcResult && !steps.some(s => s.value === funcResult)) {
         steps.push({
           value: funcResult,
           type: "result",
-          level
+          level: funcLevel
         })
       }
 
-      // Add final result for this token
+      // Add final result for this token; always at the outer (caller's) level
+      // so the expression with the inner resolved returns to the same depth
       if(rawValue !== finalValue && !steps.some(s => s.value === finalValue)) {
         steps.push({
           value: finalValue,
