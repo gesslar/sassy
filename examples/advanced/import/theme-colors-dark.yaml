@@ -1,33 +1,35 @@
+# theme-colors.yaml
+
 theme:
   colors:
     window:
-      activeBorder: $accent
+      activeBorder: $accent.base
       inactiveBorder: $accent.secondary
     contrastActiveBorder: $transparent
     contrastBorder: $transparent
     # Let's get some of the singletons out of the way first
     focusBorder: $control.outline.focus
-    foreground: $std.fg
+    foreground: $std.fg.base
     selection:
       background: $std.bg.accent.faint
     descriptionForeground: $std.fg.inactive
-    errorForeground: $std.fg.error
+    errorForeground: complement($std.fg.status.error)
 
     icon:
-      foreground: $std.fg
+      foreground: $std.fg.base
 
     sash:
       hoverBorder: $std.outline.faint
 
     widget:
       shadow: $control.shadow
-      border: $control.outline
+      border: $control.outline.base
 
     # Title Bar colors
     titleBar:
       # Active
-      activeForeground: $std.fg
-      activeBackground: $std.bg.panel.outer
+      activeForeground: $std.fg.base
+      activeBackground: $std.bg.panel.outer.active
       # Inactive
       inactiveForeground: $std.fg.inactive
       inactiveBackground: $std.bg.panel.outer.inactive
@@ -38,8 +40,8 @@ theme:
     menubar:
       # These are actually hovers, idk why they don't call them that
       selectionForeground: $std.fg.hover
-      selectionBackground: $std.bg.hover
-      # selectionBorder: $std.outline # Enabling this will draw a dashed border
+      selectionBackground: $std.bg.hover.base
+      # selectionBorder: $std.outline.base # Enabling this will draw a dashed border
     # Menu (Dropdowns themselves)
     menu:
       # Normal
@@ -48,7 +50,7 @@ theme:
       # Menu hover
       selectionForeground: $menubar.selectionForeground
       selectionBackground: $menubar.selectionBackground
-      selectionBorder: $std.outline
+      selectionBorder: $std.outline.base
       # Menu Separator & Border
       separatorBackground: $std.line.whisper
       border: $std.outline.whisper
@@ -60,15 +62,15 @@ theme:
 
     # Side bar
     sideBar:
-      foreground: $std.fg
-      background: $std.bg.panel.inner
+      foreground: $std.fg.base
+      background: $std.bg.panel.inner.active
       border: $std.outline.whisper
       dropBackground: $std.bg.accent.whisper
     sideBarTitle:
       foreground: $std.fg.accent.secondary
     sideBarSectionHeader:
       foreground: $std.fg.secondary
-      background: darken($std.bg.panel.inner, 15)
+      background: darken($std.bg.panel.inner.active, 15)
       border: $std.outline.whisper
 
     # Git colors
@@ -90,11 +92,11 @@ theme:
     # Source Control Graph colors
     scmGraph:
       historyItemHoverLabelForeground: $std.fg.hover
-      historyItemHoverAdditionsForeground: $std.fg.success
-      historyItemHoverDeletionsForeground: $std.fg.error
+      historyItemHoverAdditionsForeground: $status.added
+      historyItemHoverDeletionsForeground: $status.error
       # Default label colors (hover background box)
       historyItemHoverDefaultLabelForeground: $std.fg.hover
-      historyItemHoverDefaultLabelBackground: $std.bg.hover
+      historyItemHoverDefaultLabelBackground: $std.bg.hover.base
       # Graph lines: 5 alternating colors
       foreground1: $level.1
       foreground2: $level.2
@@ -102,35 +104,35 @@ theme:
       foreground4: $level.4
       foreground5: $level.5
       # Branch / tag references
-      historyItemRefColor: $std.bg.accent
+      historyItemRefColor: $std.bg.accent.base
       historyItemRemoteRefColor: $std.bg.accent.secondary
       historyItemBaseRefColor: lighten($scmGraph.historyItemRefColor, 25)
 
     statusBar:
-      foreground: $std.fg
-      background: $std.bg.panel.outer
-      border: $control.outline
+      foreground: $std.fg.base
+      background: $std.bg.panel.outer.active
+      border: $control.outline.base
       # No Folder Open
       noFolderForeground: darken($statusBar.foreground, 10)
       noFolderBackground: darken($statusBar.background, 10)
       noFolderBorder: darken($statusBar.border, 10)
       # Debugging
-      debuggingBackground: $control.bg
-      debuggingForeground: lighten($std.fg.accent, 25)
+      debuggingBackground: $control.bg.base
+      debuggingForeground: lighten($std.fg.accent.base, 25)
       debuggingBorder: $std.outline.secondary
-      focusBorder: $std.outline
+      focusBorder: $std.outline.base
     statusBarItem:
       # Status Bar Item Interaction
       hoverForeground: $std.fg.hover
-      hoverBackground: $std.bg.hover
+      hoverBackground: $std.bg.hover.base
       activeBackground: lighten($statusBarItem.hoverBackground, 25)
       # Compact hover (for overflow/duals)
       compactHoverBackground: lighten($statusBarItem.hoverBackground, 25)
       # Focus Styles
-      focusBorder: $std.outline.faint.strong
+      focusBorder: $std.outline.strong
       # Prominent Items
-      prominentForeground: lighten($std.bg.accent, 100)
-      prominentBackground: darken($std.bg.accent, 35)
+      prominentForeground: lighten($std.bg.accent.base, 100)
+      prominentBackground: darken($std.bg.accent.base, 35)
       prominentHoverForeground: $statusBarItem.prominentForeground
       prominentHoverBackground: lighten($statusBarItem.prominentBackground, 25)
       # Remote Indicator
@@ -144,27 +146,27 @@ theme:
       offlineHoverForeground: invert($statusBarItem.prominentHoverForeground)
       offlineHoverBackground: invert($statusBarItem.prominentHoverBackground)
       # Error State Items
-      errorForeground: $std.fg
-      errorBackground: $std.bg.error
+      errorForeground: $std.fg.status.error
+      errorBackground: $std.bg.status.error
       errorHoverForeground: $statusBarItem.errorForeground
       errorHoverBackground: solidify($statusBarItem.errorBackground, 30)
       # Warning State Items
-      warningForeground: $std.fg
-      warningBackground: $std.bg.warning
+      warningForeground: $std.fg.base
+      warningBackground: $std.bg.status.warning
       warningHoverForeground: $statusBarItem.warningForeground
       warningHoverBackground: solidify($statusBarItem.warningBackground, 30)
 
     # Activity Bar
     activityBar:
       # Base
-      foreground: $std.fg
-      background: $std.bg.panel.inner
+      foreground: $std.fg.base
+      background: $std.bg.panel.inner.active
       inactiveForeground: $std.fg.inactive
       border: $std.outline.whisper
       # Active State
       activeBackground: $std.bg.accent.faint
       activeBorder: $std.line.faint
-      activeFocusBorder: $std.line.faint.strong
+      activeFocusBorder: $std.line.strong
       # Dragging
       dropBorder: $activityBar.activeBorder
     # Badge (normal)
@@ -197,31 +199,31 @@ theme:
     # Controls and inputs and things of that nature
     # Toolbars
     toolbar:
-      hoverBackground: $std.bg.hover
+      hoverBackground: $std.bg.hover.base
       # hoverOutline: $std.outline.hover # enable this if you really want dotted underlines
       activeBackground: lighten($toolbar.hoverBackground, 25)
     # Editor Actions - no idea what this is. i mean, i know what the
     # editorAction toolbar is, but these settings don't seem to apply
     editorActionList:
-      foreground: $std.fg
-      background: $std.bg.panel.inner
-      focusForeground: $std.fg
+      foreground: $std.fg.base
+      background: $std.bg.panel.inner.active
+      focusForeground: $std.fg.base
       focusBackground: $std.bg.panel.inner.inactive
     # Button control
     button:
-      foreground: $control.fg
-      background: $control.bg
-      border: $control.outline
+      foreground: $control.fg.base
+      background: $control.bg.base
+      border: $control.outline.base
       hoverBackground: $control.bg.hover
-      secondaryForeground: $control.fg.secondary
-      secondaryBackground: $control.bg.secondary
+      secondaryForeground: $control.fg.secondary.normal
+      secondaryBackground: $control.bg.secondary.normal
       secondaryHoverBackground: $control.bg.secondary.hover
       separator: $std.line.faint
     # Checkbox
     checkbox:
-      foreground: $control.fg
-      background: $control.bg
-      border: $control.outline
+      foreground: $control.fg.base
+      background: $control.bg.base
+      border: $control.outline.base
       selectBackground: $control.bg.active
       selectBorder: $control.outline.focus
     # Radio buttons
@@ -229,36 +231,36 @@ theme:
       activeForeground: $control.fg.active
       activeBackground: $control.bg.active
       activeBorder: $control.outline.focus
-      inactiveForeground: $control.fg
-      inactiveBackground: $control.bg
-      inactiveBorder: $control.outline
+      inactiveForeground: $control.fg.base
+      inactiveBackground: $control.bg.base
+      inactiveBorder: $control.outline.base
       inactiveHoverBackground: $control.bg.hover
     # Dropdown control
     dropdown:
-      foreground: $control.fg
+      foreground: $control.fg.base
       background: $menu.background
       listBackground: $menu.background
-      border: $control.outline
+      border: $control.outline.base
     # Input control
     input:
-      foreground: $control.fg
+      foreground: $control.fg.base
       placeholderForeground: $std.fg.accent.secondary
-      background: $control.bg
-      border: $control.outline
+      background: lighten($std.bg.panel.innermost.active, 25)
+      border: $control.outline.base
     inputOption: # These are buttons!
       activeForeground: $button.foreground
       activeBackground: $button.background
       activeBorder: $control.outline.active
       hoverBackground: $button.hoverBackground
     inputValidation:
-      errorForeground: $std.fg.error
-      errorBackground: $std.bg.error
+      errorForeground: $std.fg.status.error
+      errorBackground: $std.bg.status.error
       errorBorder: $std.outline.error
-      warningForeground: $std.fg.warning
-      warningBackground: $std.bg.warning
+      warningForeground: $std.fg.status.warning
+      warningBackground: $std.bg.status.warning
       warningBorder: $std.outline.warning
-      infoForeground: $std.fg.info
-      infoBackground: $std.bg.info
+      infoForeground: $std.fg.status.info
+      infoBackground: $std.bg.status.info
       infoBorder: $std.outline.info
     # Scrollbar control
     scrollbar:
@@ -269,18 +271,18 @@ theme:
       activeBackground: solidify(lighten($scrollbarSlider.hoverBackground, 10), 0.25)
     # Progress bar
     progressBar:
-      background: $std.bg.success
+      background: $std.bg.status.success
     # Breadcrumbs colors
     breadcrumb:
-      foreground: $std.fg.accent
-      background: $std.bg.panel.inner
-      focusForeground: $std.fg
-      activeSelectionForeground: mix($std.fg.accent.secondary, $std.fg, 50)
+      foreground: $std.fg.accent.base
+      background: $std.bg.panel.inner.active
+      focusForeground: $std.fg.base
+      activeSelectionForeground: mix($std.fg.accent.secondary, $std.fg.base)
     breadcrumbPicker:
       background: $menu.background
     # Lists and trees
     list:
-      activeSelectionForeground: $std.fg
+      activeSelectionForeground: $std.fg.base
       activeSelectionBackground: $std.bg.accent.whisper
       activeSelectionIconForeground: $std.fg.accent.secondary
       inactiveSelectionForeground: $list.activeSelectionForeground
@@ -290,60 +292,60 @@ theme:
       focusBackground: lighten($list.activeSelectionBackground, 25)
       focusHighlightForeground: $list.activeSelectionForeground
       focusOutline: $std.outline.strong
-      focusAndSelectionOutline: $std.outline.faint.strong
+      focusAndSelectionOutline: $std.outline.strong
       hoverForeground: $control.fg.hover
       hoverBackground: $control.bg.hover
       dropBackground: $std.bg.drop
-      dropBetweenBackground: solidify($std.bg.accent, .25)
+      dropBetweenBackground: solidify($std.bg.accent.base, .25)
       highlightForeground: $std.fg.accent.secondary
       filterMatchBackground: $std.bg.accent.faint
-      filterMatchBorder: $std.outline.faint.strong
-      errorForeground: $std.fg.error
-      warningForeground: $std.fg.warning
-      invalidItemForeground: $std.fg.error
+      filterMatchBorder: $std.outline.strong
+      errorForeground: complement($std.fg.status.error)
+      warningForeground: $std.fg.status.warning
+      invalidItemForeground: $std.fg.status.error
       deemphasizedForeground: $std.fg.inactive
     listFilterWidget:
-      background: $control.bg
-      outline: $control.outline
+      background: $control.bg.base
+      outline: $control.outline.base
       noMatchesOutline: $std.outline.warning
       shadow: $control.shadow
     tree:
-      indentGuidesStroke: $std.line
+      indentGuidesStroke: $std.line.base
       inactiveIndentGuidesStroke: $std.line.whisper
       # The following two are used in the profiles page.
-      tableColumnsBorder: $control.outline # Hover over a table/list, separators
-      tableOddRowsBackground: fade($control.bg.secondary, 0.95) # Weirdly used as background for column headers
+      tableColumnsBorder: $control.outline.base # Hover over a table/list, separators
+      tableOddRowsBackground: fade($control.bg.secondary.normal, 0.95) # Weirdly used as background for column headers
 
     # Editor Groups & Tabs
     # Editor Groups
     editorGroupHeader:
-      noTabsBackground: $std.bg.panel.inner # workbench.editor.showTabs = "single"
-      tabsBackground: $std.bg.panel.inner
+      noTabsBackground: $std.bg.panel.inner.active # workbench.editor.showTabs = "single"
+      tabsBackground: $std.bg.panel.inner.active
       tabsBorder: $std.outline.whisper
       border: $std.outline.whisper
     editorGroup:
       border: $std.outline.whisper
       dropBackground: $std.bg.drop
-      emptyBackground: $std.bg.panel.inner
-      focusedEmptyBorder: $std.outline
-      dropIntoPromptForeground: $std.fg
-      dropIntoPromptBackground: $std.bg.panel.inner
-      dropIntoPromptBorder: $std.outline
+      emptyBackground: $std.bg.panel.inner.active
+      focusedEmptyBorder: $std.outline.base
+      dropIntoPromptForeground: $std.fg.base
+      dropIntoPromptBackground: $std.bg.panel.inner.active
+      dropIntoPromptBorder: $std.outline.base
     # Tabs
     tab:
-      activeForeground: $std.fg
+      activeForeground: $std.fg.base
       inactiveForeground: $std.fg.inactive
       unfocusedActiveForeground: $std.fg.inactive
       unfocusedInactiveForeground: $std.fg.inactive
-      activeBackground: mix($std.bg.accent, $std.bg.panel.inner, 80)
+      activeBackground: mix($std.bg.accent.base, $std.bg.panel.inner.active, 80)
       inactiveBackground: $std.bg.panel.inner.inactive
       unfocusedActiveBackground: fade($tab.activeBackground, 0.75)
       unfocusedInactiveBackground: fade($std.bg.panel.inner.inactive, 0.50)
       selectedBackground: lighten($tab.activeBackground, 100)
-      selectedForeground: $std.fg
+      selectedForeground: $std.fg.base
       border: $std.outline.whisper
       activeBorder: $transparent
-      activeBorderTop: $std.outline
+      activeBorderTop: $std.outline.base
       selectedBorderTop: lighten($tab.activeBorderTop, 25)
       unfocusedActiveBorder: $transparent
       unfocusedActiveBorderTop: $transparent
@@ -351,11 +353,11 @@ theme:
       unfocusedHoverForeground: $std.fg.inactive
       hoverBackground: lighten($tab.activeBackground, 50)
       unfocusedHoverBackground: darken($tab.hoverBackground, 20)
-      hoverBorder: $std.outline
+      hoverBorder: $std.outline.base
       unfocusedHoverBorder: $std.outline.faint
       lastPinnedBorder: $tab.activeBorderTop
       # Modified Indicator
-      activeModifiedBorder: fade($status.added, 0.2)
+      activeModifiedBorder: fade($status.modified, 0.2)
       inactiveModifiedBorder: fade($tab.activeModifiedBorder, 0.4)
       unfocusedActiveModifiedBorder: fade($tab.activeModifiedBorder, 0.2)
       unfocusedInactiveModifiedBorder: fade($tab.inactiveModifiedBorder, 0.2)
@@ -364,17 +366,17 @@ theme:
 
     # Editor pane & splitters
     editor:
-      foreground: $std.fg
-      background: $std.bg.panel.innermost
+      foreground: $std.fg.base
+      background: $std.bg.panel.innermost.active
       # Placeholder Text
       placeholder:
         foreground: $std.fg.inactive
       # Text selection
-      selectionForeground: $std.fg
+      selectionForeground: $std.fg.base
       selectionBackground: lighten($std.highlight.bg.accent, 50)
       inactiveSelectionBackground: darken($editor.selectionBackground, 10)
       # Matching content
-      selectionHighlightBackground: mix($std.bg.accent.faint, $std.bg.panel.innermost, 90)
+      selectionHighlightBackground: mix($std.bg.accent.faint, $std.bg.panel.innermost.active, 90)
       selectionHighlightBorder: lighten($editor.selectionHighlightBackground, 25)
       # Word/Identifier highlights
       wordHighlightBackground: $std.highlight.bg.read # Background color of a symbol during read-access, like reading a variable.
@@ -389,7 +391,7 @@ theme:
       # I effing see you.
       #
       # CURRENT match (focused one)
-      findMatchHighlightForeground: fade($std.bg.panel.innermost, 0.10)
+      findMatchHighlightForeground: fade($std.bg.panel.innermost.active, 0.10)
       findMatchBackground: $std.highlight.bg.match # Background color of the current find match.
       findMatchBorder: fade($editor.findMatchHighlightForeground, 0.5)
       # OTHER matches (passive highlights)
@@ -401,9 +403,9 @@ theme:
       findRangeHighlightBorder: $editor.findMatchHighlightBorder # Border color of the range highlight.
       # Folding
       foldBackground: $std.bg.accent.whisper
-      foldPlaceholderForeground: lighten($std.fg.accent, 50)
+      foldPlaceholderForeground: lighten($std.fg.accent.base, 50)
       # Active line highlight
-      lineHighlightBackground: fade(lighten($std.bg.panel.innermost, 25) , 0.25)
+      lineHighlightBackground: fade(lighten($std.bg.panel.innermost.active, 25) , 0.25)
       lineHighlightBorder: fade($std.outline.whisper, 0.25) # Border color of the active line highlight.
       # Hover highlight
       hoverHighlightBackground: fade($std.bg.accent.faint, 0.60) # Background color of the hover highlight.
@@ -414,25 +416,25 @@ theme:
       rangeHighlightBackground: $editor.findRangeHighlightBackground # Background color of the range highlight.
       rangeHighlightBorder: $editor.findRangeHighlightBorder # Border color of the range highlight.
       # Inline Values (Editor)
-      inlineValuesForeground: fade($std.fg.info, 0.15) # Subtle, but visible
-      inlineValuesBackground: fade($std.bg.info, 0.90) # Soft, muted background
+      inlineValuesForeground: fade($std.fg.status.info, 0.15) # Subtle, but visible
+      inlineValuesBackground: fade($std.bg.status.info, 0.90) # Soft, muted background
       # Stack Frame Highlights (Editor)
       stackFrameHighlightBackground: alpha($editor.findMatchHighlightBackground, 0.10) # Soft, ambient highlight
       focusedStackFrameHighlightBackground: alpha($editor.findMatchHighlightBackground, 0.20) # Stronger focus highlight
       snippetTabstopHighlightBackground: $std.bg.accent.faint # soft, ambient glow
       snippetTabstopHighlightBorder: $std.outline.faint # soft, ambient border
       snippetFinalTabstopHighlightBackground: $std.bg.accent.faint.strong # stronger, more pronounced glow
-      snippetFinalTabstopHighlightBorder: $std.outline.faint.strong # stronger, more pronounced border
+      snippetFinalTabstopHighlightBorder: $std.outline.strong # stronger, more pronounced border
 
     # Line Numbers
     editorLineNumber:
-      foreground: fade($std.fg.accent, 0.5)
-      activeForeground: fade($std.fg.accent, .1)
-      dimmedForeground: fade($std.fg.accent, .8)
+      foreground: fade($std.fg.accent.base, 0.5)
+      activeForeground: fade($std.fg.accent.base, .1)
+      dimmedForeground: fade($std.fg.accent.base, .8)
     # Cursor
     editorCursor:
       foreground: $std.fg.accent.secondary
-      background: $std.bg.panel.outer # When the cursor is a block, this is the FOREGROUND of the character it's on. Background, my ass.
+      background: $std.bg.panel.outer.active # When the cursor is a block, this is the FOREGROUND of the character it's on. Background, my ass.
     # Multi-cursor
     editorMultiCursor:
       primary:
@@ -442,7 +444,7 @@ theme:
         foreground: fade(darken($editorCursor.foreground, 25), 0.25)
         background: $editorCursor.background
     editorPane:
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
     sideBySideEditor:
       horizontalBorder: $std.outline.faint
       verticalBorder: $std.outline.whisper
@@ -452,7 +454,7 @@ theme:
       foreground: darken($std.fg.accent.whisper, 45) # Whitespace characters (spaces, tabs, etc.) when enabled
     # Indent Guides
     editorIndentGuide:
-      background1: alpha($std.line, .55)
+      background1: alpha($std.line.base, .55)
       background2: darken($editorIndentGuide.background1, 5)
       background3: darken($editorIndentGuide.background2, 5)
       background4: darken($editorIndentGuide.background3, 5)
@@ -468,18 +470,18 @@ theme:
     # Bracket Match
     editorBracketMatch:
       background: $std.bg.accent.whisper
-      border: $std.outline.faint.strong
+      border: $std.outline.strong
 
-    # Bracket Pair Colorization
+    # Bracket Pair Colourization
     editorBracketHighlight:
-      foreground1: $level.1
-      foreground2: $level.2
-      foreground3: $level.3
-      foreground4: $level.4
-      foreground5: $level.5
-      foreground6: $level.6
+      foreground1: fade($level.1, .2)
+      foreground2: fade($level.2, .2)
+      foreground3: fade($level.3, .2)
+      foreground4: fade($level.4, .2)
+      foreground5: fade($level.5, .2)
+      foreground6: fade($level.6, .2)
       unexpectedBracket:
-        foreground: "#ff0077"
+        foreground: $std.highlight.bg.error
 
     # Bracket Pair Guides
     editorBracketPairGuide:
@@ -500,7 +502,7 @@ theme:
 
     # Overview Ruler
     editorOverviewRuler:
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
       border: $std.outline.whisper
       findMatchForeground: fade($editor.findMatchForeground, 0.25)
       rangeHighlightForeground: $editor.findMatchHighlightForeground
@@ -514,49 +516,49 @@ theme:
       errorForeground: $status.error
       warningForeground: $status.warning
       infoForeground: $status.info
-      bracketMatchForeground: $std.fg.accent
-      inlineChatInserted: darken($std.bg.success, 50)
-      inlineChatRemoved: darken($std.bg.error, 50)
+      bracketMatchForeground: $std.fg.accent.base
+      inlineChatInserted: darken($status.added, 50)
+      inlineChatRemoved: darken($status.deleted, 50)
       currentContentForeground: $std.fg.accent.secondary
-      incomingContentForeground: $std.fg.success
-      commonContentForeground: $std.fg.info
+      incomingContentForeground: $status.added
+      commonContentForeground: $std.fg.status.info
 
     # Editor Diagnostics
     editorError:
-      foreground: $std.fg.error
+      foreground: $std.fg.status.error
       border: $std.outline.error
-      background: fade($std.bg.error, 0.65)
+      background: fade($std.bg.status.error, 0.65)
 
     editorWarning:
-      foreground: $std.fg.warning
+      foreground: $std.fg.status.warning
       border: $std.outline.warning
-      background: fade($std.bg.warning, 0.65)
+      background: fade($std.bg.status.warning, 0.65)
 
     editorInfo:
-      foreground: $std.fg.info
+      foreground: $std.fg.status.info
       border: $std.outline.info
-      background: fade($std.bg.info, 0.65)
+      background: fade($std.bg.status.info, 0.65)
 
     editorHint:
-      foreground: $std.fg.success
+      foreground: $std.fg.status.success
       border: $std.outline.success
 
     # Problems Icons
     problemsErrorIcon:
-      foreground: $std.fg.error
+      foreground: $std.fg.status.error
     problemsWarningIcon:
-      foreground: $std.fg.warning
+      foreground: $std.fg.status.warning
     problemsInfoIcon:
-      foreground: $std.fg.info
+      foreground: $std.fg.status.info
 
     # Unused Code
     editorUnnecessaryCode:
       border: fade($std.outline.faint, .25)
-      opacity: "#ff0000c0"
+      opacity: "#ff0000c0" # this is hard-coded cos it's just the opacity bit that matters
 
     # Gutter background
     editorGutter:
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
       # Git-style modifications
       modifiedBackground: $status.modified
       modifiedSecondaryBackground: darken($status.modified, 50)
@@ -565,10 +567,10 @@ theme:
       deletedBackground: $status.deleted
       deletedSecondaryBackground: darken($status.deleted, 50)
       # Comments and control glyphs
-      commentRangeForeground: $std.fg.accent
+      commentRangeForeground: $std.fg.accent.base
       commentGlyphForeground: $std.fg.accent.secondary
-      commentUnresolvedGlyphForeground: $std.fg.error
-      foldingControlForeground: $std.fg.accent
+      commentUnresolvedGlyphForeground: $std.fg.status.error
+      foldingControlForeground: $std.fg.accent.base
       # Misc gutter glyphs
       itemGlyphForeground: $std.fg.accent.secondary
       itemBackground: $std.bg.panel.inner.inactive
@@ -577,20 +579,20 @@ theme:
       unresolvedBorder: $std.outline.info
       rangeBackground: $std.bg.accent.faint
       rangeActiveBackground: $std.bg.accent.faint.strong
-      replyInputBackground: $std.bg.panel.inner
+      replyInputBackground: $std.bg.panel.inner.active
 
     # Editor widget colors
     # Editor Widget (Find/Replace, Peek input, etc.)
     editorWidget:
-      foreground: $std.fg
-      background: $std.bg.panel.outer
+      foreground: $std.fg.base
+      background: $std.bg.panel.outer.active
       border: $std.outline.faint
-      resizeBorder: $std.outline
+      resizeBorder: $std.outline.base
     # Suggest Widget
     editorSuggestWidget:
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
       border: $std.outline.faint
-      foreground: $std.fg
+      foreground: $std.fg.base
       focusHighlightForeground: $std.fg.accent.secondary
       highlightForeground: darken($editorSuggestWidget.focusHighlightForeground, 25) # subtle, but visible
       selectedForeground: $menubar.selectionForeground
@@ -600,8 +602,8 @@ theme:
       foreground: $std.fg.inactive
     # Editor Hover Widget
     editorHoverWidget:
-      foreground: $std.fg
-      background: $std.bg.panel.inner
+      foreground: $std.fg.base
+      background: $std.bg.panel.inner.active
       border: $std.outline.faint
       highlightForeground: $std.fg.accent.secondary
       statusBarBackground: lighten($editorHoverWidget.background, 25)
@@ -612,7 +614,7 @@ theme:
       border: $transparent
     # Sticky Scroll
     editorStickyScroll:
-      background: $std.bg.sticky # soft, ambient background
+      background: $std.bg.sticky.base # soft, ambient background
       border: $std.outline.sticky
       shadow: $std.shadow.sticky # ambient shadow
     editorStickyScrollHover:
@@ -624,39 +626,39 @@ theme:
       border: $inputValidation.errorBorder
     # Marker Navigation: Base Background
     editorMarkerNavigation:
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
     # Marker Navigation: Error/Warning/Info Bars (borders)
     editorMarkerNavigationError:
-      background: $std.bg.error
-      headerBackground: $std.bg.error
+      background: $std.bg.status.error
+      headerBackground: $std.bg.status.error
     editorMarkerNavigationWarning:
-      background: $std.bg.warning
-      headerBackground: $std.bg.warning
+      background: $std.bg.status.warning
+      headerBackground: $std.bg.status.warning
     editorMarkerNavigationInfo:
-      background: $std.bg.info
-      headerBackground: $std.bg.info
+      background: $std.bg.status.info
+      headerBackground: $std.bg.status.info
     editorLink:
       activeForeground: $std.fg.accent.secondary
     editorRuler:
-      foreground: darken($std.line.secondary, 50)
+      foreground: alpha($std.line.secondary, 0.25)
     editorCodeLens:
       foreground: $std.fg.accent.secondary.faint
     editorLightBulb:
       foreground: $$gold
     editorLightBulbAutoFix:
-      foreground: $std.fg.info
+      foreground: $std.fg.status.info
 
     # Whee! Panel stuff! YUM!
     # Panel colors
     panel:
       # Panel Base + Frame
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
       border: $std.outline.whisper
       dropBorder: $std.bg.drop
     # Panel Title Bar
     panelTitle:
-      activeBorder: $std.outline
-      activeForeground: $std.fg
+      activeBorder: $std.outline.base
+      activeForeground: $std.fg.base
       inactiveForeground: $std.fg.inactive
       border: $std.outline.whisper
     # Panel Title Badge (eg. terminal counts)
@@ -674,25 +676,25 @@ theme:
       dropBackground: $std.bg.drop
     #A Panel Input
     panelInput:
-      border: $control.outline
+      border: $control.outline.base
     # Panel Sticky Scroll
     panelStickyScroll:
-      background: $std.bg.sticky
+      background: $std.bg.sticky.base
       border: $std.outline.sticky
       shadow: $std.shadow.sticky
 
     # Welcome page colors
     welcomePage:
-      background: $std.bg.panel.innermost
+      background: $std.bg.panel.innermost.active
       progress:
-        background: darken($std.bg.success, 75)
-        foreground: $std.fg.success
+        background: darken($std.bg.status.success, 75)
+        foreground: $std.fg.status.success
       tileBackground: lighten($welcomePage.background, 35)
-      tileHoverBackground: $std.bg.hover
+      tileHoverBackground: $std.bg.hover.base
       tileBorder: $std.outline.whisper
     # Honestly, why do we have two different cases for "t" in "walkthrough"?
     walkThrough:
-      embeddedEditorBackground: $std.bg.panel.innermost
+      embeddedEditorBackground: $std.bg.panel.innermost.active
     walkthrough:
       stepTitle:
         foreground: $std.fg.accent.secondary
@@ -700,54 +702,54 @@ theme:
     # Settings Editor colors
     settings:
       headerForeground: $std.fg.accent.secondary
-      settingsHeaderHoverForeground: $std.fg.accent # menu on the left, and other things
+      settingsHeaderHoverForeground: $std.fg.accent.base # menu on the left, and other things
       headerBorder: $std.outline.whisper
       sashBorder: $std.outline.whisper
       modifiedItemIndicator: $status.modified
-      dropdownBackground: $control.bg
-      dropdownForeground: $control.fg
-      dropdownBorder: $control.outline
-      dropdownListBorder: $control.outline
-      checkboxBackground: $control.bg
-      checkboxForeground: $control.fg
-      checkboxBorder: $control.outline
+      dropdownBackground: $control.bg.base
+      dropdownForeground: $control.fg.base
+      dropdownBorder: $control.outline.base
+      dropdownListBorder: $control.outline.base
+      checkboxBackground: $control.bg.base
+      checkboxForeground: $control.fg.base
+      checkboxBorder: $control.outline.base
       # A row is a section in a settings page.
       rowHoverBackground: $std.bg.hover.whisper
-      focusedRowBackground: lighten($std.bg.panel.innermost, 25)
+      focusedRowBackground: lighten($std.bg.panel.innermost.active, 25)
       focusedRowBorder: $std.outline.faint
-      textInputBackground: $control.bg
-      textInputForeground: $control.fg
-      textInputBorder: $control.outline
-      numberInputBackground: $control.bg
-      numberInputForeground: $control.fg
-      numberInputBorder: $control.outline
+      textInputBackground: lighten($std.bg.panel.innermost.active, 25)
+      textInputForeground: $control.fg.base
+      textInputBorder: $control.outline.base
+      numberInputBackground: $control.bg.base
+      numberInputForeground: $control.fg.base
+      numberInputBorder: $control.outline.base
 
     # Output View Backgrounds
     outputView:
-      background: $std.bg.panel.innermost
+      background: $std.bg.panel.innermost.active
     outputViewStickyScroll:
-      background: $std.bg.sticky
+      background: $std.bg.sticky.base
 
     # Integrated Terminal colors
     terminal:
-      foreground: $std.fg
-      background: $std.bg.panel.innermost
-      ansiBlack: "#1e1e1e"
-      ansiBlue: "#8787d7"
-      ansiBrightBlack: "#252525"
-      ansiBrightBlue: "#8787d7"
-      ansiBrightCyan: "#87c7c7"
-      ansiBrightGreen: "#87c7c7"
-      ansiBrightMagenta: "#c787b0"
-      ansiBrightRed: "#a8a8a8"
-      ansiBrightWhite: "#e1e1e1"
-      ansiBrightYellow: "#d7c787"
-      ansiCyan: "#87c7c7"
-      ansiGreen: "#87b087"
-      ansiMagenta: "#c787b0"
-      ansiRed: "#d78787"
-      ansiWhite: "#d1d1d1"
-      ansiYellow: "#d7c787"
+      foreground: $std.fg.base
+      background: $std.bg.panel.innermost.active
+      ansiBlack: $$ansi.black
+      ansiBlue: $$ansi.blue
+      ansiBrightBlack: $$ansi.brightBlack
+      ansiBrightBlue: $$ansi.brightBlue
+      ansiBrightCyan: $$ansi.brightCyan
+      ansiBrightGreen: $$ansi.brightGreen
+      ansiBrightMagenta: $$ansi.brightMagenta
+      ansiBrightRed: $$ansi.brightRed
+      ansiBrightWhite: $$ansi.brightWhite
+      ansiBrightYellow: $$ansi.brightYellow
+      ansiCyan: $$ansi.cyan
+      ansiGreen: $$ansi.green
+      ansiMagenta: $$ansi.magenta
+      ansiRed: $$ansi.red
+      ansiWhite: $$ansi.white
+      ansiYellow: $$ansi.yellow
       selectionBackground: $std.bg.accent.faint
       border: $std.outline.whisper
       selectionForeground: $std.fg.inverse
@@ -766,16 +768,16 @@ theme:
       initialHintForeground: $std.fg.inactive
       dropBackground: $std.bg.drop
       tab:
-        activeBorder: $std.outline
+        activeBorder: $std.outline.base
 
     terminalCursor:
       foreground: $editorCursor.foreground
       background: $editorCursor.background
 
     terminalCommandDecoration:
-      defaultBackground: $std.fg
-      successBackground: $std.bg.success
-      errorBackground: $std.bg.error
+      defaultBackground: $std.fg.base
+      successBackground: $std.bg.status.success
+      errorBackground: $std.bg.status.error
 
     terminalOverviewRuler:
       cursorForeground: $terminalCursor.foreground
@@ -785,7 +787,7 @@ theme:
     # Doing this slightly differently to the rest since it's a bit lighter than
     # the rest of the stickies.
     terminalStickyScroll:
-      background: darken($std.bg.accent, 75)
+      background: darken($std.bg.accent.base, 75)
       border: $std.outline.sticky
 
     terminalStickyScrollHover:
@@ -795,24 +797,24 @@ theme:
       foreground: $std.fg.accent.secondary
 
     terminalSymbolIcon:
-      aliasForeground: "#b0e9ff"
-      flagForeground: "#e5bf72"
-      optionForeground: "#c787b0"
-      optionValueForeground: "#87c7c7"
-      methodForeground: "#a3c4a3"
-      argumentForeground: "#d78787"
-      inlineSuggestionForeground: "#8787d7"
-      fileForeground: "#ffffff"
-      folderForeground: "#e1e1e1"
+      aliasForeground: css(tomato)
+      flagForeground: css(darkseagreen)
+      optionForeground: css(darkcyan)
+      optionValueForeground: css(firebrick)
+      methodForeground: css(red)
+      argumentForeground: css(lightcoral)
+      inlineSuggestionForeground: css(mediumpurple)
+      fileForeground: css(chocolate)
+      folderForeground: css(darkgoldenrod)
 
     # Minimap
     minimap:
       # General minimap
-      background: $std.bg.panel.inner
+      background: $std.bg.panel.inner.active
       selectionHighlight: $std.bg.accent.faint
       # Errors & Warnings
-      errorHighlight: $std.bg.error
-      warningHighlight: $std.bg.warning
+      errorHighlight: $std.bg.status.error
+      warningHighlight: $std.bg.status.warning
 
     # Slider (scroll thumb) visuals
     minimapSlider:
@@ -829,9 +831,9 @@ theme:
     # Command Center colors
     commandCenter:
       # Command Center Base
-      foreground: $control.outline
-      background: $control.bg
-      border: $control.outline
+      foreground: $control.outline.base
+      background: $control.bg.base
+      border: $control.outline.base
       # Active (hovered or clicked)
       activeForeground: $control.fg.active
       activeBackground: $control.bg.active
@@ -844,50 +846,50 @@ theme:
 
     # Banner colors
     banner:
-      background: $std.bg.warning
-      foreground: $std.fg.warning
-      iconForeground: $std.fg.warning
+      background: $std.bg.status.warning
+      foreground: $std.fg.status.warning
+      iconForeground: $std.fg.status.warning
 
     # Notification Center
     notificationCenter:
       border: $std.outline.faint
     notificationCenterHeader:
       foreground: $std.fg.accent.secondary
-      background: $std.bg.panel.outer
+      background: $std.bg.panel.outer.active
     # Notification Toasts
     notificationToast:
-      border: $std.outline
+      border: $std.outline.base
     # Notification Items
     notifications:
-      foreground: $std.fg
-      background: $std.bg.panel.inner
+      foreground: $std.fg.base
+      background: $std.bg.panel.inner.active
       border: $std.outline.faint
     # Links inside notifications
     notificationLink:
       foreground: $std.fg.accent.secondary
     # Icons
     notificationsErrorIcon:
-      foreground: $std.bg.error
+      foreground: $std.bg.status.error
     notificationsWarningIcon:
-      foreground: $std.bg.warning
+      foreground: $std.bg.status.warning
     notificationsInfoIcon:
-      foreground: $std.bg.info
+      foreground: $std.bg.status.info
 
     # Extension colors
     # Extension View Prominent Button (e.g. "Install")
     extensionButton:
-      prominentForeground: $control.fg
-      prominentBackground: $control.bg.secondary
+      prominentForeground: $control.fg.base
+      prominentBackground: $control.bg.secondary.normal
       prominentHoverBackground: $control.bg.secondary.hover
       # Secondary Buttons (e.g. "Enable", "Disable", etc.)
-      foreground: $control.fg
-      background: $control.bg
+      foreground: $control.fg.base
+      background: $control.bg.base
       hoverBackground: $control.bg.hover
       separator: $std.line.faint
     # Remote Badge (for remote extensions like WSL)
     extensionBadge:
-      remoteForeground: $std.fg.success
-      remoteBackground: $std.bg.success
+      remoteForeground: $std.fg.status.success
+      remoteBackground: $std.bg.status.success
     # Icons for various metadata
     extensionIcon:
       starForeground: $$gold
@@ -926,7 +928,7 @@ theme:
       foreground: $std.fg.accent.secondary
       activeForeground: $accent.secondary
     textPreformat:
-      foreground: $std.fg
+      foreground: $std.fg.base
       background: darken($std.bg.accent.secondary, 25)
     textSeparator:
       foreground: $std.fg.secondary
@@ -934,120 +936,119 @@ theme:
     # Inline Edit
     inlineEdit:
       gutterIndicator:
-        primaryBorder: $accent
+        primaryBorder: $accent.base
         primaryForeground: $$teal
-        primaryBackground: fade($accent, 0.20)
+        primaryBackground: fade($accent.base, 0.20)
         secondaryBorder: $status.success
         secondaryForeground: $$yellow
-        secondaryBackground: fade($accent, 0.07)
+        secondaryBackground: fade($accent.base, 0.07)
         successfulBorder: $status.success
         successfulForeground: $status.success
-        successfulBackground: fade($accent, 0.13)
-        background: $std.bg.panel.outer
-      originalBackground: fade($accent, 0.20)
-      modifiedBackground: fade($$teal, 0.20)
-      originalChangedLineBackground: fade($accent, 0.27)
-      originalChangedTextBackground: fade($accent, 0.20)
-      modifiedChangedLineBackground: fade($accent, 0.20)
-      modifiedChangedTextBackground: fade($$teal, 0.27)
-      originalBorder: $accent
-      modifiedBorder: $$teal
+        successfulBackground: fade($accent.base, 0.13)
+        background: $std.bg.panel.outer.active
+      originalBackground: fade($accent.base, 0.20)
+      modifiedBackground: fade($status.modified, 0.20)
+      originalChangedLineBackground: fade($accent.base, 0.27)
+      originalChangedTextBackground: fade($accent.base, 0.20)
+      modifiedChangedLineBackground: fade($accent.base, 0.20)
+      modifiedChangedTextBackground: fade($status.modified, 0.27)
+      originalBorder: $accent.base
+      modifiedBorder: $status.modified
       tabWillAcceptModifiedBorder: $status.success
       tabWillAcceptOriginalBorder: $status.success
 
     # Diff editor colors
     # Diff Editor: Inserted/Removed Text
     diffEditor:
-      insertedTextBackground: fade($status.success, 0.80)
-      insertedTextBorder: fade($status.success, 0.80)
-      removedTextBackground: fade($status.error, 0.80)
-      removedTextBorder: fade($status.error, 0.80)
+      insertedTextBackground: fade($status.added, 0.80)
+      insertedTextBorder: fade($status.added, 0.80)
+      removedTextBackground: fade($status.deleted, 0.80)
+      removedTextBorder: fade($status.deleted, 0.80)
       # Diff Editor: Full Line Highlights
-      insertedLineBackground: fade($status.success, 0.80)
-      removedLineBackground: fade($status.error, 0.80)
+      insertedLineBackground: fade($status.added, 0.80)
+      removedLineBackground: fade($status.deleted, 0.80)
 
     diffEditorGutter:
-      insertedLineBackground: fade($status.success, 0.70)
-      removedLineBackground: fade($status.error, 0.70)
+      insertedLineBackground: fade($status.added, 0.70)
+      removedLineBackground: fade($status.deleted, 0.70)
 
     diffEditorOverview:
-      insertedForeground: fade($status.success, 0.53)
-      removedForeground: fade($status.error, 0.53)
+      insertedForeground: fade($status.added, 0.53)
+      removedForeground: fade($status.deleted, 0.53)
 
     # Inline Chat colors
     inlineChat:
-      background: $std.bg.panel.outer
-      foreground: $std.fg
-      border: fade($accent, 0.27)
+      background: $std.bg.panel.outer.active
+      foreground: $std.fg.base
+      border: fade($accent.base, 0.27)
       shadow: $control.shadow
 
     inlineChatInput:
-      background: $std.bg.panel.inner
-      border: fade($accent, 0.20)
-      focusBorder: fade($accent, 0.53)
+      background: $std.bg.panel.inner.active
+      border: fade($accent.base, 0.20)
+      focusBorder: fade($accent.base, 0.53)
       placeholderForeground: $std.fg.inactive
 
     inlineChatDiff:
-      inserted: fade($status.success, 0.13)
-      removed: fade($status.error, 0.13)
+      inserted: fade($status.added, 0.13)
+      removed: fade($status.deleted, 0.13)
 
     # Panel Chat colors
     interactive:
-      activeCodeBorder: fade($accent, 0.40)
-      inactiveCodeBorder: fade($accent, 0.20)
+      activeCodeBorder: fade($accent.base, 0.40)
+      inactiveCodeBorder: fade($accent.base, 0.20)
 
     # Peek view colors
     peekView:
-      border: fade($accent, 0.53)
+      border: fade($accent.base, 0.53)
 
     peekViewTitle:
-      background: fade($std.bg.panel.inner, 0.47)
+      background: fade($std.bg.panel.inner.active, 0.47)
 
     peekViewTitleLabel:
-      foreground: $std.fg
+      foreground: $std.fg.base
 
     peekViewTitleDescription:
       foreground: $std.fg.inactive
 
     peekViewResult:
-      background: fade($std.bg.panel.inner, 0.47)
-      fileForeground: $std.fg
+      background: fade($std.bg.panel.inner.active, 0.47)
+      fileForeground: $std.fg.base
       lineForeground: $std.fg.secondary
       matchHighlightBackground: $transparent
-      selectionBackground: $std.bg.panel.inner
-      selectionForeground: $std.fg
+      selectionBackground: $std.bg.panel.inner.active
+      selectionForeground: $std.fg.base
 
     peekViewEditorGutter:
-      background: fade($accent, 0.07)
+      background: fade($accent.base, 0.07)
 
     peekViewEditor:
       matchHighlightBackground: fade($$teal, 0.20)
-      matchHighlightBorder: fade($accent, 0.47)
-      background: fade($std.bg.panel.inner, 0.50)
+      matchHighlightBorder: fade($accent.base, 0.47)
+      background: fade($std.bg.panel.inner.active, 0.50)
 
     peekViewEditorStickyScroll:
-      background: fade($std.bg.panel.inner, 0.47)
+      background: fade($std.bg.panel.inner.active, 0.47)
 
     # Merge conflicts colors
     merge:
-      # Merge Conflict: Current Content
-      currentHeaderBackground: fade($accent, 0.20)
-      currentContentBackground: fade($accent, 0.07)
-      # Merge Conflict: Incoming Content
-      incomingHeaderBackground: fade($status.success, 0.20)
-      incomingContentBackground: fade($status.success, 0.07)
-      # Merge Conflict: Common Ancestor
-      commonContentBackground: fade($std.fg.secondary, 0.07)
-      commonHeaderBackground: fade($std.fg.secondary, 0.20)
+      # Merge Conflict: Current Content - VS Code themes like green here - we can use ops.read
+      currentHeaderBackground: fade($ops.read, 0.4)
+      currentContentBackground: fade($ops.read, 0.1)
+      # Merge Conflict: Incoming Content - VS Code themes like blue here - we can use ops.write
+      incomingHeaderBackground: fade($ops.write, 0.4)
+      incomingContentBackground: fade($ops.write, 0.1)
+      # Merge Conflict: Common Ancestor - Idk what to use here, I don't have a sample
+      commonContentBackground: fade($ops.rename, 0.4)
+      commonHeaderBackground: fade($ops.rename, 0.1)
       # Merge Conflict: Border Line Highlight
-      border: fade($accent, 0.27)
-      # Merge Conflict: Unhandled Marker Highlight
+      border: $(std.outline.secondary)
 
     mergeEditor:
       change:
-        background: fade($accent, 0.20)
+        background: fade($accent.base, 0.20)
         word:
-          background: fade($accent, 0.27)
+          background: fade($accent.base, 0.27)
       conflict:
         unhandledUnfocused:
           border: fade($status.error, 0.33)
@@ -1062,7 +1063,7 @@ theme:
         unhandled:
           minimapOverViewRuler: fade($status.error, 0.67)
         input1:
-          background: fade($accent, 0.20)
+          background: fade($accent.base, 0.20)
         input2:
           background: fade($status.success, 0.13)
       conflictingLines:
@@ -1074,16 +1075,16 @@ theme:
 
     # Action Bar colors
     actionBar:
-      toggledBackground: $std.bg.panel.inner
+      toggledBackground: $std.bg.panel.inner.active
 
     simpleFindWidget:
       sashBorder: $test
 
     # Gauge colors
     gauge:
-      background: $std.bg.panel.outer
+      background: $std.bg.panel.outer.active
       foreground: $status.success
-      border: fade($accent, 0.20)
+      border: fade($accent.base, 0.20)
       warningBackground: darken($status.warning, 60)
       warningForeground: $$yellow
       errorBackground: darken($status.error, 60)
@@ -1091,30 +1092,30 @@ theme:
 
     # Keybinding label colors
     keybindingLabel:
-      background: fade($std.bg.panel.inner, 0.73)
-      foreground: $std.fg
-      border: fade($accent, 0.33)
-      bottomBorder: fade($accent, 0.47)
+      background: fade($std.bg.panel.inner.active, 0.73)
+      foreground: $std.fg.base
+      border: fade($accent.base, 0.33)
+      bottomBorder: fade($accent.base, 0.47)
 
     # Keyboard shortcut table colors
     keybindingTable:
-      headerBackground: $std.bg.panel.outer
-      rowsBackground: $std.bg.panel.inner
+      headerBackground: $std.bg.panel.outer.active
+      rowsBackground: $std.bg.panel.inner.active
 
     # Debug colors
     debugToolBar:
-      background: $std.bg.panel.outer
-      border: fade($accent, 0.20)
+      background: $std.bg.panel.outer.active
+      border: fade($accent.base, 0.20)
 
     debugView:
-      exceptionLabelForeground: $std.fg
+      exceptionLabelForeground: $std.fg.base
       exceptionLabelBackground: $status.error
-      stateLabelForeground: $std.bg.panel.inner
+      stateLabelForeground: $std.bg.panel.inner.active
       stateLabelBackground: $$yellow
       valueChangedHighlight: fade($$teal, 0.40)
 
     debugTokenExpression:
-      name: $std.fg
+      name: $std.fg.base
       value: $$teal
       string: $$pink
       boolean: $status.error
@@ -1131,10 +1132,10 @@ theme:
       iconQueued: $$yellow
       iconUnset: fade($std.fg.secondary, 0.67)
       iconSkipped: $$blue
-      peekBorder: fade($accent, 0.53)
-      peekHeaderBackground: fade($std.bg.panel.inner, 0.47)
-      messagePeekBorder: fade($accent, 0.53)
-      messagePeekHeaderBackground: fade($std.bg.panel.inner, 0.47)
+      peekBorder: fade($accent.base, 0.53)
+      peekHeaderBackground: fade($std.bg.panel.inner.active, 0.47)
+      messagePeekBorder: fade($accent.base, 0.53)
+      messagePeekHeaderBackground: fade($std.bg.panel.inner.active, 0.47)
       coveredBackground: fade($status.success, 0.13)
       coveredBorder: fade($status.success, 0.53)
       coveredGutterBackground: fade($status.success, 0.20)
@@ -1142,14 +1143,14 @@ theme:
       uncoveredBackground: fade($status.error, 0.13)
       uncoveredBorder: fade($status.error, 0.53)
       uncoveredGutterBackground: fade($status.error, 0.20)
-      coverCountBadgeBackground: $accent
-      coverCountBadgeForeground: $std.fg
+      coverCountBadgeBackground: $accent.base
+      coverCountBadgeForeground: $std.fg.base
       message:
         error:
           lineBackground: fade($status.error, 0.13)
           badgeBackground: $status.error
           badgeBorder: fade($status.error, 0.53)
-          badgeForeground: $std.bg.panel.inner
+          badgeForeground: $std.bg.panel.inner.active
         info:
           decorationForeground: $$blue
           lineBackground: fade($$blue, 0.13)
@@ -1169,7 +1170,7 @@ theme:
       breakpointUnverifiedForeground: fade($status.error, 0.47)
       breakpointCurrentStackframeForeground: $$gold
       breakpointStackframeForeground: $status.success
-      startForeground: $accent
+      startForeground: $accent.base
       pauseForeground: $$yellow
       stopForeground: $status.error
       disconnectForeground: $std.fg.secondary
@@ -1185,32 +1186,32 @@ theme:
       infoForeground: $$teal
       warningForeground: $$yellow
       errorForeground: $status.error
-      sourceForeground: $accent
+      sourceForeground: $accent.base
 
     debugConsoleInputIcon:
       foreground: $std.fg.secondary
 
     # Chart colors
     charts:
-      foreground: $std.fg
-      lines: $accent
+      foreground: $std.fg.base
+      lines: $accent.base
       red: $status.error
-      blue: $accent
+      blue: $accent.base
       yellow: $$yellow
       orange: $$orange
       green: $status.success
       purple: $$purple
 
     chart:
-      line: $accent
-      axis: fade($accent, 0.33)
-      guide: fade($accent, 0.20)
+      line: $accent.base
+      axis: fade($accent.base, 0.33)
+      guide: fade($accent.base, 0.20)
 
     # Chat colors
     chat:
       editedFileForeground: $$yellow
-      slashCommandBackground: $std.bg.panel.inner
-      slashCommandForeground: $accent
+      slashCommandForeground: $accent.base
+      slashCommandBackground: $std.bg.panel.inner.active
 
     # Ports
     ports:

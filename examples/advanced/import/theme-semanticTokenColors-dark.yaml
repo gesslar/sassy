@@ -1,0 +1,8 @@
+# theme-semanticTokenColors.yaml
+
+theme:
+  semanticTokenColors:
+    newOperator: $$tc.controlFlow
+    stringLiteral: $$tc.string
+    customLiteral: $$tc.functionName
+    numberLiteral: $$tc.numericConstant

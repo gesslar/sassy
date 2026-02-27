@@ -1,3 +1,0 @@
-palette:
-  black: lighten(^{}, 10)
-  teal: darken(^, 5)

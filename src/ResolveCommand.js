@@ -107,6 +107,47 @@ export default class ResolveCommand extends Command {
   }
 
   /**
+   * Public method to resolve a theme token or variable and return structured
+   * data for external consumption.
+   *
+   * @param {Theme} theme - The compiled theme object
+   * @param {object} options - Resolution options (color, tokenColor, or semanticTokenColor)
+   * @returns {Promise<object>} Object containing structured resolution data
+   */
+  async resolve(theme, options = {}) {
+    const cliOptionNames = Object.keys(this.getCliOptions() ?? {})
+    const intersection =
+      Collection.intersection(cliOptionNames, Object.keys(options))
+
+    if(intersection.length > 1)
+      throw Sass.new(
+        `The options ${cliOptionNames.join(", ")} are ` +
+        `mutually exclusive and may only have one expressed in the request.`
+      )
+
+    const optionName = Object.keys(options ?? {})
+      .find(o => cliOptionNames.includes(o))
+
+    if(!optionName)
+      throw Sass.new(
+        `No valid option provided. Please specify one of: ${cliOptionNames.join(", ")}.`
+      )
+
+    const optionValue = options[optionName]
+
+    if(optionName === "color")
+      return this.#resolveColorData(theme, optionValue)
+
+    if(optionName === "tokenColor")
+      return this.#resolveTokenColorData(theme, optionValue)
+
+    if(optionName === "semanticTokenColor")
+      return this.#resolveSemanticTokenColorData(theme, optionValue)
+
+    throw Sass.new(`No data resolver for option: ${optionName}`)
+  }
+
+  /**
    * Resolves a specific color to its final value and displays the resolution trail.
    * Shows the complete dependency chain for the requested color.
    *
@@ -123,22 +164,43 @@ export default class ResolveCommand extends Command {
    * // Resolution: #3366cc
    */
   async resolveColor(theme, colorName) {
+    const data = this.#resolveColorData(theme, colorName)
+
+    if(!data.found)
+      return Term.info(`'${colorName}' not found.`)
+
+    const [formattedFinalValue] = this.#formatLeaf(data.resolution)
+    const output = c`\n{head}${colorName}{/}:\n\n${this.#formatOutput(data.trail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
+
+    Term.info(output)
+  }
+
+  /**
+   * Returns structured resolution data for a colour token.
+   *
+   * @param {object} theme - The compiled theme object with pool
+   * @param {string} colorName - The colour key to resolve
+   * @returns {object} `{ found, name, resolution?, trail? }`
+   * @private
+   */
+  #resolveColorData(theme, colorName) {
     const pool = theme.getPool()
 
     if(!pool || !pool.has(colorName))
-      return Term.info(`'${colorName}' not found.`)
+      return {found: false, name: colorName}
 
     const tokens = pool.getTokens()
     const token = tokens.get(colorName)
     const trail = token.getTrail()
     const fullTrail = this.#buildCompleteTrail(token, trail)
-    // Get the final resolved value
     const finalValue = token.getValue()
-    const [formattedFinalValue] = this.#formatLeaf(finalValue)
 
-    const output = c`\n{head}${colorName}{/}:\n\n${this.#formatOutput(fullTrail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
-
-    Term.info(output)
+    return {
+      found: true,
+      name: colorName,
+      resolution: finalValue,
+      trail: fullTrail.map(({value, type, depth}) => ({value, type, depth}))
+    }
   }
 
   /**
@@ -150,70 +212,120 @@ export default class ResolveCommand extends Command {
    * @returns {void}
    */
   async resolveTokenColor(theme, scopeName) {
-    const tokenColors = theme.getOutput()?.tokenColors || []
+    this.#displayResolvedScope(
+      await this.#resolveTokenColorData(theme, scopeName)
+    )
+  }
 
-    // Check if this is a disambiguated scope (ends with .1, .2, etc.)
+  /**
+   * Displays structured scope resolution data in the terminal.
+   *
+   * @param {object} data - Resolution data from a `#resolve*Data` method
+   * @private
+   */
+  #displayResolvedScope(data) {
+    if(!data.found) {
+      if(data.message)
+        return Term.info(`'${data.name}' not found. ${data.message}`)
+
+      return Term.info(`No tokenColors entries found for scope '${data.name}'`)
+    }
+
+    if(data.ambiguous) {
+      Term.info(`Multiple entries found for '${data.name}', please try again with the specific query:\n`)
+      data.matches.forEach(({qualifier, entryName}) => {
+        Term.info(`${entryName}: ${qualifier}`)
+      })
+
+      return
+    }
+
+    const {
+      name: displayName, entryName, resolution,
+      resolvedVia, noForeground, static: isStatic, trail,
+    } = data
+
+    if(noForeground)
+      return Term.info(`${displayName} (${entryName})\n\n(no foreground property)`)
+
+    if(isStatic)
+      return Term.info(`${displayName} (${entryName})\n\n(resolved to static value: ${resolution})`)
+
+    const [formattedFinalValue] = this.#formatLeaf(resolution)
+    const header = resolvedVia
+      ? c`{<BU}${displayName}{/} {<I}${resolvedVia.relation}{/} {<BU}${resolvedVia.scope}{/} {<I}in{/} {hex}${(`${entryName}`)}{/}\n`
+      : c`{<BU}${displayName}{/} {<I}in{/} {hex}${(`${entryName}`)}{/}\n`
+
+    const output = header +
+                    `${this.#formatOutput(trail)}\n\n` +
+                    c`{head}${"Resolution:"}{/} ${formattedFinalValue}`
+
+    Term.info(output)
+  }
+
+  /**
+   * Returns structured resolution data for a tokenColors scope.
+   *
+   * @param {object} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve
+   * @returns {Promise<object>} Resolution data object
+   * @private
+   */
+  async #resolveTokenColorData(theme, scopeName) {
+    const tokenColors = theme.getOutput()?.tokenColors || []
     const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
 
     if(disambiguatedMatch) {
       const [, baseScope, indexStr] = disambiguatedMatch
-      const index = parseInt(indexStr) - 1 // Convert to 0-based index
-
+      const index = parseInt(indexStr) - 1
       const matches = this.#findScopeMatches(tokenColors, baseScope)
 
-      if(index >= 0 && index < matches.length) {
-        const match = matches[index]
+      if(index >= 0 && index < matches.length)
+        return this.#resolveScopeMatchData(theme, matches[index], `${baseScope}.${indexStr}`)
 
-        await this.#resolveScopeMatch(theme, match, `${baseScope}.${indexStr}`)
-
-        return
-      } else {
-        return Term.info(`'${scopeName}' not found. Available: ${baseScope}.1 through ${baseScope}.${matches.length}`)
+      return {
+        found: false,
+        name: scopeName,
+        message: `Available: ${baseScope}.1 through ${baseScope}.${matches.length}`
       }
     }
 
-    // Find all matching scopes
     const matches = this.#findScopeMatches(tokenColors, scopeName)
 
     if(matches.length === 0) {
-      // Try precedence-based fallback
-      const precedenceMatch = this.#findBestPrecedenceMatch(tokenColors, scopeName)
+      const precedenceMatch =
+        this.#findBestPrecedenceMatch(tokenColors, scopeName)
 
-      if(precedenceMatch) {
-        await this.#resolveScopeMatch(
+      if(precedenceMatch)
+        return this.#resolveScopeMatchData(
           theme, precedenceMatch.entry, scopeName,
           {scope: precedenceMatch.matchedScope, relation: "via"}
         )
 
-        return
-      }
-
-      return Term.info(`No tokenColors entries found for scope '${scopeName}'`)
+      return {found: false, name: scopeName}
     }
 
     if(matches.length === 1) {
-      // Check if a broader scope earlier in the array masks this exact match
-      const maskingScope = this.#findMaskingScope(tokenColors, matches[0], scopeName)
+      const maskingScope =
+        this.#findMaskingScope(tokenColors, matches[0], scopeName)
 
-      if(maskingScope) {
-        await this.#resolveScopeMatch(
+      if(maskingScope)
+        return this.#resolveScopeMatchData(
           theme, maskingScope.entry, scopeName,
           {scope: maskingScope.matchedScope, relation: "masked by"}
         )
 
-        return
-      }
+      return this.#resolveScopeMatchData(theme, matches[0], scopeName)
+    }
 
-      // No masking - resolve directly
-      await this.#resolveScopeMatch(theme, matches[0], scopeName)
-    } else {
-      // Multiple matches - show disambiguation options
-      Term.info(`Multiple entries found for '${scopeName}', please try again with the specific query:\n`)
-      matches.forEach((match, index) => {
-        const name = match.name || `Entry ${index + 1}`
-
-        Term.info(`${name}: ${scopeName}.${index + 1}`)
-      })
+    return {
+      found: true,
+      ambiguous: true,
+      name: scopeName,
+      matches: matches.map((match, index) => ({
+        qualifier: `${scopeName}.${index + 1}`,
+        entryName: match.name || `Entry ${index + 1}`
+      }))
     }
   }
 
@@ -316,24 +428,35 @@ export default class ResolveCommand extends Command {
     return bestMatch
   }
 
-  async #resolveScopeMatch(theme, match, displayName, resolvedVia = null) {
+  /**
+   * Returns structured resolution data for a scope match.
+   *
+   * @param {object} theme - The compiled theme object with pool
+   * @param {object} match - The matching tokenColor entry
+   * @param {string} displayName - The scope name for display
+   * @param {{scope: string, relation: string}|null} resolvedVia - Resolution indirection
+   * @returns {object} Resolution data
+   * @private
+   */
+  #resolveScopeMatchData(theme, match, displayName, resolvedVia = null) {
     const pool = theme.getPool()
     const settings = match.settings || {}
     const name = match.name || "Unnamed"
-
-    // Look for the foreground property specifically
     const foreground = settings.foreground
 
-    if(!foreground) {
-      return Term.info(`${displayName} (${name})\n\n(no foreground property)`)
+    const base = {
+      found: true,
+      name: displayName,
+      entryName: name,
+      resolvedVia: resolvedVia ?? null
     }
 
-    // First, try to find the token by looking for variables that resolve to this value
-    // but prioritize source variable names over computed results
+    if(!foreground)
+      return {...base, resolution: null, noForeground: true, trail: []}
+
     const tokens = pool ? pool.getTokens() : new Map()
     let bestToken = null
 
-    // First try to find a scope.* token that matches
     for(const [tokenName, token] of tokens) {
       if(token.getValue() === foreground && tokenName.startsWith("scope.")) {
         bestToken = token
@@ -341,40 +464,32 @@ export default class ResolveCommand extends Command {
       }
     }
 
-    // If no scope token found, look for other variable-like tokens
     if(!bestToken) {
       for(const [tokenName, token] of tokens) {
         if(token.getValue() === foreground) {
-          // Prefer tokens that look like variable names (scope.*, colors.*, etc.)
-          // over computed function results
           if(tokenName.includes(".") && !tokenName.includes("(") && !tokenName.includes("#")) {
             bestToken = token
             break
           } else if(!bestToken) {
-            bestToken = token // fallback to any matching token
+            bestToken = token
           }
         }
       }
     }
 
-    if(!bestToken)
-      return Term.info(
-        `${displayName} (${name})\n\n(resolved to static value: ${foreground})`
-      )
+    if(!bestToken || bestToken.getTrail().length === 0)
+      return {...base, resolution: foreground, static: true, trail: []}
 
     const trail = bestToken.getTrail()
     const fullTrail = this.#buildCompleteTrail(bestToken, trail)
     const finalValue = bestToken.getValue()
-    const [formattedFinalValue] = this.#formatLeaf(finalValue)
-    const header = resolvedVia
-      ? c`{<BU}${displayName}{/} {<I}${resolvedVia.relation}{/} {<BU}${resolvedVia.scope}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
-      : c`{<BU}${displayName}{/} {<I}in{/} {hex}${(`${name}`)}{/}\n`
 
-    const output = header +
-                    `${this.#formatOutput(fullTrail)}\n\n`+
-                    c`{head}${"Resolution:"}{/} ${formattedFinalValue}`
-
-    Term.info(output)
+    return {
+      ...base,
+      resolution: finalValue,
+      static: false,
+      trail: fullTrail.map(({value, type, depth}) => ({value, type, depth}))
+    }
   }
 
   /**
@@ -386,23 +501,40 @@ export default class ResolveCommand extends Command {
    * @returns {void}
    */
   async resolveSemanticTokenColor(theme, scopeName) {
-    // semanticTokenColors has the same structure as tokenColors, so we can reuse the logic
-    // but we need to look at the semanticTokenColors array instead
-    const originalTokenColors = theme.getOutput()?.tokenColors
+    this.#displayResolvedScope(
+      await this.#resolveSemanticTokenColorData(theme, scopeName)
+    )
+  }
 
-    // Temporarily replace tokenColors with semanticTokenColors for resolution
+  /**
+   * Returns structured resolution data for a semanticTokenColors scope.
+   *
+   * @param {object} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve
+   * @returns {Promise<object>} Resolution data object
+   * @private
+   */
+  async #resolveSemanticTokenColorData(theme, scopeName) {
+    const originalTokenColors = theme.getOutput()?.tokenColors
     const themeOutput = theme.getOutput()
 
     if(themeOutput?.semanticTokenColors) {
-      themeOutput.tokenColors = themeOutput.semanticTokenColors
+      themeOutput.tokenColors = Object.entries(
+        themeOutput.semanticTokenColors
+      ).map(([scope, value]) => ({
+        scope,
+        settings: typeof value === "string"
+          ? {foreground: value}
+          : value,
+      }))
     }
 
-    await this.resolveTokenColor(theme, scopeName)
+    const data = await this.#resolveTokenColorData(theme, scopeName)
 
-    // Restore original tokenColors
-    if(originalTokenColors && themeOutput) {
+    if(originalTokenColors && themeOutput)
       themeOutput.tokenColors = originalTokenColors
-    }
+
+    return data
   }
 
   #buildCompleteTrail(rootToken, trail) {

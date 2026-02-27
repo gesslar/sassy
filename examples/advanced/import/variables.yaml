@@ -1,89 +1,102 @@
-# Variables for later substitution
+# variables.yaml
+
 vars:
-  # The following define secondary basics that can be relied upon by the
-  # theme's definition.
   std:
-    fg: $theme.fg
-    fg.hover: $theme.fg
-    fg.inverse: $std.bg
-    fg.secondary: darken($std.fg, 5)
-    fg.inactive: darken($std.fg, 25)
-    fg.faint: fade($std.fg, 0.53)
-    fg.accent: lighten($accent, 35)
-    fg.accent.faint: darken($std.fg.accent, 15)
-    fg.accent.whisper: darken($std.fg.accent, 15)
-    fg.accent.secondary: lighten($accent.secondary, 50)
-    fg.accent.secondary.faint: fade(lighten($std.fg.accent.secondary, 30), 0.50)
-    fg.success: $std.fg
-    fg.warning: $std.fg
-    fg.info: $status.info
-    fg.error: $status.error
-    fg.badge: $std.bg
+    fg:
+      base: $variant.fg
+      hover: $variant.fg
+      inverse: complement($std.fg.base)
+      secondary: darken($std.fg.base, 5)
+      inactive: darken($std.fg.base, 25)
+      faint: fade($std.fg.base, 0.53)
+      accent:
+        base: lighten($accent.base, 5)
+        faint: darken($std.fg.accent.base, 15)
+        whisper: darken($std.fg.accent.base, 15)
+        secondary: lighten($accent.secondary, 50)
+        secondary.faint: fade(lighten($std.fg.accent.secondary, 30), 0.50)
+      status:
+        success: shiftHue($std.fg.base, 180)
+        warning: shiftHue($std.fg.base, 180)
+        info: shiftHue($status.info, 180)
+        error: shiftHue($status.error, 180)
+      badge: lighten($accent.base, 25)
 
-    bg: $theme.bg
-    bg.inverse: invert($std.bg)
-    bg.faint: fade($std.bg.accent, 0.40)
-    bg.inactive: darken($std.bg, 15)
-    bg.accent: darken($accent, 15)
-    bg.badge: $std.bg.accent.secondary
-    bg.accent.faint: fade($accent, 0.40)
-    bg.accent.faint.strong: fade($std.bg.accent.faint, 0.50)
-    bg.accent.whisper: fade($std.bg.accent.faint, 0.80)
-    bg.accent.strong: darken($accent, 25)
-    bg.accent.secondary: lighten($accent.secondary, 25)
-    bg.hover: darken($std.bg.accent, 15)
-    bg.hover.faint: fade($std.bg.hover, 0.25)
-    bg.hover.whisper: fade($std.bg.hover.faint, 0.5)
-    bg.success: $status.success
-    bg.warning: $status.warning
-    bg.info: $status.info
-    bg.error: $status.error
-    bg.drop: fade($accent, 0.75)
-    bg.sticky: fade($std.bg, 0.10)
-    bg.sticky.hover: fade($std.bg.accent.faint, 0.45)
+    bg:
+      base: $variant.bg
+      inverse: complement($std.bg.base)
+      faint: fade($std.bg.accent.base, 0.40)
+      inactive: darken($std.bg.base, 15)
+      badge: darken($accent.base, 40)
+      accent:
+        base: darken($accent.base, 15)
+        faint: fade($accent.base, 0.40)
+        faint.strong: fade($std.bg.accent.faint, 0.50)
+        whisper: fade($std.bg.accent.faint, 0.80)
+        strong: darken($accent.base, 25)
+        secondary: lighten($accent.secondary, 25)
+      hover:
+        base: darken($std.bg.accent.base, 15)
+        faint: fade($std.bg.hover.base, 0.25)
+        whisper: fade($std.bg.hover.faint, 0.5)
+      status:
+        success: darken($status.success, 15)
+        warning: darken($status.warning, 15)
+        info: darken($status.info, 15)
+        error: darken($status.error, 15)
+      drop: fade($accent.base, 0.75)
+      sticky:
+        base: fade($std.bg.base, 0.10)
+        hover: fade($std.bg.accent.faint, 0.45)
 
-    bg.panel.outer: $std.bg
-    bg.panel.outer.inactive: $std.bg.inactive
-    bg.panel.inner: lighten($std.bg.panel.outer, 10)
-    bg.panel.inner.inactive: lighten($std.bg.panel.outer.inactive, 10)
-    bg.panel.innermost: lighten($std.bg.panel.inner, 10)
-    bg.panel.innermost.inactive: fade($std.bg.panel.inner.inactive, 0.25)
+      panel:
+        outer:
+          active: $std.bg.base
+          inactive: $std.bg.inactive
+        inner:
+          active: lighten($std.bg.panel.outer.active, 10)
+          inactive: lighten($std.bg.panel.outer.inactive, 10)
+        innermost:
+          active: lighten($std.bg.panel.inner.active, 10)
+          inactive: fade($std.bg.panel.inner.inactive, 0.25)
 
     highlight:
       fg:
-        accent: invert($std.highlight.bg.accent)
-        read: invert($std.highlight.bg.read)
-        write: invert($std.highlight.bg.write)
-        delete: invert($std.highlight.bg.delete)
-        rename: invert($std.highlight.bg.rename)
+        accent: complement($std.highlight.bg.accent)
+        read: complement($std.highlight.bg.read)
+        write: complement($std.highlight.bg.write)
+        delete: complement($std.highlight.bg.delete)
+        rename: complement($std.highlight.bg.rename)
+        error: complement($std.highlight.bg.error)
         match: $transparent
       bg:
-        accent: alpha($std.bg.accent, 0.25)
+        accent: alpha($std.bg.accent.base, 0.25)
         read: alpha($$green, 0.25)
         write: alpha($$orange, 0.25)
         delete: alpha($$red, 0.25)
         rename: alpha($$purple, 0.25)
+        error: alpha($$red, 0.25)
         match: $$green2
 
-    outline: darken($std.line, 15)
-    outline.strong: $std.line.strong
-    outline.hover: $std.line.strong
-    outline.faint: $std.line.faint
-    outline.whisper: $std.line.whisper
-    outline.faint.strong: $std.line.faint.strong
-    outline.secondary: $std.line.secondary
-    outline.success: fade(lighten($status.success, 25), 0.40)
-    outline.error: fade(lighten($status.error, 25), 0.40)
-    outline.warning: fade(lighten($status.warning, 25), 0.40)
-    outline.info: fade(lighten($status.info, 25), 0.40)
-    outline.sticky: $transparent
+    outline:
+      base: darken($std.line.base, 15)
+      strong: $std.line.strong
+      hover: $std.line.strong
+      faint: $std.line.faint
+      whisper: $std.line.whisper
+      secondary: $std.line.secondary
+      success: fade(lighten($status.success, 25), 0.40)
+      error: fade(lighten($status.error, 25), 0.40)
+      warning: fade(lighten($status.warning, 25), 0.40)
+      info: fade(lighten($status.info, 25), 0.40)
+      sticky: $transparent
 
-    line: $accent
-    line.strong: lighten($std.line, 25)
-    line.faint: fade($std.line, 0.50)
-    line.faint.strong: lighten($std.line.faint, 25)
-    line.whisper: fade($std.line.faint, 0.65)
-    line.secondary: $accent.secondary
+    line:
+      base: $accent.base
+      strong: lighten($std.line.base, 25)
+      faint: fade($std.line.base, 0.50)
+      whisper: fade($std.line.faint, 0.65)
+      secondary: $accent.secondary
 
     shadow.sticky: fade($shadow, 0.25)
 
@@ -93,10 +106,10 @@ vars:
     warning: $$orange
     error: $$red
 
-    added: lighten($status.success, 20)
-    modified: lighten($status.warning, 20)
-    deleted: lighten($status.error, 20)
-    ignored: darken($main, 50)
+    added: darken($status.success, 35)
+    modified: desaturate($status.warning, 40)
+    deleted: desaturate($status.error, 15)
+    ignored: darken($std.fg.base, 40)
 
   ops:
     read: $$green
@@ -104,30 +117,37 @@ vars:
     delete: $$red
     rename: $$purple
 
-  accent: $theme.accent
-  accent.secondary: $theme.accentSecondary
+  accent:
+    base: $variant.accent
+    secondary: $variant.accentSecondary
+
   transparent: "#00000000"
-  shadow: $theme.shadow
+  shadow: $variant.shadow
 
   control:
-    base: darken($accent, 25)
+    base: darken($accent.base, 25)
 
-    fg: $$white
-    fg.inverse: invert($control.fg)
-    fg.secondary: $control.fg
-    fg.secondary.hover: $control.fg
-    fg.hover: $std.fg.hover
-    fg.active: $std.fg.accent.secondary
+    fg:
+      base: $$white
+      inverse: complement($control.fg.base)
+      secondary:
+        normal: $control.fg.base
+        hover: $control.fg.base
+      hover: $std.fg.hover
+      active: $std.fg.accent.secondary
 
-    bg: fade($control.base, 0.50)
-    bg.secondary: darken($control.bg, 10)
-    bg.hover: $std.bg.accent
-    bg.active: darken($control.bg, 25)
-    bg.secondary.hover: darken($control.bg.secondary, 25)
+    bg:
+      base: fade($control.base, 0.50)
+      secondary:
+        normal: darken($control.bg.base, 10)
+        hover: darken($control.bg.secondary.normal, 25)
+      hover: $std.bg.accent.base
+      active: darken($control.bg.base, 25)
 
-    outline: $std.outline
-    outline.active: lighten($std.outline, 50)
-    outline.focus: lighten($control.outline, 50)
+    outline:
+      base: $std.outline.base
+      active: lighten($std.outline.base, 50)
+      focus: lighten($control.outline.base, 50)
 
     shadow: fade($shadow, 0.1)
 
