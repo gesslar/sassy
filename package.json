@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@docusaurus/eslint-plugin": "^3.9.2",
-    "@gesslar/uglier": "^1.6.2",
+    "@gesslar/uglier": "^2.0.0",
     "eslint": "^10.0.2",
     "typescript": "^5.9.3"
   }
