@@ -59,7 +59,7 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 | `Command` | Base class for CLI commands |
 | `BuildCommand` | Build subcommand implementation |
 | `LintCommand` | Lint subcommand and programmatic lint API |
-| `ResolveCommand` | Resolve subcommand implementation |
+| `ResolveCommand` | Resolve subcommand and programmatic resolve API |
 | `Session` | Orchestrates theme processing sessions |
 | `Colour` | Colour manipulation utilities (lighten, darken, mix, etc.) |
 
@@ -124,3 +124,76 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
     // results.variables            - array of variable issues
 
 `}</CodeBlock>
+
+## ResolveCommand (Programmatic Resolution)
+
+<CodeBlock lang="javascript">{`
+
+    import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
+    import {Theme, ResolveCommand} from '@gesslar/sassy'
+
+    const cwd = DirectoryObject.fromCwd()
+    const cache = new Cache()
+    const file = new FileObject('my-theme.yaml', cwd)
+
+    const theme = new Theme(file, cwd, {})
+    theme.setCache(cache)
+    await theme.load()
+    await theme.build()
+
+    const resolver = new ResolveCommand({cwd, packageJson: {}})
+    resolver.setCache(cache)
+
+    // Resolve a colour property
+    const colorResult = await resolver.resolve(theme, {color: 'editor.background'})
+
+    // Resolve a tokenColors scope
+    const tokenResult = await resolver.resolve(theme, {tokenColor: 'keyword.control'})
+
+    // Resolve a semanticTokenColors scope
+    const semanticResult = await resolver.resolve(theme, {semanticTokenColor: 'variable'})
+
+`}</CodeBlock>
+
+### `resolve(theme, options)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `theme` | `Theme` | A compiled theme (must have been loaded and built) |
+| `options` | `object` | Exactly one of the keys below |
+
+| Option Key | Type | Description |
+|------------|------|-------------|
+| `color` | `string` | A colour property key (e.g. `editor.background`) |
+| `tokenColor` | `string` | A tokenColors scope (e.g. `keyword.control`) |
+| `semanticTokenColor` | `string` | A semanticTokenColors scope (e.g. `variable`) |
+
+The three options are **mutually exclusive** — pass exactly one per call.
+
+### Return Value
+
+The method returns an object whose shape depends on the resolution type and outcome.
+
+**Colour resolution** (`color`):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `found` | `boolean` | Whether the colour key exists in the theme |
+| `name` | `string` | The requested colour key |
+| `resolution` | `string` | Final resolved hex value (when found) |
+| `trail` | `array` | Resolution steps, each with `value`, `type`, and `depth` |
+
+**Scope resolution** (`tokenColor` / `semanticTokenColor`):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `found` | `boolean` | Whether a matching scope was found |
+| `name` | `string` | The requested scope |
+| `ambiguous` | `boolean` | `true` when multiple entries match and disambiguation is needed |
+| `matches` | `array` | Available disambiguations (when ambiguous) |
+| `entryName` | `string` | The matched tokenColors entry name |
+| `resolution` | `string` | Final resolved hex value |
+| `resolvedVia` | `object` | Present when resolved through precedence fallback (`scope`, `relation`) |
+| `noForeground` | `boolean` | `true` when the matched entry has no foreground property |
+| `static` | `boolean` | `true` when the value is a static literal (no variable resolution) |
+| `trail` | `array` | Resolution steps, each with `value`, `type`, and `depth` |

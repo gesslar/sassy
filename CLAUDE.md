@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (and similar coding agents) when work
 
 ```bash
 # Run all tests
-pnpm test
+npm test
 
 # Run a single test file
 node --test tests/Colour.test.js
@@ -23,17 +23,17 @@ node --test tests/Compiler.test.js
 
 ```bash
 # Lint code
-pnpm lint
+npm run lint
 
 # Generate TypeScript definitions from JSDoc
-pnpm types
+npm run types
 ```
 
 ### Running the CLI
 
 ```bash
 # Via npm script
-pnpm exec -- build --watch --output-dir ./examples/output ./examples/simple/midnight-ocean-json5.json5
+npx sassy build --watch --output-dir ./examples/output ./examples/simple/midnight-ocean-json5.json5
 
 # Direct
 node ./src/cli.js build my-theme.yaml
@@ -43,23 +43,23 @@ node ./src/cli.js build my-theme.yaml
 
 ```bash
 # Dev server
-pnpm docs:dev
+npm run docs:dev
 
 # Production build
-pnpm docs:build
+npm run docs:build
 ```
 
 ### Publishing & Updates
 
 ```bash
 # Publish to npm
-pnpm submit
+npm run submit
 
 # Update dependencies
-pnpm update
+npm run update
 
 # Create PR with Graphite
-pnpm pr
+npm run pr
 ```
 
 ## Architecture
@@ -122,7 +122,7 @@ Style is enforced by `@gesslar/uglier` ESLint config. **Non-negotiable** prefere
 
 - **Type:** ES6 modules (`"type": "module"`)
 - **Node Version:** `>=22`
-- **Package Manager:** pnpm
+- **Package Manager:** npm
 - **Import Extensions:** Always use `.js` extensions
 
 ## Testing
