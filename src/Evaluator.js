@@ -112,13 +112,21 @@ export default class Evaluator {
    * @returns {string} The string with palette aliases expanded
    */
   static expandPaletteAliases(value) {
-    return value.replace(Evaluator.paletteAlias, (match, parens, braces, bare) => {
-      if(parens) return `$(palette.${parens})`
-      if(braces) return `\${palette.${braces}}`
-      if(bare) return `$palette.${bare}`
+    return value.replace(
+      Evaluator.paletteAlias,
+      (match, parens, braces, bare) => {
+        if(parens)
+          return `$(palette.${parens})`
 
-      return match
-    })
+        if(braces)
+          return `\${palette.${braces}}`
+
+        if(bare)
+          return `$palette.${bare}`
+
+        return match
+      },
+    )
   }
 
   /**
@@ -347,7 +355,8 @@ export default class Evaluator {
              null
     })
 
-    const applied = this.#colourFunction(func, split, value, sourceTokens, captured)
+    const applied =
+      this.#colourFunction(func, split, value, sourceTokens, captured)
 
     if(!applied)
       return null

@@ -59,7 +59,8 @@ export default class Compiler {
 
       // Let's get all of the imports!
       const imports = recompConfig.import ?? []
-      const {imported, importByFile, allPriors} = await this.#import(imports, theme)
+      const {imported, importByFile, allPriors} =
+        await this.#import(imports, theme)
 
       importByFile.forEach(
         (themeData, file) => theme.addDependency(file,themeData)
@@ -141,6 +142,7 @@ export default class Compiler {
         .map(entry => {
           if(Array.isArray(entry.scope))
             return {...entry, scope: entry.scope.join(", ")}
+
           return entry
         })
       const semanticTokenColors = this.#composeObject(workSemanticTokenColors)
@@ -241,7 +243,8 @@ export default class Compiler {
         ["semanticTokenColors", semanticTokenColors]
       ]))
 
-      const {transformed, priors} = this.#séance(imported.palette, palette, allPriors)
+      const {transformed, priors} =
+        this.#séance(imported.palette, palette, allPriors)
 
       priors.forEach((v, k) => allPriors.set(k, v))
 
@@ -406,7 +409,8 @@ export default class Compiler {
       while(
         existingPriors.has(`__${version}__.${pathStr}`) ||
         priors.has(`__${version}__.${pathStr}`)
-      ) version++
+      )
+        version++
 
       return `__${version}__.${pathStr}`
     }

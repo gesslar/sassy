@@ -1,33 +1,25 @@
-# Theme Config
+# Theme Config - bubblegum-goth
+
 config:
   $schema: vscode://schemas/color-theme
   name: bubblegum-goth
   type: dark
 
   import:
-    - import/palette-$(type).yaml
-    - import/variables.yaml
-    - import/colors.yaml
-    - import/tokenColors-$(type).yaml
+    - ./import/palette-$(type).yaml
+    - ./import/variables.yaml
+    - ./import/theme-colors-$(type).yaml
+    - ./import/theme-tokenColors-$(type).yaml
+    - ./import/theme-semanticTokenColors-$(type).yaml
 
   custom:
-    semanticHighlighting: false
+    semanticHighlighting: true
     colorSpaceName: sRGB
 
 vars:
-  main: $$white
-  inverse: invert($main)
-
-  # The following define primary basics that can be relied upon by the
-  # variables definitions. Dark and light themes will define these
-  # differently. Anything expressed here will override anything being
-  # imported.
-  fg:
-    main: $main
-
-  theme:
-    fg: $main
+  variant:
+    fg: $$white
     bg: $$black
     accent: $$pink
-    accentSecondary: darken($$pink, 60)
-    shadow: alpha($theme.accent, 0.25)
+    accentSecondary: desaturate($variant.accent, 35)
+    shadow: alpha($variant.accent, 0.25)

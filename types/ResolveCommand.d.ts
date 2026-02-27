@@ -26,6 +26,15 @@ export default class ResolveCommand extends Command {
      */
     execute(inputArg: string, options?: object): Promise<void>;
     /**
+     * Public method to resolve a theme token or variable and return structured
+     * data for external consumption.
+     *
+     * @param {Theme} theme - The compiled theme object
+     * @param {object} options - Resolution options (color, tokenColor, or semanticTokenColor)
+     * @returns {Promise<object>} Object containing structured resolution data
+     */
+    resolve(theme: Theme, options?: object): Promise<object>;
+    /**
      * Resolves a specific color to its final value and displays the resolution trail.
      * Shows the complete dependency chain for the requested color.
      *
@@ -63,4 +72,5 @@ export default class ResolveCommand extends Command {
     #private;
 }
 import Command from "./Command.js";
+import Theme from "./Theme.js";
 //# sourceMappingURL=ResolveCommand.d.ts.map

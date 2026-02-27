@@ -1,0 +1,17 @@
+#palette-dark-hushed.yaml
+
+palette:
+  black: lighten(^, 5)
+
+  blue: shade(^, 25)
+  gold: shade(^, 25)
+  green: shade(^, 25)
+  green2: shade(^, 25)
+  grey: shade(^, 25)
+  orange: shade(^, 25)
+  peach: shade(^, 25)
+  pink: shade(^, 25)
+  purple: shade(^, 25)
+  red: shade(^, 25)
+  teal: shade(^, 25)
+  yellow: shade(^, 25)

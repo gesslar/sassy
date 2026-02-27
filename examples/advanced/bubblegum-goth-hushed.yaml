@@ -1,12 +1,13 @@
-# Theme Config - blackboard
+# Theme Config - bubblegum-goth-hushed
 
 config:
   $schema: vscode://schemas/color-theme
-  name: blackboard
+  name: bubblegum-goth-hushed
   type: dark
 
   import:
     - ./import/palette-$(type).yaml
+    - ./import/palette-$(type)-hushed.yaml
     - ./import/variables.yaml
     - ./import/theme-colors-$(type).yaml
     - ./import/theme-tokenColors-$(type).yaml
@@ -20,6 +21,6 @@ vars:
   variant:
     fg: $$white
     bg: $$black
-    accent: $$blue
-    accentSecondary: darken($variant.accent, 50)
-    shadow: alpha($variant.accent, 0.25)
+    accent: $$pink
+    accentSecondary: desaturate($variant.accent, 35)
+    shadow: $transparent

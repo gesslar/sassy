@@ -1,12 +1,13 @@
-# Theme Config - blackboard
+# Theme Config - blackboard-hushed
 
 config:
   $schema: vscode://schemas/color-theme
-  name: blackboard
+  name: blackboard-hushed
   type: dark
 
   import:
     - ./import/palette-$(type).yaml
+    - ./import/palette-$(type)-hushed.yaml
     - ./import/variables.yaml
     - ./import/theme-colors-$(type).yaml
     - ./import/theme-tokenColors-$(type).yaml
@@ -22,4 +23,4 @@ vars:
     bg: $$black
     accent: $$blue
     accentSecondary: darken($variant.accent, 50)
-    shadow: alpha($variant.accent, 0.25)
+    shadow: $transparent

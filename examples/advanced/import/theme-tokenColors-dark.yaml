@@ -1,0 +1,485 @@
+# theme-tokenColors-dark.yaml
+
+palette:
+  tc:
+    comment: oklch(0.5 0 25)
+    markupBlockquote: $$tc.comment
+
+    keyword: oklch(0.6713 0.0672 245.54) # blue
+    storage: oklch(0.6713 0.0672 245.54) # blue
+    storageModifier: oklch(0.6713 0.0672 245.54) # blue
+    storageType: oklch(0.6713 0.0672 245.54) # blue
+    operatorWord: oklch(0.6713 0.0672 245.54) # blue
+    operator: oklch(0.748 0 0) # dark white
+    controlFlow: oklch(0.7024 0.0679 329.42) # light pink
+
+    variable: oklch(0.6816 0.0692 232.08) # teal-y blue
+    property: oklch(0.6816 0.0692 232.08) # teal-y blue
+    selfReference: oklch(0.6713 0.0672 245.54) # blue
+
+    functionName: oklch(0.715 0.0656 107.67) # pale yellow
+
+    type: oklch(0.6849 0.0856 177.18) # teal-y green
+
+    languageConstant: oklch(0.6713 0.0672 245.54) # blue
+    numericConstant: oklch(0.6772 0.0844 126.69) # pale green
+    enumConstant: oklch(0.6644 0.0898 226.28) # another blue
+    characterConstant: oklch(0.6713 0.0672 245.54) # blue
+    escapeSequence: oklch(0.8048 0.0541 85.14) # light orange
+    unit: oklch(0.6772 0.0844 126.69) # pale green
+
+    string: oklch(0.6948 0.0606 43.17) # salmon ?
+    interpolation: oklch(0.6713 0.0672 245.54) # blue
+
+    tagName: oklch(0.6713 0.0672 245.54) # blue
+    tagPunctuation: oklch(0.5999 0 0) # mid grey
+    cssSelector: oklch(0.8048 0.0541 85.14) # light orange
+    cssProperty: oklch(0.6816 0.0692 232.08) # teal-y blue
+    cssValue: oklch(0.6948 0.0606 43.17) # salmon ?
+
+    markupStrong: oklch(0.6713 0.0672 245.54) # blue
+    markupEmphasis: oklch(0.7024 0.0679 329.42) # light pink
+    markupInserted: oklch(0.6772 0.0844 126.69) # pale green
+    markupDeleted: oklch(0.6948 0.0606 43.17) # salmon ?
+    markupChanged: oklch(0.6713 0.0672 245.54) # blue
+    markupList: oklch(0.5978 0.0892 260.52) # yet another blue
+    markupHeader: oklch(0.5527 0.1321 264.052) # more blue, but darker and more offensive
+
+    preprocessor: oklch(0.6713 0.0672 245.54) # blue
+    diffHeader: oklch(0.6713 0.0672 245.54) # blue
+
+    regexpLiteral: oklch(0.528 0.0736 281.68) # there's a lot of blue in this theme, this one very pale, almost smokey
+    regexpString: oklch(0.5677 0.0805 21.41) # reddish pink
+    regexpGroup: oklch(0.6948 0.0606 43.17) # salmon ?
+    regexpCharClass: oklch(0.5677 0.0805 21.41) # reddish pink
+    regexpQuantifier: oklch(0.8048 0.0541 85.14) # light orange
+    regexpOperator: oklch(0.715 0.0656 107.67) # pale yellow
+
+    gitRebaseCommand: oklch(0.6816 0.0692 232.08) # teal-y blue
+    gitCommitSha: oklch(0.6772 0.0844 126.69) # pale green
+
+    label: oklch(0.8328 0 0) # a lighter grey
+    invalid: oklch(0.6484 0.2098 25.22) # almost clown-nose red
+    default: oklch(0.748 0 0) # dark white
+
+theme:
+  tokenColors:
+    - name: Emphasis
+      scope: emphasis
+      settings:
+        fontStyle: italic
+
+    - name: Strong
+      scope: strong
+      settings:
+        fontStyle: bold
+
+    - name: Header
+      scope: header
+      settings:
+        foreground: $$tc.markupHeader
+
+    - name: Comment
+      scope: comment
+      settings:
+        foreground: $$tc.comment
+
+    - name: Language constants
+      scope: constant.language
+      settings:
+        foreground: $$tc.languageConstant
+
+    - name: Numeric constants and exponents
+      scope:
+        - constant.numeric
+        - keyword.operator.plus.exponent
+        - keyword.operator.minus.exponent
+      settings:
+        foreground: $$tc.numericConstant
+
+    - name: Regexp constants
+      scope: constant.regexp
+      settings:
+        foreground: $$tc.regexpLiteral
+
+    - name: CSS/Less element selectors
+      scope:
+        - entity.name.tag.css
+        - entity.name.tag.less
+      settings:
+        foreground: $$tc.cssSelector
+
+    - name: HTML/XML tag names
+      scope: entity.name.tag
+      settings:
+        foreground: $$tc.tagName
+
+    - name: CSS/Less/SCSS attribute selectors
+      scope:
+        - entity.other.attribute-name.class
+        - entity.other.attribute-name.id
+        - entity.other.attribute-name.parent-selector
+        - entity.other.attribute-name.parent.less
+        - entity.other.attribute-name.pseudo-class
+        - entity.other.attribute-name.pseudo-element
+        - entity.other.attribute-name.scss
+      settings:
+        foreground: $$tc.cssSelector
+
+    - name: Attribute names
+      scope: entity.other.attribute-name
+      settings:
+        foreground: $$tc.property
+
+    - name: Invalid tokens
+      scope: invalid
+      settings:
+        foreground: $$tc.invalid
+
+    - name: "Markup: underline"
+      scope: markup.underline
+      settings:
+        fontStyle: underline
+
+    - name: "Markup: bold"
+      scope: markup.bold
+      settings:
+        fontStyle: bold
+        foreground: $$tc.markupStrong
+
+    - name: "Markup: heading"
+      scope: markup.heading
+      settings:
+        fontStyle: bold
+        foreground: $$tc.markupStrong
+
+    - name: "Markup: italic"
+      scope: markup.italic
+      settings:
+        fontStyle: italic
+        foreground: $$tc.markupEmphasis
+
+    - name: "Markup: strikethrough"
+      scope: markup.strikethrough
+      settings:
+        fontStyle: strikethrough
+
+    - name: "Markup: inserted"
+      scope: markup.inserted
+      settings:
+        foreground: $$tc.markupInserted
+
+    - name: "Markup: deleted"
+      scope: markup.deleted
+      settings:
+        foreground: $$tc.markupDeleted
+
+    - name: "Markup: changed"
+      scope: markup.changed
+      settings:
+        foreground: $$tc.markupChanged
+
+    - name: "Markdown: blockquote marker"
+      scope: punctuation.definition.quote.begin
+      settings:
+        foreground: $$tc.markupBlockquote
+
+    - name: "Markdown: list marker"
+      scope: punctuation.definition.list.begin
+      settings:
+        foreground: $$tc.markupList
+
+    - name: "Markup: inline code"
+      scope: markup.inline.raw
+      settings:
+        foreground: $$tc.string
+
+    - name: Brackets of XML/HTML tags
+      scope: punctuation.definition.tag
+      settings:
+        foreground: $$tc.tagPunctuation
+
+    - name: Preprocessor strings
+      scope: meta.preprocessor.string
+      settings:
+        foreground: $$tc.string
+
+    - name: Preprocessor numerics
+      scope: meta.preprocessor.numeric
+      settings:
+        foreground: $$tc.numericConstant
+
+    - name: Preprocessor directives
+      scope:
+        - meta.preprocessor
+        - entity.name.function.preprocessor
+      settings:
+        foreground: $$tc.preprocessor
+
+    - name: Python dictionary keys
+      scope: meta.structure.dictionary.key.python
+      settings:
+        foreground: $$tc.property
+
+    - name: Diff header
+      scope: meta.diff.header
+      settings:
+        foreground: $$tc.diffHeader
+
+    - name: Regular expression strings
+      scope: string.regexp
+      settings:
+        foreground: $$tc.regexpString
+
+    - name: Reset string interpolation expression
+      scope:
+        - meta.template.expression
+      settings:
+        foreground: $$tc.default
+
+    - name: CSS property names
+      scope:
+        - support.type.vendored.property-name
+        - support.type.property-name
+        - source.css variable
+      settings:
+        foreground: $$tc.cssProperty
+
+    - name: Word-like operators
+      scope:
+        - keyword.operator.new
+        - keyword.operator.expression
+        - keyword.operator.cast
+        - keyword.operator.sizeof
+        - keyword.operator.alignof
+        - keyword.operator.typeid
+        - keyword.operator.alignas
+        - keyword.operator.instanceof
+        - keyword.operator.logical
+        - keyword.operator.wordlike
+      settings:
+        foreground: $$tc.operatorWord
+
+    - name: Unit suffixes
+      scope: keyword.other.unit
+      settings:
+        foreground: $$tc.unit
+
+    - name: Git rebase commands
+      scope: support.function.git-rebase
+      settings:
+        foreground: $$tc.gitRebaseCommand
+
+    - name: Git commit SHA
+      scope: constant.sha.git-rebase
+      settings:
+        foreground: $$tc.gitCommitSha
+
+    - name: "Java: import and package identifiers"
+      scope:
+        - storage.modifier.import.java
+        - variable.language.wildcard.java
+        - storage.modifier.package.java
+      settings:
+        foreground: $$tc.default
+
+    - name: this.self
+      scope: variable.language
+      settings:
+        foreground: $$tc.selfReference
+
+    - name: Function declarations
+      scope:
+        - entity.name.function
+        - support.function
+        - support.constant.handlebars
+        - entity.name.operator.custom-literal
+      settings:
+        foreground: $$tc.functionName
+
+    - name: Types declaration and references
+      scope:
+        - support.class
+        - support.type
+        - entity.name.type
+        - entity.name.namespace
+        - entity.other.attribute
+        - entity.name.scope-resolution
+        - entity.name.class
+        - storage.type.numeric
+        - storage.type.byte
+        - storage.type.boolean
+        - storage.type.string
+        - storage.type.uintptr
+        - storage.type.error
+        - storage.type.rune
+        - storage.type.cs
+        - storage.type.generic
+        - storage.type.modifier
+        - storage.type.variable
+        - storage.type.annotation
+        - storage.type.java
+        - storage.type.object.array
+        - storage.type.primitive.array
+        - storage.type.primitive
+        - storage.type.token
+      settings:
+        foreground: $$tc.type
+
+    - name: Storage type keyword
+      scope: storage.type
+      settings:
+        foreground: $$tc.storageType
+
+    - name: Type expressions and built-in constants
+      scope:
+        - meta.type.cast.expr
+        - meta.type.new.expr
+        - support.constant.math
+        - support.constant.dom
+        - support.constant.json
+        - entity.other.inherited-class
+        - punctuation.separator.namespace
+      settings:
+        foreground: $$tc.type
+
+    - name: Constants and enums
+      scope:
+        - variable.other.constant
+        - variable.other.enummember
+      settings:
+        foreground: $$tc.enumConstant
+
+    - name: Object literal keys
+      scope:
+        - meta.object-literal.key
+      settings:
+        foreground: $$tc.property
+
+    - name: CSS property values
+      scope:
+        - support.constant.property-value
+        - support.constant.font-name
+        - support.constant.media-type
+        - support.constant.media
+        - constant.other.color.rgb-value
+        - constant.other.rgb-value
+        - support.constant.color
+      settings:
+        foreground: $$tc.cssValue
+
+    - name: "Regexp: groups and assertions"
+      scope:
+        - punctuation.definition.group.regexp
+        - punctuation.definition.group.assertion.regexp
+        - punctuation.definition.character-class.regexp
+        - punctuation.character.set.begin.regexp
+        - punctuation.character.set.end.regexp
+        - keyword.operator.negation.regexp
+        - support.other.parenthesis.regexp
+      settings:
+        foreground: $$tc.regexpGroup
+
+    - name: "Regexp: character classes"
+      scope:
+        - constant.character.character-class.regexp
+        - constant.other.character-class.set.regexp
+        - constant.other.character-class.regexp
+        - constant.character.set.regexp
+      settings:
+        foreground: $$tc.regexpCharClass
+
+    - name: "Regexp: alternation and anchors"
+      scope:
+        - keyword.operator.or.regexp
+        - keyword.control.anchor.regexp
+      settings:
+        foreground: $$tc.regexpOperator
+
+    - name: "Regexp: quantifiers"
+      scope: keyword.operator.quantifier.regexp
+      settings:
+        foreground: $$tc.regexpQuantifier
+
+    - name: Escape sequences
+      scope: constant.character.escape
+      settings:
+        foreground: $$tc.escapeSequence
+
+    - name: Character constants
+      scope:
+        - constant.character
+        - constant.other.option
+      settings:
+        foreground: $$tc.characterConstant
+
+    - name: Labels
+      scope: entity.name.label
+      settings:
+        foreground: $$tc.label
+
+    - name: Control flow / Special keywords
+      scope:
+        - keyword.control
+        - source.cpp keyword.operator.new
+        - keyword.operator.delete
+        - keyword.other.using
+        - keyword.other.directive.using
+        - keyword.other.operator
+        - entity.name.operator
+      settings:
+        foreground: $$tc.controlFlow
+
+    - name: String interpolation
+      scope:
+        - punctuation.definition.template-expression.begin
+        - punctuation.definition.template-expression.end
+        - punctuation.section.embedded
+      settings:
+        foreground: $$tc.interpolation
+
+    - name: Strings
+      scope:
+        - string
+        - meta.embedded.assembly
+      settings:
+        foreground: $$tc.string
+
+    - name: Embedded content
+      scope:
+        - meta.embedded
+        - string meta.image.inline.markdown
+      settings:
+        foreground: $$tc.default
+
+    - name: Variable and parameter name
+      scope:
+        - variable
+        - meta.definition.variable.name
+        - support.variable
+        - entity.name.variable
+        - constant.other.placeholder
+      settings:
+        foreground: $$tc.variable
+
+    - name: Storage modifiers
+      scope:
+        - storage.modifier
+        - keyword.operator.noexcept
+      settings:
+        foreground: $$tc.storageModifier
+
+    - name: Operators
+      scope: keyword.operator
+      settings:
+        foreground: $$tc.operator
+
+    - name: Keywords
+      scope: keyword
+      settings:
+        foreground: $$tc.keyword
+
+    - name: Storage
+      scope: storage
+      settings:
+        foreground: $$tc.storage

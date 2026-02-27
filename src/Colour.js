@@ -116,6 +116,7 @@ const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 const resolveColour = tokenOrColor => {
   if(typeof tokenOrColor === "string" && Colour.isHex(tokenOrColor)) {
     const extracted = Colour.parseHexColour(tokenOrColor)
+
     return {colour: asColour(extracted.colour), alphaHex: extracted.alpha?.hex ?? ""}
   }
 
@@ -400,7 +401,8 @@ export default class Colour {
     // if chroma is 0, hue is meaningless; leave as-is
     if(oklchColor.c && isFinite(oklchColor.h)) {
       oklchColor.h = (oklchColor.h + deg) % 360
-      if(oklchColor.h < 0) oklchColor.h += 360
+      if(oklchColor.h < 0)
+        oklchColor.h += 360
     }
 
     return `${formatHex(oklchColor)}${alphaHex}`.toLowerCase()
