@@ -28,6 +28,7 @@ export {default as Evaluator} from "./Evaluator.js"
 export {default as Command} from "./Command.js"
 export {default as BuildCommand} from "./BuildCommand.js"
 export {default as LintCommand} from "./LintCommand.js"
+export {default as ProofCommand} from "./ProofCommand.js"
 export {default as ResolveCommand} from "./ResolveCommand.js"
 
 // Data handling and utilities

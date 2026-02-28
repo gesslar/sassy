@@ -59,6 +59,7 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 | `Command` | Base class for CLI commands |
 | `BuildCommand` | Build subcommand implementation |
 | `LintCommand` | Lint subcommand and programmatic lint API |
+| `ProofCommand` | Proof subcommand and programmatic proof API |
 | `ResolveCommand` | Resolve subcommand and programmatic resolve API |
 | `Session` | Orchestrates theme processing sessions |
 | `Colour` | Colour manipulation utilities (lighten, darken, mix, etc.) |
@@ -122,6 +123,34 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
     // results.semanticTokenColors  - array of semanticTokenColors issues
     // results.colors               - array of colors issues
     // results.variables            - array of variable issues
+
+`}</CodeBlock>
+
+## ProofCommand (Programmatic Proofing)
+
+<CodeBlock lang="javascript">{`
+
+    import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
+    import {Theme, ProofCommand} from '@gesslar/sassy'
+
+    const cwd = DirectoryObject.fromCwd()
+    const cache = new Cache()
+    const file = new FileObject('my-theme.yaml', cwd)
+
+    const theme = new Theme(file, cwd, {})
+    theme.setCache(cache)
+    await theme.load()
+
+    const proofer = new ProofCommand({cwd, packageJson: {}})
+    proofer.setCache(cache)
+
+    const composed = await proofer.proof(theme)
+    // composed.config             - resolved config (without import key)
+    // composed.palette            - merged palette with séance inlined
+    // composed.vars               - merged vars
+    // composed.theme.colors       - merged colors
+    // composed.theme.tokenColors  - appended tokenColors
+    // composed.theme.semanticTokenColors - merged semanticTokenColors
 
 `}</CodeBlock>
 

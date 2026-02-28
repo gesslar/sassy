@@ -153,6 +153,36 @@ To preview against a specific background instead, use `--bg`:
 Pass the hex value without `#` to avoid shell comment interpretation, or wrap it in quotes: `--bg '#1a1a1a'`.
 :::
 
+## Seeing the Full Picture with Proof
+
+While `resolve` traces a single token, sometimes you need to see the entire composed document — the full result of all your imports, overrides, and séance operators, before any evaluation happens.
+
+<CodeBlock lang="bash">{`
+
+  npx @gesslar/sassy proof ocean.yaml
+
+`}</CodeBlock>
+
+This outputs the complete merged theme as YAML — with all imports flattened, séance `^` operators replaced with their actual prior values, but all variable references and colour functions left untouched. It's exactly what the compiler sees before it starts evaluating.
+
+This is especially useful when:
+
+- You're working with multiple import layers and need to verify the merge order
+- You want to confirm that séance derivations are referencing the right prior values
+- Someone new to your theme needs to understand the full structure without reading the import graph
+- You want to diff two theme variants to see exactly what changed
+
+<CodeBlock lang="bash">{`
+
+  # Compare a base theme to its hushed variant
+  diff <(npx @gesslar/sassy proof blackboard.yaml) <(npx @gesslar/sassy proof blackboard-hushed.yaml)
+
+`}</CodeBlock>
+
+:::tip
+Think of `proof` as the aerial photograph and `resolve` as the archaeological dig. Use proof to orient yourself, then resolve to investigate specific tokens.
+:::
+
 ## What You've Learned
 
 Over these seven pages you've gone from a single-file theme to:
@@ -163,6 +193,7 @@ Over these seven pages you've gone from a single-file theme to:
 - **Colour spaces** beyond hex codes
 - **The full function toolkit** for colour manipulation
 - **Linting** to catch issues early
+- **Proof** to see the full composed document before evaluation
 - **Resolve** to debug any value in your theme
 
 You're ready to build anything. For complete specifications of every feature, see the [Reference](/docs/reference/theme-file) section.
