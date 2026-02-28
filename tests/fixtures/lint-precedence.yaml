@@ -1,0 +1,16 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Precedence Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: General Keywords
+      scope: keyword
+      settings:
+        foreground: "#ff0000"
+    - name: Control Keywords
+      scope: keyword.control
+      settings:
+        foreground: "#0000ff"

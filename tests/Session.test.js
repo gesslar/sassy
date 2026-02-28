@@ -14,6 +14,178 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 describe("Session", () => {
+  describe("constructor and getters", () => {
+    it("returns the theme via getTheme()", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const options = {watch: false}
+      const session = new Session(command, theme, options)
+
+      assert.equal(session.getTheme(), theme)
+      assert.equal(session.theme, theme)
+    })
+
+    it("returns the command via getCommand()", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {})
+
+      assert.equal(session.getCommand(), command)
+    })
+
+    it("returns the options via getOptions()", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const options = {watch: true, dryRun: false}
+      const session = new Session(command, theme, options)
+
+      assert.deepEqual(session.getOptions(), options)
+    })
+  })
+
+  describe("initial state", () => {
+    it("isBuilding returns false initially", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const command = new BuildCommand({cwd, packageJson: {}})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {})
+
+      assert.equal(session.isBuilding(), false)
+    })
+
+    it("isWatching returns false when watch not set", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const command = new BuildCommand({cwd, packageJson: {}})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {})
+
+      assert.equal(session.isWatching(), false)
+    })
+
+    it("isWatching returns true when watch is set", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const command = new BuildCommand({cwd, packageJson: {}})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {watch: true})
+
+      assert.equal(session.isWatching(), true)
+    })
+
+    it("hasWatcher returns false initially", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const command = new BuildCommand({cwd, packageJson: {}})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {})
+
+      assert.equal(session.hasWatcher(), false)
+    })
+
+    it("getHistory returns empty array initially", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const command = new BuildCommand({cwd, packageJson: {}})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {})
+
+      assert.deepEqual(session.getHistory(), [])
+    })
+
+    it("getStats returns zeroed stats initially", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const command = new BuildCommand({cwd, packageJson: {}})
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const session = new Session(command, theme, {})
+      const stats = session.getStats()
+
+      assert.equal(stats.builds, 0)
+      assert.equal(stats.failures, 0)
+    })
+  })
+
+  describe("run and stats", () => {
+    it("records build history after successful run", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      command.setCache(new Cache())
+
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+
+      const session = new Session(command, theme, {})
+
+      // Mock write to avoid file I/O
+      const originalWrite = theme.write.bind(theme)
+      theme.write = async function() {
+        return {status: {description: "skipped"}, file: themeFile, bytes: 0}
+      }
+
+      try {
+        await session.run()
+      } catch(error) {
+        // May throw, that's okay
+      }
+
+      const history = session.getHistory()
+      assert.ok(history.length > 0, "should have at least one build record")
+
+      const record = history[0]
+      assert.equal(typeof record.timestamp, "number")
+      assert.equal(typeof record.success, "boolean")
+
+      theme.write = originalWrite
+    })
+
+    it("records success in history after successful run", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      command.setCache(new Cache())
+
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+
+      const session = new Session(command, theme, {})
+
+      // Mock write to avoid file I/O
+      const originalWrite = theme.write.bind(theme)
+      theme.write = async function() {
+        return {status: {description: "skipped"}, file: themeFile, bytes: 0}
+      }
+
+      try {
+        await session.run()
+      } catch(error) {
+        // May throw, that's okay
+      }
+
+      const history = session.getHistory()
+      assert.ok(history.length > 0, "should have at least one build record")
+      assert.equal(history[0].success, true, "build should be recorded as successful")
+      assert.equal(typeof history[0].loadTime, "number")
+      assert.equal(typeof history[0].buildTime, "number")
+      assert.equal(typeof history[0].writeTime, "number")
+
+      theme.write = originalWrite
+    })
+  })
+
   describe("run", () => {
     it("calls asyncEmit on command", async() => {
       const cwd = new DirectoryObject(__dirname)

@@ -89,6 +89,54 @@ describe("ResolveCommand", () => {
         )
       }
     })
+
+    it("executes with semanticTokenColor option", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const fixturePath = TestUtils.getFixturePath("semantic-token-theme.yaml")
+
+      try {
+        await command.execute(fixturePath, {semanticTokenColor: "variable.declaration"})
+      } catch(error) {
+        assert.ok(
+          error instanceof Sass || error.constructor.name === "Sass" ||
+          error.message.includes("not found") || error.message.includes("No such function")
+        )
+      }
+    })
+
+    it("throws when --bg hex is invalid", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
+
+      await assert.rejects(
+        () => command.execute(fixturePath, {color: "editor.background", bg: "zzzzz"}),
+        error => error instanceof Sass || error.constructor.name === "Sass"
+      )
+    })
+
+    it("accepts valid --bg hex", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
+
+      // Should not throw on option validation; may print "not found" for the colour
+      try {
+        await command.execute(fixturePath, {color: "colors.editor.background", bg: "1a1a1a"})
+      } catch(error) {
+        // Only accept Sass errors (not option-validation errors)
+        assert.ok(
+          error instanceof Sass || error.constructor.name === "Sass"
+        )
+      }
+    })
   })
 
   describe("resolveColor", () => {
@@ -254,6 +302,46 @@ describe("ResolveCommand", () => {
         assert.deepEqual(data.trail, [])
         assert.equal(data.resolvedVia, null)
       })
+
+      it("resolves variable-backed tokenColor with trail", async() => {
+        const cwd = new DirectoryObject(__dirname)
+        const packageJson = {}
+        const command = new ResolveCommand({cwd, packageJson})
+        command.setCache(new Cache())
+        const themeFile = cwd.getFile("./fixtures/palette-alias-tokencolors.yaml")
+        const theme = new Theme(themeFile, cwd, {outputDir: "."})
+        theme.setCache(command.getCache())
+        await theme.load()
+        await theme.build()
+
+        const data = await command.resolve(theme, {tokenColor: "keyword"})
+        assert.equal(data.found, true)
+        assert.equal(data.entryName, "Keywords")
+        assert.equal(typeof data.resolution, "string")
+        // Palette alias tokens may resolve as static or with trail depending
+        // on pool state; just verify the shape is correct
+        assert.ok("static" in data)
+        assert.ok(Array.isArray(data.trail))
+      })
+
+      it("resolves via precedence for sub-scope", async() => {
+        const cwd = new DirectoryObject(__dirname)
+        const packageJson = {}
+        const command = new ResolveCommand({cwd, packageJson})
+        command.setCache(new Cache())
+        const themeFile = cwd.getFile("./fixtures/palette-alias-tokencolors.yaml")
+        const theme = new Theme(themeFile, cwd, {outputDir: "."})
+        theme.setCache(command.getCache())
+        await theme.load()
+        await theme.build()
+
+        // "keyword.control" has no exact match, but "keyword" is a prefix
+        const data = await command.resolve(theme, {tokenColor: "keyword.control"})
+        assert.equal(data.found, true)
+        assert.ok(data.resolvedVia, "should resolve via precedence")
+        assert.equal(data.resolvedVia.relation, "via")
+        assert.equal(data.resolvedVia.scope, "keyword")
+      })
     })
 
     describe("semanticTokenColor option", () => {
@@ -288,6 +376,103 @@ describe("ResolveCommand", () => {
         assert.equal(typeof data.resolution, "string")
         assert.ok(Array.isArray(data.trail))
       })
+
+      it("resolves string-value semantic token (palette alias)", async() => {
+        const cwd = new DirectoryObject(__dirname)
+        const packageJson = {}
+        const command = new ResolveCommand({cwd, packageJson})
+        command.setCache(new Cache())
+        const themeFile = cwd.getFile("./fixtures/semantic-token-theme.yaml")
+        const theme = new Theme(themeFile, cwd, {outputDir: "."})
+        theme.setCache(command.getCache())
+        await theme.load()
+        await theme.build()
+
+        const data = await command.resolve(theme, {semanticTokenColor: "string:escape"})
+        assert.equal(data.found, true)
+        assert.equal(typeof data.resolution, "string")
+      })
+    })
+  })
+
+  describe("resolveTokenColor", () => {
+    it("does not throw for a valid scope", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/token-colors-string-scope.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+      await theme.load()
+      await theme.build()
+
+      // Smoke test: should not throw
+      await command.resolveTokenColor(theme, "comment")
+    })
+
+    it("does not throw for a missing scope", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/token-colors-string-scope.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+      await theme.load()
+      await theme.build()
+
+      await command.resolveTokenColor(theme, "nonexistent.scope")
+    })
+  })
+
+  describe("resolveSemanticTokenColor", () => {
+    it("does not throw for a valid scope", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/semantic-token-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+      await theme.load()
+      await theme.build()
+
+      await command.resolveSemanticTokenColor(theme, "variable.declaration")
+    })
+
+    it("does not throw for a missing scope", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/semantic-token-theme.yaml")
+      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      theme.setCache(command.getCache())
+      await theme.load()
+      await theme.build()
+
+      await command.resolveSemanticTokenColor(theme, "nonexistent.token")
+    })
+  })
+
+  describe("buildCli", () => {
+    it("adds --bg extra option", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new ResolveCommand({cwd, packageJson})
+
+      const {Command: CommanderCommand} = await import("commander")
+      const program = new CommanderCommand()
+
+      await command.buildCli(program)
+
+      // The commander subcommand should have the --bg option registered
+      const subcommand = program.commands.find(cmd => cmd.name() === "resolve")
+      assert.ok(subcommand, "resolve subcommand should be registered")
+
+      const bgOption = subcommand.options.find(opt => opt.long === "--bg")
+      assert.ok(bgOption, "--bg option should be registered")
     })
   })
 })

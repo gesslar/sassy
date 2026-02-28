@@ -1,0 +1,10 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Unused Variable Test
+  type: dark
+vars:
+  used: "#4b8ebd"
+  orphan: "#ff0000"
+theme:
+  colors:
+    "editor.background": $(used)

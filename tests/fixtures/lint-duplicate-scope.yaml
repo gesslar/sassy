@@ -1,0 +1,16 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Duplicate Scope Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Keywords A
+      scope: keyword
+      settings:
+        foreground: "#ff0000"
+    - name: Keywords B
+      scope: keyword
+      settings:
+        foreground: "#00ff00"
