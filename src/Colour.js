@@ -68,7 +68,7 @@ const asColour = s => {
     v = parse(k) // returns undefined if invalid
 
     if(!v)
-      throw Sass.new(`Unable to parse colour: ${k}`)
+      throw Sass.new(`Invalid colour '${k}'`)
 
     _colourCache.set(k, v)
   }
@@ -269,7 +269,7 @@ export default class Colour {
     const matches = code.match(Colour.shortHex)
 
     if(!matches)
-      throw Sass.new(`Invalid hex format. Expecting #aaa/aaa, got '${code}'`)
+      throw Sass.new(`Invalid hex format. Expected #FFF, #FFFA, got '${code}'`)
 
     const [_,hex] = matches
 
@@ -291,7 +291,7 @@ export default class Colour {
       null
 
     if(!parsed)
-      throw Sass.new(`Missing or invalid hex colour: ${hex}`)
+      throw Sass.new(`Missing or invalid hex colour '${hex}'`)
 
     const result = {}
 
@@ -529,7 +529,7 @@ export default class Colour {
     const colourObj = parse(input)
 
     if(!colourObj)
-      throw Sass.new(`Invalid colour function invocation: ${input}`)
+      throw Sass.new(`Invalid colour expression '${input}'`)
 
     const formatter = "alpha" in colourObj
       ? formatHex8

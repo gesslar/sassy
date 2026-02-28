@@ -163,7 +163,7 @@ export default class Compiler {
       theme.setOutput(output)
       theme.setPool(evaluator.pool)
     } catch(error) {
-      throw Sass.new(`Compiling ${theme.getName()}`, error)
+      throw Sass.new(`Compiling '${theme.getName()}'`, error)
     }
   }
 
@@ -222,7 +222,7 @@ export default class Compiler {
           loaded.set(file, result)
 
       } catch(error) {
-        throw Sass.new(`Attempting to import ${importing}`, error)
+        throw Sass.new(`Attempting to import '${importing}'`, error)
       }
     }
 

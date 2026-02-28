@@ -209,10 +209,8 @@ export default class Evaluator {
         .map(token => token.flatPath)
 
       throw Sass.new(
-        "Luuuucyyyy! We tried to resolve your tokens, but there were just "+
-        "too many! Suspect maybe some circular references are interfering "+
-        "with your bliss. These are the ones that remain unresolved: " +
-        unresolved.toString()
+        "The following tokens could not be resolved: " +
+        unresolved.join(", ")
       )
     }
   }
@@ -253,11 +251,10 @@ export default class Evaluator {
     } while(++it < this.#maxIterations)
 
     if(it === this.#maxIterations) {
-      throw Sass.new("HMMMMM! It looks like you might have some " +
-        "circular resolution happening. We tried to fix it up, but this " +
-        "doesn't seem to be working out. Trying to resolve: " +
-        `${parentTokenKeyString}, we got as far as ${value}, before we ` +
-        "called an end to this interminable game of Duck-Duck-Goose.")
+      throw Sass.new(
+        `Potential circular reference detected trying to resolve ` +
+        `'${parentTokenKeyString}'.`
+      )
     }
 
     return // it'll never reach here, but the linter got mad so i gave it a tit
@@ -439,7 +436,7 @@ export default class Evaluator {
             return Colour.toHex(captured)
         }
       } catch(e) {
-        throw Sass.new(`Performing colour function ${raw}`, e)
+        throw Sass.new(`Performing colour function '${raw}'`, e)
       }
     })()
   }

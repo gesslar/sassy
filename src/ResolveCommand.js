@@ -74,7 +74,7 @@ export default class ResolveCommand extends Command {
 
     if(!optionName) {
       throw Sass.new(
-        `No valid option provided. Please specify one of: ${cliOptionNames.join(", ")}.`
+        `No valid option provided. Please specify one of ${cliOptionNames.join(", ")}.`
       )
     }
 
@@ -93,7 +93,7 @@ export default class ResolveCommand extends Command {
     const resolverFunction = this[resolveFunctionName]
 
     if(!(resolverFunction && typeof resolverFunction === "function"))
-      throw Sass.new(`No such function ${resolveFunctionName}`)
+      throw Sass.new(`No such function '${resolveFunctionName}'`)
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
     const theme = new Theme(fileObject, cwd, options)
@@ -130,7 +130,7 @@ export default class ResolveCommand extends Command {
 
     if(!optionName)
       throw Sass.new(
-        `No valid option provided. Please specify one of: ${cliOptionNames.join(", ")}.`
+        `No valid option provided. Please specify one of ${cliOptionNames.join(", ")}.`
       )
 
     const optionValue = options[optionName]
@@ -144,7 +144,7 @@ export default class ResolveCommand extends Command {
     if(optionName === "semanticTokenColor")
       return this.#resolveSemanticTokenColorData(theme, optionValue)
 
-    throw Sass.new(`No data resolver for option: ${optionName}`)
+    throw Sass.new(`No data resolver for option '${optionName}'`)
   }
 
   /**

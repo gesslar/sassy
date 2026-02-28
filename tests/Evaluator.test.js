@@ -219,7 +219,7 @@ describe("Evaluator", () => {
 
       assert.throws(
         () => evaluator.evaluate(decomposed),
-        /circular|unresolved/i
+        /The following tokens could not be resolved/
       )
     })
   })
