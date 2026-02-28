@@ -615,11 +615,16 @@ npx @gesslar/sassy resolve --color problematic.variable my-theme.yaml
 - Try restarting watch mode if it seems stuck
 - Verify file permissions allow reading your theme files
 
-## Getting Help
+## Examples
 
-- **Examples**: Complete theme files in the `/examples` directory
-- **Issues**: Report bugs or request features on GitHub
-- **Community**: Share your themes and get feedback
+The `/examples` containes complete, compilable theme files in both formats.
+
+## Changelog
+
+I iterate on my own cadence and I do not keep a diary. But, each [PR](https://github.com/gesslar/sassy/pulls?q=is%3Apr+is%3Aclosed)
+that I submit I run through [Graphite](https://graphite.dev) which does an
+amazing job of itemising all of the changes. So, if you wanna know, you now
+know where you can know the new know.
 
 ## License
 

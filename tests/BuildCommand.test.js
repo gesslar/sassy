@@ -14,6 +14,37 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 describe("BuildCommand", () => {
+  describe("constructor", () => {
+    it("sets CLI command to 'build <file...>'", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+
+      assert.equal(command.getCliCommand(), "build <file...>")
+    })
+
+    it("sets CLI options for watch, output-dir, dry-run, silent", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      const options = command.getCliOptions()
+
+      assert.ok("watch" in options)
+      assert.ok("output-dir" in options)
+      assert.ok("dry-run" in options)
+      assert.ok("silent" in options)
+    })
+
+    it("has an emitter property", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+
+      assert.ok(command.emitter)
+      assert.equal(typeof command.emitter.on, "function")
+    })
+  })
+
   describe("asyncEmit", () => {
     it("has asyncEmit method", () => {
       const cwd = new DirectoryObject(__dirname)
@@ -99,6 +130,58 @@ describe("BuildCommand", () => {
       // Restore
       command.resolveThemeFileName = originalResolve
       process.exit = originalExit
+    })
+
+    it("executes successfully with a valid theme file", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      command.setCache(new Cache())
+
+      const fixturePath = TestUtils.getFixturePath("simple-theme.yaml")
+
+      // Mock process.exit to prevent actual exit
+      const originalExit = process.exit
+      process.exit = () => {}
+
+      let ran = false
+      const originalRun = Session.prototype.run
+      Session.prototype.run = async function() {
+        ran = true
+      }
+
+      try {
+        await command.execute([fixturePath], {outputDir: "."})
+      } finally {
+        Session.prototype.run = originalRun
+        process.exit = originalExit
+      }
+
+      assert.ok(ran, "Session.run should have been called")
+    })
+
+    it("processes multiple theme files", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new BuildCommand({cwd, packageJson})
+      command.setCache(new Cache())
+
+      const fixture1 = TestUtils.getFixturePath("simple-theme.yaml")
+      const fixture2 = TestUtils.getFixturePath("function-theme.yaml")
+
+      let runCount = 0
+      const originalRun = Session.prototype.run
+      Session.prototype.run = async function() {
+        runCount++
+      }
+
+      try {
+        await command.execute([fixture1, fixture2], {outputDir: "."})
+      } finally {
+        Session.prototype.run = originalRun
+      }
+
+      assert.equal(runCount, 2, "Session.run should have been called for each file")
     })
 
     it("wraps session run errors in Sass errors", async() => {

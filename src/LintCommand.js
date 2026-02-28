@@ -23,7 +23,7 @@ import c from "@gesslar/colours"
 import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
 import Theme from "./Theme.js"
-import {Term} from "@gesslar/toolkit"
+import {FileSystem, Term} from "@gesslar/toolkit"
 
 /**
  * @import {ThemePool} from "./ThemePool.js"
@@ -58,6 +58,9 @@ export default class LintCommand extends Command {
   // Issue type constants
   static ISSUE_TYPES = {
     DUPLICATE_SCOPE: "duplicate-scope",
+    // Canary: themes with undefined variables cannot compile, so this
+    // condition is unreachable under normal operation. It exists as a
+    // safety net to surface bugs in sassy's own resolution logic.
     UNDEFINED_VARIABLE: "undefined-variable",
     UNUSED_VARIABLE: "unused-variable",
     PRECEDENCE_ISSUE: "precedence-issue"
@@ -571,12 +574,14 @@ export default class LintCommand extends Command {
         const depFile = dependency.getSourceFile()
 
         // Collect vars definitions
-        if(depData?.vars) {
+        const vars = depData?.get("vars")
+
+        if(vars) {
           const relativeDependencyPath =
-            File.relativeOrAbsolutePath(cwd, depFile)
+            FileSystem.relativeOrAbsolutePath(cwd.path, depFile.path)
 
           this.#collectVarsDefinitions(
-            depData.vars,
+            vars,
             definedVars,
             "",
             relativeDependencyPath

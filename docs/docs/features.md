@@ -1,9 +1,7 @@
 ---
-title: "Features"
+title: "Sassy — Feature Inventory"
 sidebar_position: 99
 ---
-
-# Sassy — Feature Inventory
 
 ## Authoring Formats
 
