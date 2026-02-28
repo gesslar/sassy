@@ -499,7 +499,7 @@ export default class Theme {
 
     if(!source[PropertyKey.CONFIG.description])
       throw Sass.new(
-        `Source file does not contain '${PropertyKey.CONFIG.description}' property: ${this.#sourceFile.relativeTo(this.#cwd)}`
+        `'${this.#sourceFile.relativeTo(this.#cwd)}' does not contain '${PropertyKey.CONFIG.description}' property.`
       )
 
     this.#source = source

@@ -60,21 +60,7 @@ void (async function main() {
   setupAbortHandlers()
 
   try {
-    // setup the colour aliases
-    // Term status stuff
-    c.alias.set("success", "{F070}")
-    c.alias.set("success-bracket", "{F076}")
-    c.alias.set("info", "{F038}")
-    c.alias.set("info-bracket", "{F087}")
-    c.alias.set("warn", "{F215}")
-    c.alias.set("warn-bracket", "{F208}")
-    c.alias.set("error", "{F196}")
-    c.alias.set("error-bracket", "{F160}")
-    c.alias.set("modified", "{F127}")
-    c.alias.set("modified-bracket", "{F165}")
-    c.alias.set("muted", "{F240}")
-    c.alias.set("muted-bracket", "{F244}")
-
+    // Setup the colour aliases
     // Lint command
     c.alias.set("context", "{F159}")
     c.alias.set("loc", "{F148}")

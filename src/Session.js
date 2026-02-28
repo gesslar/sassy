@@ -254,7 +254,7 @@ export default class Session {
       const settled = await Promised
         .settle(dependencyFiles.map(async fileObject => {
           if(!fileObject)
-            throw Sass.new("Invalid dependency file object")
+            throw Sass.new("Invalid dependency file object.")
 
           return [fileObject.relativeTo(cwd), await fileObject.size()]
         }))
@@ -372,15 +372,15 @@ export default class Session {
   async #handleFileChange(changed, _stats) {
     let startedPipeline = false
 
+    // Normalize the changed path from chokidar for comparison
+    const normalizedChanged = path.resolve(changed)
+
     try {
       if(this.#building)
         return
 
       this.#building = true
       await this.#command.asyncEmit("building")
-
-      // Normalize the changed path from chokidar for comparison
-      const normalizedChanged = path.resolve(changed)
 
       const changedFile = Array.from(this.#theme.getDependencies()).find(
         dep => {
@@ -411,7 +411,7 @@ export default class Session {
       startedPipeline = true
       await this.#buildPipeline()
     } catch(error) {
-      const sassError = Sass.new("Handling file change.", error)
+      const sassError = Sass.new(`'${normalizedChanged}' modified.`, error)
       sassError.report(this.#options?.nerd)
 
       if(!startedPipeline)

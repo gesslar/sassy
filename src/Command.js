@@ -198,7 +198,7 @@ export default class Command {
    */
   addCliOption(name, options, preserve) {
     if(!this.#command)
-      throw new Error("Unitialised Command")
+      throw Sass.new("Uninitialised Command")
 
     this.#command.option(...options)
 
@@ -236,7 +236,7 @@ export default class Command {
     const fileObject = cwd.getFile(fileName)
 
     if(!await fileObject.exists)
-      throw Sass.new(`No such file 🤷: ${fileObject.relativeTo(cwd)}`)
+      throw Sass.new(`No such file '${fileObject.relativeTo(cwd)}'`)
 
     return fileObject
   }

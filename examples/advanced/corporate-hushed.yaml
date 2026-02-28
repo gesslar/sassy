@@ -1,7 +1,7 @@
 # Theme Config - corporate-hushed
 
 config:
-  schema: $vscode://schemas/color-theme
+  $schema: vscode://schemas/color-theme
   name: corporate-hushed
   type: dark
 
