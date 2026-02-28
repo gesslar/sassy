@@ -134,6 +134,49 @@ When no exact scope match exists, Sassy uses TextMate precedence rules to find t
 
 ---
 
+### proof
+
+Display the fully composed theme document after all imports, overrides, and séance operators are applied — but before any variable substitution or colour function evaluation.
+
+<CodeBlock lang="bash">{`
+
+    sassy proof [options] <file>
+
+`}</CodeBlock>
+
+| Option | Description |
+|--------|-------------|
+| `--nerd` | Show full error stack traces |
+
+The output is YAML — the same language you author in. It shows:
+
+- All imports resolved and merged into a single document
+- Séance `^` operators replaced with the actual prior values (e.g. `shade(#4b8ebd, 25)`)
+- All variable references (`$(std.bg)`, `$$blue`) left untouched
+- All colour functions left unevaluated
+- The `config.import` key removed (imports are already applied)
+
+**Examples:**
+
+<CodeBlock lang="bash">{`
+
+    # See what the compiler will evaluate
+    sassy proof my-theme.yaml
+
+    # Pipe to a file for diffing
+    sassy proof my-theme.yaml > composed.yaml
+
+    # Compare two variants
+    diff <(sassy proof blackboard.yaml) <(sassy proof blackboard-hushed.yaml)
+
+`}</CodeBlock>
+
+:::tip
+Use `proof` to orient yourself in a layered theme before reaching for `resolve`. Proof is the aerial photograph; resolve is the archaeological dig.
+:::
+
+---
+
 ### lint
 
 Validate a theme file for common issues.

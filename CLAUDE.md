@@ -66,10 +66,10 @@ npm run pr
 
 ### Source Files (`src/`)
 
-- `cli.js` - Commander.js CLI entry point with subcommands (build, resolve, lint)
+- `cli.js` - Commander.js CLI entry point with subcommands (build, resolve, lint, proof)
 - `Session.js` - Orchestrates theme processing sessions
 - `Theme.js` - Theme lifecycle: load, build, write, watch mode, dependency tracking
-- `Compiler.js` - Compilation pipeline: imports, variable decomposition, token evaluation
+- `Compiler.js` - Compilation pipeline: shared `#compose()` step feeds both `compile()` and `proof()`
 - `Evaluator.js` - Variable substitution and colour function evaluation
 - `ThemePool.js` - Central token registry and dependency graph
 - `ThemeToken.js` - Individual token with value, dependencies, resolution trail
@@ -77,12 +77,14 @@ npm run pr
 - `Command.js` - Base command class
 - `BuildCommand.js` - Build subcommand implementation
 - `ResolveCommand.js` - Variable/token resolution debugging
+- `ProofCommand.js` - Composed document output (pre-evaluation YAML view)
 - `LintCommand.js` - Theme validation (duplicate scopes, undefined vars, precedence)
 
 ### Key Design Patterns
 
 - **Parametric design**: Semantic variables over literal hex codes
-- **Phase-based compilation**: Import resolution → variable decomposition → token evaluation → function application → dependency resolution → theme assembly
+- **Compose-then-evaluate pipeline**: Shared `#compose()` (import → merge → séance) feeds both `compile()` and `proof()` — one source of truth, two consumers
+- **Phase-based compilation**: Compose → decompose → evaluate → resolve → assemble
 - **ThemePool/ThemeToken system**: Tracks resolution trails, enables debugging, detects circular dependencies
 - **Hash-based output**: Skips file writes when output unchanged (sha256)
 - **Error context chains**: `Sass.new(msg).trace(context)` for structured error reporting
@@ -90,6 +92,14 @@ npm run pr
 ### Documentation Site (`docs/`)
 
 Docusaurus 3 site deployed to `sassy.gesslar.io` via rsync. Workflow at `.github/workflows/deploy-docs.yml`.
+
+### Keeping Docs Current
+
+When making changes that affect features, behaviour, or the CLI:
+
+- Update the relevant pages in `docs/docs/` (reference, diving-deeper, etc.)
+- Update `features.md` (root) and `docs/docs/features.md` with any new or changed features
+- Run `npm run docs:build` to verify the site builds cleanly
 
 ## Code Standards
 
@@ -125,7 +135,7 @@ Style is enforced by `@gesslar/uglier` ESLint config. **Non-negotiable** prefere
 - **Package Manager:** npm
 - **Import Extensions:** Always use `.js` extensions
 
-## Testing
+## Testing Sassy
 
 Tests use Node.js built-in test runner (`node:test`):
 

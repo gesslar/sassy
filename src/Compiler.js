@@ -29,68 +29,22 @@ import Evaluator from "./Evaluator.js"
 export default class Compiler {
   /**
    * Compiles a theme source file into a VS Code colour theme.
-   * Processes configuration, variables, imports, and theme definitions.
+   * Composes the theme via {@link #compose}, then evaluates all variables
+   * and colour functions to produce the final output.
    *
    * @param {Theme} theme - The file object containing source data and metadata
    * @returns {Promise<void>} Resolves when compilation is complete
    */
   async compile(theme) {
     try {
-      const source = theme.getSource()
-      const {config: sourceConfig} = source ?? {}
-      const {palette: sourcePalette} = source
-      const {vars: sourceVars} = source
-      const {theme: sourceTheme} = source
-
-      const evaluator = new Evaluator()
-      const evaluate = (...arg) => evaluator.evaluate(...arg)
-
-      const config = this.#decomposeObject(sourceConfig)
-
-      evaluate(config)
-
-      const recompConfig = this.#composeObject(config)
+      const {recompConfig, sourceConfig, merged, allPriors} =
+        await this.#compose(theme)
 
       const header = {
         $schema: recompConfig.$schema,
         name: recompConfig.name,
         type: recompConfig.type
       }
-
-      // Let's get all of the imports!
-      const imports = recompConfig.import ?? []
-      const {imported, importByFile, allPriors} =
-        await this.#import(imports, theme)
-
-      importByFile.forEach(
-        (themeData, file) => theme.addDependency(file,themeData)
-      )
-
-      // Handle tokenColors separately - imports first, then main source
-      // (append-only)
-      const mergedTokenColors = [
-        ...(imported.tokenColors ?? []),
-        ...(sourceTheme?.tokenColors ?? [])
-      ]
-
-      // Apply séance to source palette against the accumulated imported palette
-      const {transformed: transformedPalette, priors: sourcePriors} =
-        this.#séance(imported.palette, sourcePalette ?? {}, allPriors)
-
-      sourcePriors.forEach((v, k) => allPriors.set(k, v))
-
-      const merged = Data.mergeObject({},
-        imported,
-        {
-          palette: transformedPalette,
-          vars: sourceVars ?? {},
-          colors: sourceTheme?.colors ?? {},
-          semanticTokenColors: sourceTheme?.semanticTokenColors ?? {},
-        }
-      )
-
-      // Add tokenColors after merging to avoid mergeObject processing
-      merged.tokenColors = mergedTokenColors
 
       // Inject prior values as real palette tokens so the evaluator can
       // resolve séance variable references with full provenance
@@ -103,6 +57,9 @@ export default class Compiler {
 
         merged.palette.__prior__ = priorTree
       }
+
+      const evaluator = new Evaluator()
+      const evaluate = (...arg) => evaluator.evaluate(...arg)
 
       // Palette first — self-contained, cannot reach outside itself
       const palette = this.#decomposeObject({palette: merged.palette ?? {}})
@@ -442,6 +399,136 @@ export default class Compiler {
     }
 
     return {transformed: walk(accumulated, incoming, []), priors}
+  }
+
+  /**
+   * Produces the fully composed theme document after all imports are merged,
+   * overrides applied, and séance operators inlined — but before any variable
+   * substitution or colour function evaluation.
+   *
+   * @param {Theme} theme - The theme object to proof
+   * @returns {Promise<object>} The composed, unevaluated theme structure
+   */
+  async proof(theme) {
+    try {
+      const {recompConfig, merged, allPriors} = await this.#compose(theme)
+
+      // Strip import — it's been applied
+      const proofConfig = {...recompConfig}
+
+      delete proofConfig.import
+
+      // Inline séance references: replace $(palette.__prior__.<key>) with
+      // the actual prior value so the proof reads naturally
+      if(allPriors.size > 0)
+        this.#inlinePriors(merged.palette, allPriors)
+
+      // Strip internal bookkeeping
+      delete merged.palette?.__prior__
+
+      return {
+        config: proofConfig,
+        palette: merged.palette ?? {},
+        vars: merged.vars ?? {},
+        theme: {
+          colors: merged.colors ?? {},
+          tokenColors: merged.tokenColors ?? [],
+          semanticTokenColors: merged.semanticTokenColors ?? {},
+        }
+      }
+    } catch(error) {
+      throw Sass.new(`Proofing '${theme.getName()}'`, error)
+    }
+  }
+
+  /**
+   * Shared composition step: resolves config, imports, séance, and merges
+   * everything into a single structure. Both {@link compile} and {@link proof}
+   * consume this output — compile continues into evaluation, proof returns it
+   * as-is (with séance inlined).
+   *
+   * @param {Theme} theme - The theme object to compose
+   * @returns {Promise<{recompConfig: object, sourceConfig: object, merged: object, allPriors: Map}>}
+   * @private
+   */
+  async #compose(theme) {
+    const source = theme.getSource()
+    const {config: sourceConfig} = source ?? {}
+    const {palette: sourcePalette} = source
+    const {vars: sourceVars} = source
+    const {theme: sourceTheme} = source
+
+    // Evaluate config so $(type) in import paths resolves
+    const evaluator = new Evaluator()
+    const evaluate = (...arg) => evaluator.evaluate(...arg)
+    const config = this.#decomposeObject(sourceConfig)
+
+    evaluate(config)
+
+    const recompConfig = this.#composeObject(config)
+
+    // Let's get all of the imports!
+    const imports = recompConfig.import ?? []
+    const {imported, importByFile, allPriors} =
+      await this.#import(imports, theme)
+
+    importByFile.forEach(
+      (themeData, file) => theme.addDependency(file, themeData)
+    )
+
+    // Handle tokenColors separately - imports first, then main source
+    // (append-only)
+    const mergedTokenColors = [
+      ...(imported.tokenColors ?? []),
+      ...(sourceTheme?.tokenColors ?? [])
+    ]
+
+    // Apply séance to source palette against the accumulated imported palette
+    const {transformed: transformedPalette, priors: sourcePriors} =
+      this.#séance(imported.palette, sourcePalette ?? {}, allPriors)
+
+    sourcePriors.forEach((v, k) => allPriors.set(k, v))
+
+    const merged = Data.mergeObject({},
+      imported,
+      {
+        palette: transformedPalette,
+        vars: sourceVars ?? {},
+        colors: sourceTheme?.colors ?? {},
+        semanticTokenColors: sourceTheme?.semanticTokenColors ?? {},
+      }
+    )
+
+    // Add tokenColors after merging to avoid mergeObject processing
+    merged.tokenColors = mergedTokenColors
+
+    return {recompConfig, sourceConfig, merged, allPriors}
+  }
+
+  /**
+   * Walks an object tree and replaces all `$(palette.__prior__.<key>)`
+   * references with the actual prior values from the priors map.
+   *
+   * @param {object} obj - The object to walk (mutated in place)
+   * @param {Map<string, string>} priors - Map of séance keys to prior values
+   * @private
+   */
+  #inlinePriors(obj, priors) {
+    const pattern = /\$\(palette\.__prior__\.([^)]+)\)/g
+
+    const replace = str =>
+      str.replace(pattern, (_, key) => priors.get(key) ?? _)
+
+    const walk = target => {
+      for(const [key, val] of Object.entries(target)) {
+        if(typeof val === "string")
+          target[key] = replace(val)
+        else if(this.#isObject(val))
+          walk(val)
+      }
+    }
+
+    walk(obj)
   }
 
   /**

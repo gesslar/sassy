@@ -116,6 +116,12 @@ const config = {
             label: "Hacking",
           },
           {
+            type: "doc",
+            docId: "features",
+            position: "left",
+            label: "Features",
+          },
+          {
             type: "html",
             value: `<a href="https://github.com/gesslar/sassy" target="_blank"><img class="header-svg" src="/img/line-md--github-loop.svg" /></a>`,
             position: "right",

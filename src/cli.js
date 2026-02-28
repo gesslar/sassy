@@ -39,6 +39,7 @@ import c from "@gesslar/colours"
 import {Cache, DirectoryObject, FileObject, Sass, Term} from "@gesslar/toolkit"
 import BuildCommand from "./BuildCommand.js"
 import LintCommand from "./LintCommand.js"
+import ProofCommand from "./ProofCommand.js"
 import ResolveCommand from "./ResolveCommand.js"
 
 /**
@@ -94,7 +95,7 @@ void (async function main() {
       .description(pkgJson.description)
       .version(pkgJson.version)
 
-    const commands = [BuildCommand, ResolveCommand, LintCommand]
+    const commands = [BuildCommand, ResolveCommand, LintCommand, ProofCommand]
 
     for(const CommandClass of commands) {
       const command = new CommandClass({cwd, packageJson: pkgJson})
