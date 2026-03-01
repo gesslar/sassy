@@ -628,8 +628,23 @@ know where you can know the new know.
 
 ## License
 
-**The Unlicense** - Use this however you want! The idea of copyrighting colour
-arrangements is absurd.
+sassy is released into the public domain under the
+[Unlicense](UNLICENSE.txt).
+
+This package includes or depends on third-party components under their own
+licenses:
+
+| Dependency | License |
+| --- | --- |
+| [@gesslar/colours](https://github.com/gesslar/colours) | Unlicense |
+| [@gesslar/toolkit](https://github.com/gesslar/toolkit) | Unlicense |
+| [chokidar](https://github.com/paulmillr/chokidar) | MIT |
+| [color-support](https://github.com/isaacs/color-support) | ISC |
+| [commander](https://github.com/tj/commander.js) | MIT |
+| [culori](https://github.com/Evercoder/culori) | MIT |
+| [globby](https://github.com/sindresorhus/globby) | MIT |
+| [json5](https://github.com/json5/json5) | MIT |
+| [yaml](https://github.com/eemeli/yaml) | ISC |
 
 ---
 
