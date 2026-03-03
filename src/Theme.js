@@ -92,7 +92,7 @@ export default class Theme {
     this.#outputFileName = `${this.#name}.${outputFileExtension}`
 
     this.#outputDir = outputDir !== "."
-      ? this.#cwd?.getDirectory(options.outputDir)
+      ? this.#cwd?.getDirectory(outputDir)
       : this.#cwd
 
     this.#outputFile = this.#outputDir?.getFile(this.#outputFileName) ?? null
