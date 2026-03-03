@@ -75,6 +75,9 @@ export class Lint {
    * @returns {Promise<object>} Object containing categorised lint results
    */
   async run(theme) {
+    if(!theme.isReady())
+      await theme.load()
+
     const results = {
       [LC.SECTIONS.TOKEN_COLORS]: [],
       [LC.SECTIONS.SEMANTIC_TOKEN_COLORS]: [],

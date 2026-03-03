@@ -30,9 +30,12 @@ export class Resolve {
    *
    * @param {Theme} theme - The compiled theme object with pool
    * @param {string} colorName - The colour key to resolve
-   * @returns {object} `{ found, name, resolution?, trail? }`
+   * @returns {Promise<object>} `{ found, name, resolution?, trail? }`
    */
-  color(theme, colorName) {
+  async color(theme, colorName) {
+    if(!theme.isReady())
+      await theme.load()
+
     const pool = theme.getPool()
 
     if(!pool || !pool.has(colorName))
@@ -60,6 +63,9 @@ export class Resolve {
    * @returns {Promise<object>} Resolution data object
    */
   async tokenColor(theme, scopeName) {
+    if(!theme.isReady())
+      await theme.load()
+
     const tokenColors = theme.getOutput()?.tokenColors || []
     const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
 
@@ -125,6 +131,9 @@ export class Resolve {
    * @returns {Promise<object>} Resolution data object
    */
   async semanticTokenColor(theme, scopeName) {
+    if(!theme.isReady())
+      await theme.load()
+
     const originalTokenColors = theme.getOutput()?.tokenColors
     const themeOutput = theme.getOutput()
 
@@ -539,6 +548,9 @@ export default class ResolveCommand extends Command {
    * @returns {Promise<object>} Object containing structured resolution data
    */
   async resolve(theme, options = {}) {
+    if(!theme.isReady())
+      await theme.load()
+
     const cliOptionNames = Object.keys(this.getCliOptions() ?? {})
     const intersection =
       Collection.intersection(cliOptionNames, Object.keys(options))
@@ -561,7 +573,7 @@ export default class ResolveCommand extends Command {
     const optionValue = options[optionName]
 
     if(optionName === "color")
-      return resolver.color(theme, optionValue)
+      return await resolver.color(theme, optionValue)
 
     if(optionName === "tokenColor")
       return await resolver.tokenColor(theme, optionValue)
@@ -581,7 +593,7 @@ export default class ResolveCommand extends Command {
    */
   async resolveColor(theme, colorName) {
     const resolver = new Resolve()
-    const data = resolver.color(theme, colorName)
+    const data = await resolver.color(theme, colorName)
 
     if(!data.found)
       return Term.info(`'${colorName}' not found.`)

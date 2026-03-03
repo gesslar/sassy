@@ -30,6 +30,9 @@ export class Proof {
    * @returns {Promise<object>} The composed, unevaluated theme structure
    */
   async run(theme) {
+    if(!theme.isReady())
+      await theme.load()
+
     const compiler = new Compiler()
 
     return await compiler.proof(theme)

@@ -9,9 +9,9 @@ export class Resolve {
      *
      * @param {Theme} theme - The compiled theme object with pool
      * @param {string} colorName - The colour key to resolve
-     * @returns {object} `{ found, name, resolution?, trail? }`
+     * @returns {Promise<object>} `{ found, name, resolution?, trail? }`
      */
-    color(theme: Theme, colorName: string): object;
+    color(theme: Theme, colorName: string): Promise<object>;
     /**
      * Resolves a tokenColors scope to its final value with trail.
      *
