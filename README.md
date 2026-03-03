@@ -558,10 +558,11 @@ const output = theme.getOutput()          // compiled theme object
 const issues = await new Lint().run(theme) // structured issue data
 
 // Resolve
-const data = new Resolve().color(theme, 'editor.background')  // resolution trail
+const data = await new Resolve().color(theme, 'editor.background')  // resolution trail
 ```
 
 Cache is optional — `load()` falls back to direct file reads without one.
+Engine methods will automatically `load()` if needed, but they will not automatically `build()`.
 See the [full API reference](https://sassy.gesslar.io/docs/reference/api) for
 details on all engine classes and return shapes.
 

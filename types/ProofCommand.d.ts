@@ -7,8 +7,9 @@ export class Proof {
     /**
      * Proofs a loaded theme, returning the composed document before
      * variable substitution or colour function evaluation.
+     * Automatically calls `theme.load()` if the theme is not ready.
      *
-     * @param {Theme} theme - A loaded Theme instance
+     * @param {Theme} theme - A Theme instance
      * @returns {Promise<object>} The composed, unevaluated theme structure
      */
     run(theme: Theme): Promise<object>;
