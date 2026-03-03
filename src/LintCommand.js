@@ -1,24 +1,24 @@
 /**
  * @file LintCommand.js
  *
- * Defines the LintCommand class for comprehensive theme file validation.
- * Provides static analysis of theme configuration files to identify:
+ * Defines the Lint engine class for comprehensive theme file validation and
+ * the LintCommand CLI adapter that formats and reports results.
+ *
+ * Lint (engine) provides static analysis of theme configuration files to
+ * identify:
  *   - Duplicate scope definitions across tokenColor rules
  *   - Undefined variable references in theme content
  *   - Unused variables defined in vars but never referenced
  *   - Scope precedence issues where broad scopes mask specific ones
  *   - TextMate scope selector conflicts and redundancies
  *
- * Integrates with the theme compilation pipeline to analyse both source
- * and compiled theme data, ensuring accurate variable resolution tracking.
- * Supports modular themes with import dependencies and provides detailed,
- * colour-coded reporting for different severity levels.
+ * LintCommand (CLI) handles file resolution, terminal reporting, exit codes,
+ * and delegates all analysis to Lint.
  */
 
 import process from "node:process"
 
 import c from "@gesslar/colours"
-// import colorSupport from "color-support"
 
 import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
@@ -29,34 +29,29 @@ import {FileSystem, Term} from "@gesslar/toolkit"
  * @import {ThemePool} from "./ThemePool.js"
  */
 
-// oops, need to have @gesslar/colours support this, too!
-// ansiColors.enabled = colorSupport.hasBasic
-
 /**
- * Command handler for linting theme files for potential issues.
- * Validates tokenColors for duplicate scopes, undefined variables, unused
- * variables, and precedence issues that could cause unexpected theme
- * behaviour.
+ * Engine class for linting themes.
+ * Analyses a compiled Theme and returns structured issue data.
+ * No CLI awareness — takes a Theme and returns results.
  */
-export default class LintCommand extends Command {
-
+export class Lint {
   // Theme section constants
-  static SECTIONS = {
+  static SECTIONS = Object.freeze({
     VARS: "vars",
     COLORS: "colors",
     TOKEN_COLORS: "tokenColors",
     SEMANTIC_TOKEN_COLORS: "semanticTokenColors"
-  }
+  })
 
   // Issue severity levels
-  static SEVERITY = {
+  static SEVERITY = Object.freeze({
     HIGH: "high",
     MEDIUM: "medium",
     LOW: "low"
-  }
+  })
 
   // Issue type constants
-  static ISSUE_TYPES = {
+  static ISSUE_TYPES = Object.freeze({
     DUPLICATE_SCOPE: "duplicate-scope",
     // Canary: themes with undefined variables cannot compile, so this
     // condition is unreachable under normal operation. It exists as a
@@ -64,73 +59,22 @@ export default class LintCommand extends Command {
     UNDEFINED_VARIABLE: "undefined-variable",
     UNUSED_VARIABLE: "unused-variable",
     PRECEDENCE_ISSUE: "precedence-issue"
-  }
+  })
 
   // Template strings for dynamic rule names
-  static TEMPLATES = {
+  static TEMPLATES = Object.freeze({
     ENTRY_NAME: index => `Entry ${index + 1}`,
     OBJECT_NAME: index => `Object ${index + 1}`,
     VARIABLE_PREFIX: "$"
-  }
-  /**
-   * Creates a new LintCommand instance.
-   *
-   * @param {object} base - Base configuration containing cwd and packageJson
-   */
-  constructor(base) {
-    super(base)
-
-    this.setCliCommand("lint <file>")
-    this.setCliOptions({
-      // Future options could include:
-      // "fix": ["-f, --fix", "automatically fix issues where possible"],
-      "strict": ["--strict", "treat warnings as errors"],
-      // "format": ["--format <type>", "output format (text, json)", "text"],
-    })
-  }
+  })
 
   /**
-   * Executes the lint command for a given theme file.
-   * Validates the theme and reports any issues found.
-   *
-   * @param {string} inputArg - Path to the theme file to lint
-   * @param {object} options - Linting options
-   * @returns {Promise<void>} Resolves when linting is complete
-   */
-  async execute(inputArg, options = {}) {
-    const cwd = this.getCwd()
-    const fileObject = await this.resolveThemeFileName(inputArg, cwd)
-    const theme = new Theme()
-      .setCwd(cwd)
-      .setThemeFile(fileObject)
-      .withOptions(options)
-      .setCache(this.getCache())
-    await theme.load()
-    await theme.build()
-
-    const issues = await this.#lintTheme(theme)
-
-    this.#reportIssues(issues)
-
-    const exitSeverities = [LC.SEVERITY.HIGH]
-
-    if(options.strict)
-      exitSeverities.push(LC.SEVERITY.MEDIUM)
-
-    if(issues.some(i => exitSeverities.includes(i.severity)))
-      process.exit(1)
-  }
-
-  /**
-   * Public method to lint a theme and return structured results for external
-   * consumption.
-   *
-   * Returns categorized lint results for tokenColors, semanticTokenColors, and colors.
+   * Lints a compiled theme and returns categorised results.
    *
    * @param {Theme} theme - The compiled theme object
-   * @returns {Promise<object>} Object containing categorized lint results
+   * @returns {Promise<object>} Object containing categorised lint results
    */
-  async lint(theme) {
+  async run(theme) {
     const results = {
       [LC.SECTIONS.TOKEN_COLORS]: [],
       [LC.SECTIONS.SEMANTIC_TOKEN_COLORS]: [],
@@ -275,26 +219,6 @@ export default class LintCommand extends Command {
   }
 
   /**
-   * Performs comprehensive linting of a theme.
-   * Returns an array of issues found during validation.
-   *
-   * @param {Theme} theme - The compiled theme object
-   * @returns {Promise<Array>} Array of lint issues
-   * @private
-   */
-  async #lintTheme(theme) {
-    const results = await this.lint(theme)
-
-    // Flatten all results into a single array for backward compatibility
-    return [
-      ...results[LC.SECTIONS.TOKEN_COLORS],
-      ...results[LC.SECTIONS.SEMANTIC_TOKEN_COLORS],
-      ...results[LC.SECTIONS.COLORS],
-      ...results.variables
-    ]
-  }
-
-  /**
    * Extracts a specific section from all theme dependencies (including main theme).
    *
    * Returns an array of [FileObject, sectionData] tuples for linting methods that need
@@ -314,98 +238,6 @@ export default class LintCommand extends Command {
 
       return false
     }).filter(Boolean)
-  }
-
-  /**
-   * Reports lint issues to the user with appropriate formatting and colors.
-   *
-   * @param {Array} issues - Array of lint issues to report
-   * @private
-   */
-  #reportIssues(issues) {
-    if(issues.length === 0) {
-      Term.info(c`{success}✓{/} No linting issues found`)
-
-      return
-    }
-
-    const errors = issues.filter(i => i.severity === LC.SEVERITY.HIGH)
-    const warnings = issues.filter(i => i.severity === LC.SEVERITY.MEDIUM)
-    const infos = issues.filter(i => i.severity === LC.SEVERITY.LOW)
-    const allIssues = errors.concat(warnings, infos)
-
-    allIssues.forEach(issue => this.#reportSingleIssue(issue))
-
-    // Clean summary
-    const parts = []
-
-    if(errors.length > 0)
-      parts.push(`${errors.length} error${errors.length === 1 ? "" : "s"}`)
-
-    if(warnings.length > 0)
-      parts.push(`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`)
-
-    if(infos.length > 0)
-      parts.push(`${infos.length} info`)
-
-    Term.info(`\n${parts.join(", ")}`)
-  }
-
-  /**
-   * Returns a colour-coded bullet indicator for a given severity level.
-   *
-   * @private
-   * @param {"high"|"medium"|"low"} severity - Severity level to represent
-   * @returns {string} A pre-coloured "●" character for terminal output
-   */
-  #getIndicator(severity) {
-    switch(severity) {
-      case LC.SEVERITY.HIGH: return c`{error}●{/}`
-      case LC.SEVERITY.MEDIUM: return c`{warn}●{/}`
-      case LC.SEVERITY.LOW:
-      default: return c`{info}●{/}`
-    }
-  }
-
-  /**
-   * Reports a single lint issue with clean, minimal formatting.
-   *
-   * @param {object} issue - The issue to report
-   * @private
-   */
-  #reportSingleIssue(issue) {
-    const indicator = this.#getIndicator(issue.severity)
-
-    switch(issue.type) {
-      case LC.ISSUE_TYPES.DUPLICATE_SCOPE: {
-        const rules = issue.occurrences.map(occ => `{loc}'${occ.name}{/}'`).join(", ")
-
-        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
-        break
-      }
-
-      case LC.ISSUE_TYPES.UNDEFINED_VARIABLE: {
-        const sectionInfo = issue.section && issue.section !== LC.SECTIONS.TOKEN_COLORS ? ` in ${issue.section}` : ""
-
-        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)${sectionInfo}`)
-        break
-      }
-
-      case LC.ISSUE_TYPES.UNUSED_VARIABLE: {
-        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined in '{loc}${issue.occurrence}{/}', but is never used`)
-        break
-      }
-
-      case LC.ISSUE_TYPES.PRECEDENCE_ISSUE: {
-        if(issue.broadIndex === issue.specificIndex) {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'`)
-        } else {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'`)
-        }
-
-        break
-      }
-    }
   }
 
   /**
@@ -566,7 +398,7 @@ export default class LintCommand extends Command {
 
     // Get variables defined in the vars section only
     const definedVars = new Map()
-    const cwd = this.getCwd()
+    const cwd = theme.getCwd()
 
     const usedVars = new Set()
 
@@ -579,8 +411,9 @@ export default class LintCommand extends Command {
         const vars = depData?.get("vars")
 
         if(vars) {
-          const relativeDependencyPath =
-            FileSystem.relativeOrAbsolutePath(cwd.path, depFile.path)
+          const relativeDependencyPath = cwd
+            ? FileSystem.relativeOrAbsolutePath(cwd.path, depFile.path)
+            : depFile.path
 
           this.#collectVarsDefinitions(
             vars,
@@ -590,7 +423,10 @@ export default class LintCommand extends Command {
           )
         }
 
-        // Find variable usage in colors, tokenColors, and semanticTokenColors sections
+        // Find variable usage in all sections, including vars
+        // (vars cross-reference each other across files)
+        this.#findVariableUsage(depData
+          ?.get(LC.SECTIONS.VARS), usedVars)
         this.#findVariableUsage(depData
           ?.get(LC.SECTIONS.COLORS), usedVars)
         this.#findVariableUsage(depData
@@ -631,11 +467,13 @@ export default class LintCommand extends Command {
     for(const [key, value] of Object.entries(vars ?? {})) {
       const varName = prefix ? `${prefix}.${key}` : key
 
-      definedVars.set(varName, filename)
-
-      // If the value is an object, recurse for nested definitions
-      if(typeof value === "object" && !Array.isArray(value))
+      if(typeof value === "object" && !Array.isArray(value)) {
+        // Container/namespace — recurse but don't register as a variable
         this.#collectVarsDefinitions(value, definedVars, varName, filename)
+      } else {
+        // Leaf value (string, array, etc.) — actual variable definition
+        definedVars.set(varName, filename)
+      }
     }
   }
 
@@ -760,5 +598,173 @@ export default class LintCommand extends Command {
   }
 }
 
+/**
+ * Command handler for linting theme files for potential issues.
+ * CLI adapter that delegates analysis to Lint and handles terminal output.
+ */
+export default class LintCommand extends Command {
+  /**
+   * Creates a new LintCommand instance.
+   *
+   * @param {object} base - Base configuration containing cwd and packageJson
+   */
+  constructor(base) {
+    super(base)
+
+    this.setCliCommand("lint <file>")
+    this.setCliOptions({
+      // Future options could include:
+      // "fix": ["-f, --fix", "automatically fix issues where possible"],
+      "strict": ["--strict", "treat warnings as errors"],
+      // "format": ["--format <type>", "output format (text, json)", "text"],
+    })
+  }
+
+  /**
+   * Executes the lint command for a given theme file.
+   * Validates the theme and reports any issues found.
+   *
+   * @param {string} inputArg - Path to the theme file to lint
+   * @param {object} options - Linting options
+   * @returns {Promise<void>} Resolves when linting is complete
+   */
+  async execute(inputArg, options = {}) {
+    const cwd = this.getCwd()
+    const fileObject = await this.resolveThemeFileName(inputArg, cwd)
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(fileObject)
+      .withOptions(options)
+      .setCache(this.getCache())
+    await theme.load()
+    await theme.build()
+
+    const issues = await this.#lintTheme(theme)
+
+    this.#reportIssues(issues)
+
+    const exitSeverities = [LC.SEVERITY.HIGH]
+
+    if(options.strict)
+      exitSeverities.push(LC.SEVERITY.MEDIUM)
+
+    if(issues.some(i => exitSeverities.includes(i.severity)))
+      process.exit(1)
+  }
+
+  /**
+   * Performs comprehensive linting of a theme.
+   * Returns an array of issues found during validation.
+   *
+   * @param {Theme} theme - The compiled theme object
+   * @returns {Promise<Array>} Array of lint issues
+   * @private
+   */
+  async #lintTheme(theme) {
+    const lint = new Lint()
+    const results = await lint.run(theme)
+
+    // Flatten all results into a single array for backward compatibility
+    return [
+      ...results[LC.SECTIONS.TOKEN_COLORS],
+      ...results[LC.SECTIONS.SEMANTIC_TOKEN_COLORS],
+      ...results[LC.SECTIONS.COLORS],
+      ...results.variables
+    ]
+  }
+
+  /**
+   * Reports lint issues to the user with appropriate formatting and colors.
+   *
+   * @param {Array} issues - Array of lint issues to report
+   * @private
+   */
+  #reportIssues(issues) {
+    if(issues.length === 0) {
+      Term.info(c`{success}✓{/} No linting issues found`)
+
+      return
+    }
+
+    const errors = issues.filter(i => i.severity === LC.SEVERITY.HIGH)
+    const warnings = issues.filter(i => i.severity === LC.SEVERITY.MEDIUM)
+    const infos = issues.filter(i => i.severity === LC.SEVERITY.LOW)
+    const allIssues = errors.concat(warnings, infos)
+
+    allIssues.forEach(issue => this.#reportSingleIssue(issue))
+
+    // Clean summary
+    const parts = []
+
+    if(errors.length > 0)
+      parts.push(`${errors.length} error${errors.length === 1 ? "" : "s"}`)
+
+    if(warnings.length > 0)
+      parts.push(`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`)
+
+    if(infos.length > 0)
+      parts.push(`${infos.length} info`)
+
+    Term.info(`\n${parts.join(", ")}`)
+  }
+
+  /**
+   * Returns a colour-coded bullet indicator for a given severity level.
+   *
+   * @private
+   * @param {"high"|"medium"|"low"} severity - Severity level to represent
+   * @returns {string} A pre-coloured "●" character for terminal output
+   */
+  #getIndicator(severity) {
+    switch(severity) {
+      case LC.SEVERITY.HIGH: return c`{error}●{/}`
+      case LC.SEVERITY.MEDIUM: return c`{warn}●{/}`
+      case LC.SEVERITY.LOW:
+      default: return c`{info}●{/}`
+    }
+  }
+
+  /**
+   * Reports a single lint issue with clean, minimal formatting.
+   *
+   * @param {object} issue - The issue to report
+   * @private
+   */
+  #reportSingleIssue(issue) {
+    const indicator = this.#getIndicator(issue.severity)
+
+    switch(issue.type) {
+      case LC.ISSUE_TYPES.DUPLICATE_SCOPE: {
+        const rules = issue.occurrences.map(occ => `{loc}'${occ.name}{/}'`).join(", ")
+
+        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
+        break
+      }
+
+      case LC.ISSUE_TYPES.UNDEFINED_VARIABLE: {
+        const sectionInfo = issue.section && issue.section !== LC.SECTIONS.TOKEN_COLORS ? ` in ${issue.section}` : ""
+
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)${sectionInfo}`)
+        break
+      }
+
+      case LC.ISSUE_TYPES.UNUSED_VARIABLE: {
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined in '{loc}${issue.occurrence}{/}', but is never used`)
+        break
+      }
+
+      case LC.ISSUE_TYPES.PRECEDENCE_ISSUE: {
+        if(issue.broadIndex === issue.specificIndex) {
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'`)
+        } else {
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'`)
+        }
+
+        break
+      }
+    }
+  }
+}
+
 // Aliases
-const LC = LintCommand
+const LC = Lint

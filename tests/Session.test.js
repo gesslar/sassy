@@ -20,7 +20,7 @@ describe("Session", () => {
       const packageJson = {}
       const command = new BuildCommand({cwd, packageJson})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const options = {watch: false}
       const session = new Session(command, theme, options)
 
@@ -33,7 +33,7 @@ describe("Session", () => {
       const packageJson = {}
       const command = new BuildCommand({cwd, packageJson})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.getCommand(), command)
@@ -44,7 +44,7 @@ describe("Session", () => {
       const packageJson = {}
       const command = new BuildCommand({cwd, packageJson})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const options = {watch: true, dryRun: false}
       const session = new Session(command, theme, options)
 
@@ -57,7 +57,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.isBuilding(), false)
@@ -67,7 +67,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.isWatching(), false)
@@ -77,7 +77,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {watch: true})
 
       assert.equal(session.isWatching(), true)
@@ -87,7 +87,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.hasWatcher(), false)
@@ -97,7 +97,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.deepEqual(session.getHistory(), [])
@@ -107,7 +107,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       const session = new Session(command, theme, {})
       const stats = session.getStats()
 
@@ -124,7 +124,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -158,7 +158,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -194,7 +194,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -243,7 +243,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -303,7 +303,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})

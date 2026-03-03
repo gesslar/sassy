@@ -95,23 +95,6 @@
       "console": "internalConsole"
     },
     {
-      "name": "Advanced (YAML) (semantics)",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "exec",
-        "build",
-        "--",
-        "--output-dir",
-        "./examples/output",
-        "./examples/advanced/blackboard-semantics.yaml"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "internalConsole"
-    },
-    {
       "name": "Advanced (YAML) (watch)",
       "type": "node",
       "request": "launch",
@@ -126,24 +109,6 @@
         "--output-dir",
         "./examples/output",
         "./examples/advanced/blackboard.yaml"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Advanced (Corporate 2) (Override Parent)",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "exec",
-        "--",
-        "build",
-        "--nerd",
-        "--output-dir",
-        "./examples/output",
-        "./examples/advanced/corporate2.yaml",
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"

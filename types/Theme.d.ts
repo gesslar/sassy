@@ -3,14 +3,9 @@
  * See file-level docstring for responsibilities.
  */
 export default class Theme {
-    /**
-     * Creates a new Theme instance.
-     *
-     * @param {FileObject} themeFile - The source theme file object
-     * @param {DirectoryObject} cwd - The project's directory.
-     * @param {object} options - Compilation options
-     */
-    constructor(themeFile: FileObject, cwd: DirectoryObject, options: object);
+    setThemeFile(file: any): this;
+    setCwd(cwd: any): this;
+    withOptions(options: any): this;
     /**
      * Resets the theme's compilation state, clearing output and lookup data.
      * Used when recompiling in watch mode or clearing previous state.
@@ -222,7 +217,7 @@ export default class Theme {
     hasLookup(): boolean;
     /**
      * Checks if the theme is ready to be compiled.
-     * Requires source data and cache to be available.
+     * Requires source data to be available.
      *
      * @returns {boolean} True if theme can be compiled
      */
@@ -258,7 +253,7 @@ export default class Theme {
     /**
      * Loads and parses the theme source file.
      * Validates that the source contains required configuration.
-     * Skips loading if no cache is available (extension use case).
+     * Uses cache when available, otherwise reads the file directly.
      *
      * @returns {Promise<this>} Returns this instance for method chaining
      * @throws {Sass} If source file lacks required 'config' property

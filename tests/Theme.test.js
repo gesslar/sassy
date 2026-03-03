@@ -17,7 +17,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
 
       assert.ok(theme.isValid())
       assert.equal(theme.getSourceFile(), themeFile)
@@ -27,7 +27,7 @@ describe("Theme", () => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       const outputName = theme.getOutputFileName()
 
       assert.ok(outputName.endsWith(".color-theme.json"))
@@ -40,7 +40,7 @@ describe("Theme", () => {
       const options = {}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -64,7 +64,7 @@ describe("Theme", () => {
       )
 
       const invalidFile = cwd.getFile("./fixtures/invalid-theme.yaml")
-      const theme = new Theme(invalidFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(invalidFile).withOptions(options)
       theme.setCache(cache)
 
       await assert.rejects(
@@ -73,16 +73,16 @@ describe("Theme", () => {
       )
     })
 
-    it("skips loading when no cache is set", async() => {
+    it("loads via FileObject.loadData() when no cache is set", async() => {
       const cwd = new DirectoryObject(__dirname)
       const options = {}
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
-      // Don't set cache
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
+      // Don't set cache — load() falls back to FileObject.loadData()
 
       await theme.load()
 
-      assert.equal(theme.hasSource(), false)
+      assert.ok(theme.hasSource())
     })
   })
 
@@ -92,7 +92,7 @@ describe("Theme", () => {
       const options = {}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -107,7 +107,7 @@ describe("Theme", () => {
       const options = {}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -129,7 +129,7 @@ describe("Theme", () => {
       const options = {outputDir: "./fixtures/output"}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -147,7 +147,7 @@ describe("Theme", () => {
       const options = {outputDir: "./fixtures/output"}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -165,7 +165,7 @@ describe("Theme", () => {
       const options = {dryRun: true}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -183,7 +183,7 @@ describe("Theme", () => {
       const options = {}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       assert.equal(theme.hasSource(), false)
@@ -200,7 +200,7 @@ describe("Theme", () => {
       const options = {}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()
@@ -220,7 +220,7 @@ describe("Theme", () => {
       const options = {}
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, options)
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
       theme.setCache(cache)
 
       await theme.load()

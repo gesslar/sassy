@@ -1,6 +1,38 @@
 /**
+ * Engine class for resolving theme tokens and variables.
+ * Returns structured resolution data with trails.
+ * No CLI awareness — takes a compiled Theme and returns data.
+ */
+export class Resolve {
+    /**
+     * Resolves a colour token to its final value with trail.
+     *
+     * @param {Theme} theme - The compiled theme object with pool
+     * @param {string} colorName - The colour key to resolve
+     * @returns {object} `{ found, name, resolution?, trail? }`
+     */
+    color(theme: Theme, colorName: string): object;
+    /**
+     * Resolves a tokenColors scope to its final value with trail.
+     *
+     * @param {Theme} theme - The compiled theme object with output
+     * @param {string} scopeName - The scope to resolve
+     * @returns {Promise<object>} Resolution data object
+     */
+    tokenColor(theme: Theme, scopeName: string): Promise<object>;
+    /**
+     * Resolves a semanticTokenColors scope to its final value with trail.
+     *
+     * @param {Theme} theme - The compiled theme object with output
+     * @param {string} scopeName - The scope to resolve
+     * @returns {Promise<object>} Resolution data object
+     */
+    semanticTokenColor(theme: Theme, scopeName: string): Promise<object>;
+    #private;
+}
+/**
  * Command handler for resolving theme tokens and variables to their final values.
- * Provides introspection into the theme resolution process and variable dependencies.
+ * CLI adapter that delegates data resolution to Resolve and handles terminal display.
  */
 export default class ResolveCommand extends Command {
     /**
@@ -27,7 +59,7 @@ export default class ResolveCommand extends Command {
     execute(inputArg: string, options?: object): Promise<void>;
     /**
      * Public method to resolve a theme token or variable and return structured
-     * data for external consumption.
+     * data for external consumption. Delegates to the Resolve engine.
      *
      * @param {Theme} theme - The compiled theme object
      * @param {object} options - Resolution options (color, tokenColor, or semanticTokenColor)
@@ -36,41 +68,30 @@ export default class ResolveCommand extends Command {
     resolve(theme: Theme, options?: object): Promise<object>;
     /**
      * Resolves a specific color to its final value and displays the resolution trail.
-     * Shows the complete dependency chain for the requested color.
      *
      * @param {object} theme - The compiled theme object with pool
      * @param {string} colorName - The color key to resolve
      * @returns {void}
-     * @example
-     * // Resolve a color variable from a compiled theme
-     * await resolveCommand.resolveColor(theme, 'colors.primary');
-     * // Output:
-     * // colors.primary:
-     * //   $(vars.accent)
-     * //     → #3366cc
-     * // Resolution: #3366cc
      */
     resolveColor(theme: object, colorName: string): void;
     /**
      * Resolves a specific tokenColors scope to its final value and displays the resolution trail.
-     * Shows all matching scopes with disambiguation when multiple matches are found.
      *
      * @param {object} theme - The compiled theme object with output
-     * @param {string} scopeName - The scope to resolve (e.g., "entity.name.class" or "entity.name.class.1")
+     * @param {string} scopeName - The scope to resolve
      * @returns {void}
      */
     resolveTokenColor(theme: object, scopeName: string): void;
     /**
      * Resolves a specific semanticTokenColors scope to its final value.
-     * Uses the same logic as tokenColors since they have identical structure.
      *
      * @param {object} theme - The compiled theme object with output
-     * @param {string} scopeName - The scope to resolve (e.g., "keyword" or "keyword.1")
+     * @param {string} scopeName - The scope to resolve
      * @returns {void}
      */
     resolveSemanticTokenColor(theme: object, scopeName: string): void;
     #private;
 }
-import Command from "./Command.js";
 import Theme from "./Theme.js";
+import Command from "./Command.js";
 //# sourceMappingURL=ResolveCommand.d.ts.map
