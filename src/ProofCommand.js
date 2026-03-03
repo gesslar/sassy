@@ -6,17 +6,35 @@
  * operators inlined — but before any variable substitution or colour
  * function evaluation.
  *
- * Useful for inspecting the exact structure the compiler would evaluate
- * against, verifying that imports, merges, and séance derivations
- * compose as expected.
+ * Also exports the Proof engine class for direct API use without CLI.
  */
 
 import {stringify} from "yaml"
 
+import {Term} from "@gesslar/toolkit"
 import Command from "./Command.js"
 import Compiler from "./Compiler.js"
 import Theme from "./Theme.js"
-import {Term} from "@gesslar/toolkit"
+
+/**
+ * Engine class for proofing themes.
+ * Produces the fully composed, unevaluated theme structure.
+ * No CLI awareness — takes a loaded Theme and returns data.
+ */
+export class Proof {
+  /**
+   * Proofs a loaded theme, returning the composed document before
+   * variable substitution or colour function evaluation.
+   *
+   * @param {Theme} theme - A loaded Theme instance
+   * @returns {Promise<object>} The composed, unevaluated theme structure
+   */
+  async run(theme) {
+    const compiler = new Compiler()
+
+    return await compiler.proof(theme)
+  }
+}
 
 /**
  * Command handler for proofing theme files.
@@ -54,22 +72,9 @@ export default class ProofCommand extends Command {
       .setCache(this.getCache())
     await theme.load()
 
-    const compiler = new Compiler()
-    const result = await compiler.proof(theme)
+    const proof = new Proof()
+    const result = await proof.run(theme)
 
     Term.log(stringify(result, {lineWidth: 0}))
-  }
-
-  /**
-   * Public method to proof a theme and return structured results for
-   * external consumption.
-   *
-   * @param {Theme} theme - The loaded theme object
-   * @returns {Promise<object>} The composed, unevaluated theme structure
-   */
-  async proof(theme) {
-    const compiler = new Compiler()
-
-    return await compiler.proof(theme)
   }
 }

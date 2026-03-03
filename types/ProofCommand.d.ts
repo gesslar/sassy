@@ -1,4 +1,19 @@
 /**
+ * Engine class for proofing themes.
+ * Produces the fully composed, unevaluated theme structure.
+ * No CLI awareness — takes a loaded Theme and returns data.
+ */
+export class Proof {
+    /**
+     * Proofs a loaded theme, returning the composed document before
+     * variable substitution or colour function evaluation.
+     *
+     * @param {Theme} theme - A loaded Theme instance
+     * @returns {Promise<object>} The composed, unevaluated theme structure
+     */
+    run(theme: Theme): Promise<object>;
+}
+/**
  * Command handler for proofing theme files.
  * Outputs the fully composed, unevaluated theme document as YAML.
  */
@@ -19,15 +34,7 @@ export default class ProofCommand extends Command {
      * @returns {Promise<void>} Resolves when proofing is complete
      */
     execute(inputArg: string, options?: object): Promise<void>;
-    /**
-     * Public method to proof a theme and return structured results for
-     * external consumption.
-     *
-     * @param {Theme} theme - The loaded theme object
-     * @returns {Promise<object>} The composed, unevaluated theme structure
-     */
-    proof(theme: Theme): Promise<object>;
 }
-import Command from "./Command.js";
 import Theme from "./Theme.js";
+import Command from "./Command.js";
 //# sourceMappingURL=ProofCommand.d.ts.map

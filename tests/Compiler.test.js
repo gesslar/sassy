@@ -18,7 +18,7 @@ describe("Compiler", () => {
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -37,7 +37,7 @@ describe("Compiler", () => {
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -74,7 +74,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/palette-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -108,7 +108,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/palette-func-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -140,7 +140,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/function-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -177,7 +177,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/token-colors-array-scope.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -212,7 +212,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/token-colors-string-scope.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -253,7 +253,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/token-colors-mixed-scope.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -296,7 +296,7 @@ theme:
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/semantic-token-theme.yaml")
-      const theme = new Theme(themeFile, cwd, {outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()

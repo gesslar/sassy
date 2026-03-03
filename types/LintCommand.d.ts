@@ -2,34 +2,47 @@
  * @import {ThemePool} from "./ThemePool.js"
  */
 /**
- * Command handler for linting theme files for potential issues.
- * Validates tokenColors for duplicate scopes, undefined variables, unused
- * variables, and precedence issues that could cause unexpected theme
- * behaviour.
+ * Engine class for linting themes.
+ * Analyses a compiled Theme and returns structured issue data.
+ * No CLI awareness — takes a Theme and returns results.
  */
-export default class LintCommand extends Command {
-    static SECTIONS: {
-        VARS: string;
-        COLORS: string;
-        TOKEN_COLORS: string;
-        SEMANTIC_TOKEN_COLORS: string;
-    };
-    static SEVERITY: {
-        HIGH: string;
-        MEDIUM: string;
-        LOW: string;
-    };
-    static ISSUE_TYPES: {
-        DUPLICATE_SCOPE: string;
-        UNDEFINED_VARIABLE: string;
-        UNUSED_VARIABLE: string;
-        PRECEDENCE_ISSUE: string;
-    };
-    static TEMPLATES: {
+export class Lint {
+    static SECTIONS: Readonly<{
+        VARS: "vars";
+        COLORS: "colors";
+        TOKEN_COLORS: "tokenColors";
+        SEMANTIC_TOKEN_COLORS: "semanticTokenColors";
+    }>;
+    static SEVERITY: Readonly<{
+        HIGH: "high";
+        MEDIUM: "medium";
+        LOW: "low";
+    }>;
+    static ISSUE_TYPES: Readonly<{
+        DUPLICATE_SCOPE: "duplicate-scope";
+        UNDEFINED_VARIABLE: "undefined-variable";
+        UNUSED_VARIABLE: "unused-variable";
+        PRECEDENCE_ISSUE: "precedence-issue";
+    }>;
+    static TEMPLATES: Readonly<{
         ENTRY_NAME: (index: any) => string;
         OBJECT_NAME: (index: any) => string;
-        VARIABLE_PREFIX: string;
-    };
+        VARIABLE_PREFIX: "$";
+    }>;
+    /**
+     * Lints a compiled theme and returns categorised results.
+     *
+     * @param {Theme} theme - The compiled theme object
+     * @returns {Promise<object>} Object containing categorised lint results
+     */
+    run(theme: Theme): Promise<object>;
+    #private;
+}
+/**
+ * Command handler for linting theme files for potential issues.
+ * CLI adapter that delegates analysis to Lint and handles terminal output.
+ */
+export default class LintCommand extends Command {
     /**
      * Creates a new LintCommand instance.
      *
@@ -45,18 +58,8 @@ export default class LintCommand extends Command {
      * @returns {Promise<void>} Resolves when linting is complete
      */
     execute(inputArg: string, options?: object): Promise<void>;
-    /**
-     * Public method to lint a theme and return structured results for external
-     * consumption.
-     *
-     * Returns categorized lint results for tokenColors, semanticTokenColors, and colors.
-     *
-     * @param {Theme} theme - The compiled theme object
-     * @returns {Promise<object>} Object containing categorized lint results
-     */
-    lint(theme: Theme): Promise<object>;
     #private;
 }
-import Command from "./Command.js";
 import Theme from "./Theme.js";
+import Command from "./Command.js";
 //# sourceMappingURL=LintCommand.d.ts.map

@@ -1,5 +1,17 @@
+/**
+ * @file ResolveCommand.js
+ *
+ * Defines the Resolve engine class for theme token resolution and the
+ * ResolveCommand CLI adapter that formats and displays results.
+ *
+ * Resolve (engine) provides introspection into the theme resolution process,
+ * returning structured data about variable dependencies and resolution trails.
+ *
+ * ResolveCommand (CLI) handles file resolution, option validation, terminal
+ * formatting with colour swatches, and delegates all data work to Resolve.
+ */
+
 import c from "@gesslar/colours"
-// import colorSupport from "color-support"
 
 import Command from "./Command.js"
 import {Collection, Sass, Term, Util} from "@gesslar/toolkit"
@@ -7,185 +19,20 @@ import Colour from "./Colour.js"
 import Evaluator from "./Evaluator.js"
 import Theme from "./Theme.js"
 
-// ansiColors.enabled = colorSupport.hasBasic
-
 /**
- * Command handler for resolving theme tokens and variables to their final values.
- * Provides introspection into the theme resolution process and variable dependencies.
+ * Engine class for resolving theme tokens and variables.
+ * Returns structured resolution data with trails.
+ * No CLI awareness — takes a compiled Theme and returns data.
  */
-export default class ResolveCommand extends Command {
-  #extraOptions = null
-  #bg = null
-
+export class Resolve {
   /**
-   * Creates a new ResolveCommand instance.
+   * Resolves a colour token to its final value with trail.
    *
-   * @param {object} base - Base configuration containing cwd and packageJson
-   */
-  constructor(base) {
-    super(base)
-
-    this.setCliCommand("resolve <file>")
-    this.setCliOptions({
-      "color": ["-c, --color <key>", "resolve a color key to its final evaluated value"],
-      "tokenColor": ["-t, --tokenColor <scope>", "resolve a tokenColors scope to its final evaluated value"],
-      "semanticTokenColor": ["-s, --semanticTokenColor <scope>", "resolve a semanticTokenColors scope to its final evaluated value"],
-    })
-    this.#extraOptions = {
-      "bg": ["--bg <hex>", "background colour for alpha swatch preview (e.g. 1a1a1a or '#1a1a1a')"],
-    }
-  }
-
-  /**
-   * Builds the CLI command, adding extra options that are not mutually exclusive.
-   *
-   * @param {object} program - The commander.js program instance
-   * @returns {Promise<this>} Returns this instance for method chaining
-   */
-  async buildCli(program) {
-    await super.buildCli(program)
-    this.addCliOptions(this.#extraOptions, false)
-
-    return this
-  }
-
-  /**
-   * Executes the resolve command for a given theme file and option.
-   * Validates mutual exclusivity of options and delegates to appropriate resolver.
-   *
-   * @param {string} inputArg - Path to the theme file to resolve
-   * @param {object} options - Resolution options (token, etc.)
-   * @returns {Promise<void>} Resolves when resolution is complete
-   */
-  async execute(inputArg, options={}) {
-    const cliOptionNames = this.getCliOptionNames()
-    const intersection =
-      Collection.intersection(cliOptionNames, Object.keys(options))
-
-    if(intersection.length > 1)
-      throw Sass.new(
-        `The options ${cliOptionNames.join(", ")} are ` +
-        `mutually exclusive and may only have one expressed in the request.`
-      )
-
-    const cwd = this.getCwd()
-    const optionName = Object.keys(options??{})
-      .find(o => cliOptionNames.includes(o))
-
-    if(!optionName) {
-      throw Sass.new(
-        `No valid option provided. Please specify one of ${cliOptionNames.join(", ")}.`
-      )
-    }
-
-    if(options.bg) {
-      const bg = options.bg.startsWith("#") ? options.bg : `#${options.bg}`
-
-      if(!Colour.isHex(bg)) {
-        throw Sass.new(`Invalid --bg colour: ${options.bg}`)
-      }
-
-      this.#bg = Colour.normaliseHex(bg)
-    }
-
-    const resolveFunctionName = `resolve${Util.capitalize(optionName)}`
-    const optionValue = options[optionName]
-    const resolverFunction = this[resolveFunctionName]
-
-    if(!(resolverFunction && typeof resolverFunction === "function"))
-      throw Sass.new(`No such function '${resolveFunctionName}'`)
-
-    const fileObject = await this.resolveThemeFileName(inputArg, cwd)
-    const theme = new Theme()
-      .setCwd(cwd)
-      .setThemeFile(fileObject)
-      .withOptions(options)
-      .setCache(this.getCache())
-
-    await theme.load()
-    await theme.build()
-
-    await resolverFunction.call(this, theme, optionValue)
-  }
-
-  /**
-   * Public method to resolve a theme token or variable and return structured
-   * data for external consumption.
-   *
-   * @param {Theme} theme - The compiled theme object
-   * @param {object} options - Resolution options (color, tokenColor, or semanticTokenColor)
-   * @returns {Promise<object>} Object containing structured resolution data
-   */
-  async resolve(theme, options = {}) {
-    const cliOptionNames = Object.keys(this.getCliOptions() ?? {})
-    const intersection =
-      Collection.intersection(cliOptionNames, Object.keys(options))
-
-    if(intersection.length > 1)
-      throw Sass.new(
-        `The options ${cliOptionNames.join(", ")} are ` +
-        `mutually exclusive and may only have one expressed in the request.`
-      )
-
-    const optionName = Object.keys(options ?? {})
-      .find(o => cliOptionNames.includes(o))
-
-    if(!optionName)
-      throw Sass.new(
-        `No valid option provided. Please specify one of ${cliOptionNames.join(", ")}.`
-      )
-
-    const optionValue = options[optionName]
-
-    if(optionName === "color")
-      return this.#resolveColorData(theme, optionValue)
-
-    if(optionName === "tokenColor")
-      return this.#resolveTokenColorData(theme, optionValue)
-
-    if(optionName === "semanticTokenColor")
-      return this.#resolveSemanticTokenColorData(theme, optionValue)
-
-    throw Sass.new(`No data resolver for option '${optionName}'`)
-  }
-
-  /**
-   * Resolves a specific color to its final value and displays the resolution trail.
-   * Shows the complete dependency chain for the requested color.
-   *
-   * @param {object} theme - The compiled theme object with pool
-   * @param {string} colorName - The color key to resolve
-   * @returns {void}
-   * @example
-   * // Resolve a color variable from a compiled theme
-   * await resolveCommand.resolveColor(theme, 'colors.primary');
-   * // Output:
-   * // colors.primary:
-   * //   $(vars.accent)
-   * //     → #3366cc
-   * // Resolution: #3366cc
-   */
-  async resolveColor(theme, colorName) {
-    const data = this.#resolveColorData(theme, colorName)
-
-    if(!data.found)
-      return Term.info(`'${colorName}' not found.`)
-
-    const [formattedFinalValue] = this.#formatLeaf(data.resolution)
-    const output = c`\n{head}${colorName}{/}:\n\n${this.#formatOutput(data.trail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
-
-    Term.info(output)
-  }
-
-  /**
-   * Returns structured resolution data for a colour token.
-   *
-   * @param {object} theme - The compiled theme object with pool
+   * @param {Theme} theme - The compiled theme object with pool
    * @param {string} colorName - The colour key to resolve
    * @returns {object} `{ found, name, resolution?, trail? }`
-   * @private
    */
-  #resolveColorData(theme, colorName) {
+  color(theme, colorName) {
     const pool = theme.getPool()
 
     if(!pool || !pool.has(colorName))
@@ -206,74 +53,13 @@ export default class ResolveCommand extends Command {
   }
 
   /**
-   * Resolves a specific tokenColors scope to its final value and displays the resolution trail.
-   * Shows all matching scopes with disambiguation when multiple matches are found.
+   * Resolves a tokenColors scope to its final value with trail.
    *
-   * @param {object} theme - The compiled theme object with output
-   * @param {string} scopeName - The scope to resolve (e.g., "entity.name.class" or "entity.name.class.1")
-   * @returns {void}
-   */
-  async resolveTokenColor(theme, scopeName) {
-    this.#displayResolvedScope(
-      await this.#resolveTokenColorData(theme, scopeName)
-    )
-  }
-
-  /**
-   * Displays structured scope resolution data in the terminal.
-   *
-   * @param {object} data - Resolution data from a `#resolve*Data` method
-   * @private
-   */
-  #displayResolvedScope(data) {
-    if(!data.found) {
-      if(data.message)
-        return Term.info(`'${data.name}' not found. ${data.message}`)
-
-      return Term.info(`No tokenColors entries found for scope '${data.name}'`)
-    }
-
-    if(data.ambiguous) {
-      Term.info(`Multiple entries found for '${data.name}', please try again with the specific query:\n`)
-      data.matches.forEach(({qualifier, entryName}) => {
-        Term.info(`${entryName}: ${qualifier}`)
-      })
-
-      return
-    }
-
-    const {
-      name: displayName, entryName, resolution,
-      resolvedVia, noForeground, static: isStatic, trail,
-    } = data
-
-    if(noForeground)
-      return Term.info(`${displayName} (${entryName})\n\n(no foreground property)`)
-
-    if(isStatic)
-      return Term.info(`${displayName} (${entryName})\n\n(resolved to static value: ${resolution})`)
-
-    const [formattedFinalValue] = this.#formatLeaf(resolution)
-    const header = resolvedVia
-      ? c`{<BU}${displayName}{/} {<I}${resolvedVia.relation}{/} {<BU}${resolvedVia.scope}{/} {<I}in{/} {hex}${(`${entryName}`)}{/}\n`
-      : c`{<BU}${displayName}{/} {<I}in{/} {hex}${(`${entryName}`)}{/}\n`
-
-    const output = header +
-                    `${this.#formatOutput(trail)}\n\n` +
-                    c`{head}${"Resolution:"}{/} ${formattedFinalValue}`
-
-    Term.info(output)
-  }
-
-  /**
-   * Returns structured resolution data for a tokenColors scope.
-   *
-   * @param {object} theme - The compiled theme object with output
+   * @param {Theme} theme - The compiled theme object with output
    * @param {string} scopeName - The scope to resolve
    * @returns {Promise<object>} Resolution data object
-   * @private
    */
-  async #resolveTokenColorData(theme, scopeName) {
+  async tokenColor(theme, scopeName) {
     const tokenColors = theme.getOutput()?.tokenColors || []
     const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
 
@@ -329,6 +115,36 @@ export default class ResolveCommand extends Command {
         entryName: match.name || `Entry ${index + 1}`
       }))
     }
+  }
+
+  /**
+   * Resolves a semanticTokenColors scope to its final value with trail.
+   *
+   * @param {Theme} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve
+   * @returns {Promise<object>} Resolution data object
+   */
+  async semanticTokenColor(theme, scopeName) {
+    const originalTokenColors = theme.getOutput()?.tokenColors
+    const themeOutput = theme.getOutput()
+
+    if(themeOutput?.semanticTokenColors) {
+      themeOutput.tokenColors = Object.entries(
+        themeOutput.semanticTokenColors
+      ).map(([scope, value]) => ({
+        scope,
+        settings: typeof value === "string"
+          ? {foreground: value}
+          : value,
+      }))
+    }
+
+    const data = await this.tokenColor(theme, scopeName)
+
+    if(originalTokenColors && themeOutput)
+      themeOutput.tokenColors = originalTokenColors
+
+    return data
   }
 
   #findScopeMatches(tokenColors, targetScope) {
@@ -494,51 +310,6 @@ export default class ResolveCommand extends Command {
     }
   }
 
-  /**
-   * Resolves a specific semanticTokenColors scope to its final value.
-   * Uses the same logic as tokenColors since they have identical structure.
-   *
-   * @param {object} theme - The compiled theme object with output
-   * @param {string} scopeName - The scope to resolve (e.g., "keyword" or "keyword.1")
-   * @returns {void}
-   */
-  async resolveSemanticTokenColor(theme, scopeName) {
-    this.#displayResolvedScope(
-      await this.#resolveSemanticTokenColorData(theme, scopeName)
-    )
-  }
-
-  /**
-   * Returns structured resolution data for a semanticTokenColors scope.
-   *
-   * @param {object} theme - The compiled theme object with output
-   * @param {string} scopeName - The scope to resolve
-   * @returns {Promise<object>} Resolution data object
-   * @private
-   */
-  async #resolveSemanticTokenColorData(theme, scopeName) {
-    const originalTokenColors = theme.getOutput()?.tokenColors
-    const themeOutput = theme.getOutput()
-
-    if(themeOutput?.semanticTokenColors) {
-      themeOutput.tokenColors = Object.entries(
-        themeOutput.semanticTokenColors
-      ).map(([scope, value]) => ({
-        scope,
-        settings: typeof value === "string"
-          ? {foreground: value}
-          : value,
-      }))
-    }
-
-    const data = await this.#resolveTokenColorData(theme, scopeName)
-
-    if(originalTokenColors && themeOutput)
-      themeOutput.tokenColors = originalTokenColors
-
-    return data
-  }
-
   #buildCompleteTrail(rootToken, trail) {
     const steps = []
     const seen = new Set()
@@ -658,21 +429,249 @@ export default class ResolveCommand extends Command {
 
     return steps
   }
+}
+
+/**
+ * Command handler for resolving theme tokens and variables to their final values.
+ * CLI adapter that delegates data resolution to Resolve and handles terminal display.
+ */
+export default class ResolveCommand extends Command {
+  #extraOptions = null
+  #bg = null
+
+  /**
+   * Creates a new ResolveCommand instance.
+   *
+   * @param {object} base - Base configuration containing cwd and packageJson
+   */
+  constructor(base) {
+    super(base)
+
+    this.setCliCommand("resolve <file>")
+    this.setCliOptions({
+      "color": ["-c, --color <key>", "resolve a color key to its final evaluated value"],
+      "tokenColor": ["-t, --tokenColor <scope>", "resolve a tokenColors scope to its final evaluated value"],
+      "semanticTokenColor": ["-s, --semanticTokenColor <scope>", "resolve a semanticTokenColors scope to its final evaluated value"],
+    })
+    this.#extraOptions = {
+      "bg": ["--bg <hex>", "background colour for alpha swatch preview (e.g. 1a1a1a or '#1a1a1a')"],
+    }
+  }
+
+  /**
+   * Builds the CLI command, adding extra options that are not mutually exclusive.
+   *
+   * @param {object} program - The commander.js program instance
+   * @returns {Promise<this>} Returns this instance for method chaining
+   */
+  async buildCli(program) {
+    await super.buildCli(program)
+    this.addCliOptions(this.#extraOptions, false)
+
+    return this
+  }
+
+  /**
+   * Executes the resolve command for a given theme file and option.
+   * Validates mutual exclusivity of options and delegates to appropriate resolver.
+   *
+   * @param {string} inputArg - Path to the theme file to resolve
+   * @param {object} options - Resolution options (token, etc.)
+   * @returns {Promise<void>} Resolves when resolution is complete
+   */
+  async execute(inputArg, options={}) {
+    const cliOptionNames = this.getCliOptionNames()
+    const intersection =
+      Collection.intersection(cliOptionNames, Object.keys(options))
+
+    if(intersection.length > 1)
+      throw Sass.new(
+        `The options ${cliOptionNames.join(", ")} are ` +
+        `mutually exclusive and may only have one expressed in the request.`
+      )
+
+    const cwd = this.getCwd()
+    const optionName = Object.keys(options?? {})
+      .find(o => cliOptionNames.includes(o))
+
+    if(!optionName) {
+      throw Sass.new(
+        `No valid option provided. Please specify one of ${cliOptionNames.join(", ")}.`
+      )
+    }
+
+    if(options.bg) {
+      const bg = options.bg.startsWith("#") ? options.bg : `#${options.bg}`
+
+      if(!Colour.isHex(bg)) {
+        throw Sass.new(`Invalid --bg colour: ${options.bg}`)
+      }
+
+      this.#bg = Colour.normaliseHex(bg)
+    }
+
+    const resolveFunctionName = `resolve${Util.capitalize(optionName)}`
+    const optionValue = options[optionName]
+    const resolverFunction = this[resolveFunctionName]
+
+    if(!(resolverFunction && typeof resolverFunction === "function"))
+      throw Sass.new(`No such function '${resolveFunctionName}'`)
+
+    const fileObject = await this.resolveThemeFileName(inputArg, cwd)
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(fileObject)
+      .withOptions(options)
+      .setCache(this.getCache())
+
+    await theme.load()
+    await theme.build()
+
+    await resolverFunction.call(this, theme, optionValue)
+  }
+
+  /**
+   * Public method to resolve a theme token or variable and return structured
+   * data for external consumption. Delegates to the Resolve engine.
+   *
+   * @param {Theme} theme - The compiled theme object
+   * @param {object} options - Resolution options (color, tokenColor, or semanticTokenColor)
+   * @returns {Promise<object>} Object containing structured resolution data
+   */
+  async resolve(theme, options = {}) {
+    const cliOptionNames = Object.keys(this.getCliOptions() ?? {})
+    const intersection =
+      Collection.intersection(cliOptionNames, Object.keys(options))
+
+    if(intersection.length > 1)
+      throw Sass.new(
+        `The options ${cliOptionNames.join(", ")} are ` +
+        `mutually exclusive and may only have one expressed in the request.`
+      )
+
+    const optionName = Object.keys(options ?? {})
+      .find(o => cliOptionNames.includes(o))
+
+    if(!optionName)
+      throw Sass.new(
+        `No valid option provided. Please specify one of ${cliOptionNames.join(", ")}.`
+      )
+
+    const resolver = new Resolve()
+    const optionValue = options[optionName]
+
+    if(optionName === "color")
+      return resolver.color(theme, optionValue)
+
+    if(optionName === "tokenColor")
+      return await resolver.tokenColor(theme, optionValue)
+
+    if(optionName === "semanticTokenColor")
+      return await resolver.semanticTokenColor(theme, optionValue)
+
+    throw Sass.new(`No data resolver for option '${optionName}'`)
+  }
+
+  /**
+   * Resolves a specific color to its final value and displays the resolution trail.
+   *
+   * @param {object} theme - The compiled theme object with pool
+   * @param {string} colorName - The color key to resolve
+   * @returns {void}
+   */
+  async resolveColor(theme, colorName) {
+    const resolver = new Resolve()
+    const data = resolver.color(theme, colorName)
+
+    if(!data.found)
+      return Term.info(`'${colorName}' not found.`)
+
+    const [formattedFinalValue] = this.#formatLeaf(data.resolution)
+    const output = c`\n{head}${colorName}{/}:\n\n${this.#formatOutput(data.trail)}\n\n{head}${"Resolution:"}{/} ${formattedFinalValue}`
+
+    Term.info(output)
+  }
+
+  /**
+   * Resolves a specific tokenColors scope to its final value and displays the resolution trail.
+   *
+   * @param {object} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve
+   * @returns {void}
+   */
+  async resolveTokenColor(theme, scopeName) {
+    const resolver = new Resolve()
+
+    this.#displayResolvedScope(
+      await resolver.tokenColor(theme, scopeName)
+    )
+  }
+
+  /**
+   * Resolves a specific semanticTokenColors scope to its final value.
+   *
+   * @param {object} theme - The compiled theme object with output
+   * @param {string} scopeName - The scope to resolve
+   * @returns {void}
+   */
+  async resolveSemanticTokenColor(theme, scopeName) {
+    const resolver = new Resolve()
+
+    this.#displayResolvedScope(
+      await resolver.semanticTokenColor(theme, scopeName)
+    )
+  }
+
+  /**
+   * Displays structured scope resolution data in the terminal.
+   *
+   * @param {object} data - Resolution data from a Resolve method
+   * @private
+   */
+  #displayResolvedScope(data) {
+    if(!data.found) {
+      if(data.message)
+        return Term.info(`'${data.name}' not found. ${data.message}`)
+
+      return Term.info(`No tokenColors entries found for scope '${data.name}'`)
+    }
+
+    if(data.ambiguous) {
+      Term.info(`Multiple entries found for '${data.name}', please try again with the specific query:\n`)
+      data.matches.forEach(({qualifier, entryName}) => {
+        Term.info(`${entryName}: ${qualifier}`)
+      })
+
+      return
+    }
+
+    const {
+      name: displayName, entryName, resolution,
+      resolvedVia, noForeground, static: isStatic, trail,
+    } = data
+
+    if(noForeground)
+      return Term.info(`${displayName} (${entryName})\n\n(no foreground property)`)
+
+    if(isStatic)
+      return Term.info(`${displayName} (${entryName})\n\n(resolved to static value: ${resolution})`)
+
+    const [formattedFinalValue] = this.#formatLeaf(resolution)
+    const header = resolvedVia
+      ? c`{<BU}${displayName}{/} {<I}${resolvedVia.relation}{/} {<BU}${resolvedVia.scope}{/} {<I}in{/} {hex}${(`${entryName}`)}{/}\n`
+      : c`{<BU}${displayName}{/} {<I}in{/} {hex}${(`${entryName}`)}{/}\n`
+
+    const output = header +
+                    `${this.#formatOutput(trail)}\n\n` +
+                    c`{head}${"Resolution:"}{/} ${formattedFinalValue}`
+
+    Term.info(output)
+  }
+
   /**
    * Formats a list of resolution steps into a visually indented tree structure for display.
    *
-   * Each step represents a part of the theme token resolution process, including variables,
-   * function calls, expressions, and final results. The output is colorized and indented
-   * according to the step's depth and type, making the dependency chain and resolution
-   * process easy to follow in terminal output.
-   *
-   * - Hex color results are indented one extra level and prefixed with an arrow for emphasis.
-   * - Other steps (variables, functions, literals) are indented according to their depth.
-   *
    * @param {Array} steps - List of resolution steps, each with {value, depth, type}.
-   *   - value: The string value to display (token, expression, result, etc.)
-   *   - depth: Indentation level for the step
-   *   - type: The kind of step ("result", "variable", "function", "expression", etc.)
    * @returns {string} Formatted, colorized, and indented output for terminal display.
    */
   #formatOutput(steps) {
@@ -725,9 +724,6 @@ export default class ResolveCommand extends Command {
 
   /**
    * Creates a colour swatch or fallback arrow indicator for a hex value.
-   * When the colour has alpha and no --bg is provided, shows two swatches
-   * (against black and white). With --bg, shows a single swatch composited
-   * against the specified background.
    *
    * @private
    * @param {string} hex - The hex colour value.
@@ -766,9 +762,6 @@ export default class ResolveCommand extends Command {
    *
    * @param {string} value - The man, the mystrery, the value.
    * @returns {string} The formatted and colourised representation of the token.
-   *
-   * Uses the token's kind property to determine formatting instead of regex matching.
-   * Provides clear visual distinction between tokens, functions, colours, and variables.
    */
   #formatLeaf(value) {
     if(this.#hex(value)) {
@@ -790,7 +783,7 @@ export default class ResolveCommand extends Command {
 
       const {func, args} = match.groups
       const cleanArgs = args.replace(
-        /\$\(palette\.__prior__(?:\.__\d+__)?\.([^)]+)\)/g,
+        /\$\(palette\.__prior__(?:\.__\d+__)?\.\([^)]+\)\)/g,
         (_, key) => `^(${key})`
       )
 
@@ -802,7 +795,7 @@ export default class ResolveCommand extends Command {
 
     if(this.#sub.test(value)) {
       const varValue = Evaluator.extractVariableName(value) || value
-      const priorMatch = varValue.match(/^palette\.__prior__(?:\.__\d+__)?\.(.+)$/)
+      const priorMatch = varValue.match(/^palette\.__prior__(?:\.__\d+__)?\.\(.+\)$/)
 
       if(priorMatch) {
         return [
