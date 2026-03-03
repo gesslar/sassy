@@ -162,15 +162,21 @@ export default class Compiler {
 
         // Get the cached version or a new version. Who knows? I don't know.
         const {result, cost} = await Util.time(async() => {
-          return await theme.getCache().loadCachedData(file)
+          return theme.hasCache()
+            ? await theme.getCache().loadCachedData(file)
+            : await file.loadData()
         })
 
-        if(theme.getOptions().nerd) {
+        if(theme.getOption("nerd")) {
           const cwd = theme.getCwd()
+          const label = cwd
+            ? file.relativeTo(cwd)
+            : file.path
+
           Term.status([
             ["muted", Util.rightAlignText(`${cost.toLocaleString()}ms`, 10), ["[","]"]],
             "",
-            ["muted", `${file.relativeTo(cwd)}`],
+            ["muted", `${label}`],
             ["muted", `${theme.getName()}`,["(",")"]],
           ], theme.getOptions())
         }
