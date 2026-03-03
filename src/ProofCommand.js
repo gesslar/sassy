@@ -47,9 +47,11 @@ export default class ProofCommand extends Command {
   async execute(inputArg, options = {}) {
     const cwd = this.getCwd()
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
-    const theme = new Theme(fileObject, cwd, options)
-
-    theme.setCache(this.getCache())
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(fileObject)
+      .withOptions(options)
+      .setCache(this.getCache())
     await theme.load()
 
     const compiler = new Compiler()

@@ -68,29 +68,36 @@ export default class Theme {
 
   #cwd = null
 
-  /**
-   * Creates a new Theme instance.
-   *
-   * @param {FileObject} themeFile - The source theme file object
-   * @param {DirectoryObject} cwd - The project's directory.
-   * @param {object} options - Compilation options
-   */
-  constructor(themeFile, cwd, options) {
-    this.#sourceFile = themeFile
-    this.#name = themeFile.module
-    this.#outputFileName = `${this.#name}.${outputFileExtension}`
-    this.#options = options
+  setThemeFile(file) {
+    this.#sourceFile = file
+    this.#name = file.module
+
+    return this
+  }
+
+  setCwd(cwd) {
     this.#cwd = cwd
 
-    // Let's create the output directory, since we're gonna needs it.
-    // If outputDir is not provided or is ".", use the cwd itself
-    const outputDir = options.outputDir && options.outputDir !== "."
-      ? cwd.getDirectory(options.outputDir)
-      : cwd
-    const outputFile = outputDir.getFile(this.#outputFileName)
+    return this
+  }
 
-    this.#outputFile = outputFile
-    this.#outputDir = outputDir
+  withOptions(options) {
+    this.#options = options
+
+    const {outputDir = "."} = options ?? {}
+
+    if(!outputDir)
+      throw Sass.new(`No outputDir in options.`)
+
+    this.#outputFileName = `${this.#name}.${outputFileExtension}`
+
+    this.#outputDir = outputDir !== "."
+      ? this.#cwd?.getDirectory(options.outputDir)
+      : this.#cwd
+
+    this.#outputFile = this.#outputDir?.getFile(this.#outputFileName) ?? null
+
+    return this
   }
 
   /**
@@ -434,12 +441,12 @@ export default class Theme {
 
   /**
    * Checks if the theme is ready to be compiled.
-   * Requires source data and cache to be available.
+   * Requires source data to be available.
    *
    * @returns {boolean} True if theme can be compiled
    */
   isReady() {
-    return this.hasSource() && this.hasCache()
+    return this.hasSource()
   }
 
   /**
@@ -485,22 +492,25 @@ export default class Theme {
   /**
    * Loads and parses the theme source file.
    * Validates that the source contains required configuration.
-   * Skips loading if no cache is available (extension use case).
+   * Uses cache when available, otherwise reads the file directly.
    *
    * @returns {Promise<this>} Returns this instance for method chaining
    * @throws {Sass} If source file lacks required 'config' property
    */
   async load() {
-    // Skip loading if no cache (extension use case)
-    if(!this.#cache)
-      return this
+    const source = this.#cache
+      ? await this.#cache.loadCachedData(this.#sourceFile)
+      : await this.#sourceFile.loadData()
 
-    const source = await this.#cache.loadCachedData(this.#sourceFile)
+    if(!source[PropertyKey.CONFIG.description]) {
+      const label = this.#cwd
+        ? this.#sourceFile.relativeTo(this.#cwd)
+        : this.#sourceFile.path
 
-    if(!source[PropertyKey.CONFIG.description])
       throw Sass.new(
-        `'${this.#sourceFile.relativeTo(this.#cwd)}' does not contain '${PropertyKey.CONFIG.description}' property.`
+        `'${label}' does not contain '${PropertyKey.CONFIG.description}' property.`
       )
+    }
 
     this.#source = source
 
@@ -533,7 +543,10 @@ export default class Theme {
     const output = this.#outputJson
     const file = this.#outputFile
 
-    if(this.#options.dryRun) {
+    if(!file)
+      throw Sass.new("No output file configured. Set cwd and options before writing.")
+
+    if(this.#options?.dryRun) {
       Term.log(this.#outputJson)
 
       return {status: WriteStatus.DRY_RUN, file}
@@ -551,7 +564,7 @@ export default class Theme {
     }
 
     // Real write (timed)
-    if(!await this.#outputDir.exists)
+    if(this.#outputDir && !await this.#outputDir.exists)
       await this.#outputDir.assureExists()
 
     await file.write(output)

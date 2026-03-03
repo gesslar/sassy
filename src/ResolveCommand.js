@@ -96,9 +96,11 @@ export default class ResolveCommand extends Command {
       throw Sass.new(`No such function '${resolveFunctionName}'`)
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
-    const theme = new Theme(fileObject, cwd, options)
-
-    theme.setCache(this.getCache())
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(fileObject)
+      .withOptions(options)
+      .setCache(this.getCache())
 
     await theme.load()
     await theme.build()
