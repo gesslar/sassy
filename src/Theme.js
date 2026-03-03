@@ -71,23 +71,42 @@ export default class Theme {
   setThemeFile(file) {
     this.#sourceFile = file
     this.#name = file.module
+    this.#computeOutputPath()
 
     return this
   }
 
   setCwd(cwd) {
     this.#cwd = cwd
+    this.#computeOutputPath()
 
     return this
   }
 
   withOptions(options) {
-    this.#options = options
-
     const {outputDir = "."} = options ?? {}
 
     if(!outputDir)
       throw Sass.new(`No outputDir in options.`)
+
+    this.#options = options
+    this.#computeOutputPath()
+
+    return this
+  }
+
+  /**
+   * Recomputes the derived output path properties from current state.
+   * Called whenever cwd, themeFile, or options change so derived
+   * state remains consistent regardless of setter call order.
+   *
+   * @private
+   */
+  #computeOutputPath() {
+    if(!this.#name || !this.#options)
+      return
+
+    const {outputDir = "."} = this.#options
 
     this.#outputFileName = `${this.#name}.${outputFileExtension}`
 
@@ -96,8 +115,6 @@ export default class Theme {
       : this.#cwd
 
     this.#outputFile = this.#outputDir?.getFile(this.#outputFileName) ?? null
-
-    return this
   }
 
   /**
