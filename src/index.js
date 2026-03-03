@@ -8,33 +8,30 @@
  *
  * @example
  * // Import specific classes
- * import { Theme, LintCommand, Compiler } from '@gesslar/sassy'
+ * import {Theme, Lint, Resolve, Colour} from '@gesslar/sassy'
  *
- * // Import everything
- * import * as Sassy from '@gesslar/sassy'
- *
- * // Create and use a Theme programmatically
- * const theme = new Theme(fileObject)
- * await theme.load('./my-theme.json5')
+ * // Build a theme with the builder pattern
+ * const theme = new Theme()
+ *   .setCwd(cwd)
+ *   .setThemeFile(fileObject)
+ *   .withOptions({outputDir: './dist'})
+ * await theme.load()
  * await theme.build()
+ *
+ * // Use engine classes directly (no CLI needed)
+ * const results = await new Lint().run(theme)
+ * const data = new Resolve().color(theme, 'editor.background')
  */
 
 // Core theme functionality
 export {default as Theme} from "./Theme.js"
-export {default as Compiler} from "./Compiler.js"
-export {default as Evaluator} from "./Evaluator.js"
 
-// Command classes for programmatic access
-export {default as Command} from "./Command.js"
-export {default as BuildCommand} from "./BuildCommand.js"
-export {default as LintCommand} from "./LintCommand.js"
-export {default as ProofCommand} from "./ProofCommand.js"
-export {default as ResolveCommand} from "./ResolveCommand.js"
+// Engine classes — CLI-free analysis and introspection
+export {Lint} from "./LintCommand.js"
+export {Proof} from "./ProofCommand.js"
+export {Resolve} from "./ResolveCommand.js"
 
-// Data handling and utilities
-export {default as Session} from "./Session.js"
-
-// Color utilities
+// Colour utilities
 export {default as Colour} from "./Colour.js"
 
 // Note: CLI functionality remains in cli.js and is accessible via the 'sassy'

@@ -73,12 +73,14 @@ The second rule never applies because `string` was already matched by the first.
 
 **Severity:** info
 
-**What it detects:** Variables defined under `vars` that are never referenced in `colors`, `tokenColors`, or `semanticTokenColors` across the theme and its imports.
+**What it detects:** Leaf variables defined under `vars` that are never referenced anywhere — including in other vars, colors, tokenColors, and semanticTokenColors across the theme and its imports.
 
 **Why it matters:** Unused variables are dead code. They may indicate a typo in a variable name or a leftover from a previous revision.
 
 :::info
-This check only examines references in the `theme` section (colours, tokenColors, semanticTokenColors). Variables referenced only by other variables are not flagged -- they participate in the variable resolution chain even if they do not appear directly in theme output.
+Container keys (YAML mappings that hold child keys, like `std` in `std.fg.base`) are not flagged — they are namespaces, not variables. Only leaf values (strings, arrays) are tracked as defined variables.
+
+Variables referenced by other variables in the `vars` section are correctly recognised as used — the linter scans all sections for cross-references.
 :::
 
 **Example problem:**

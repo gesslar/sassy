@@ -5,24 +5,40 @@ title: "Theme Class"
 
 `Theme.js` manages the complete lifecycle of a single theme entry file.
 
+## Builder Pattern
+
+As of v5, Theme uses a chainable builder instead of a constructor with arguments:
+
+```javascript
+const theme = new Theme()
+  .setCwd(cwd)                          // DirectoryObject
+  .setThemeFile(file)                   // FileObject (also derives theme name)
+  .withOptions({outputDir: './dist'})   // compilation options
+  .setCache(cache)                      // optional — load() falls back to direct file read
+```
+
+This makes Theme usable from both the CLI (which provides a cwd and options) and from an API consumer (which may only have a `FileObject`).
+
 ## Key Properties
 
 | Property | Type | Description |
 |---|---|---|
-| `sourceFile` | `FileObject` | The entry theme file |
+| `sourceFile` | `FileObject` | The entry theme file (set via `setThemeFile`) |
 | `source` | `object` | Parsed YAML/JSON5 content |
 | `output` | `object` | Final compiled VS Code theme JSON |
 | `dependencies` | `Set<Dependency>` | Tracked import files for watch mode |
 | `lookup` | `object` | Variable resolution data |
 | `pool` | `ThemePool` | Token registry from compilation |
 | `outputFileName` | `string` | Derived output filename (`.color-theme.json`) |
+| `name` | `string` | Theme name, derived from `file.module` in `setThemeFile` |
 
 ## Methods
 
 ### `load()`
 
 Parses the source file. Format is auto-detected from the file extension (JSON5
-or YAML). Populates `source` with the parsed content.
+or YAML). Uses `Cache.loadCachedData()` when a cache is set, otherwise falls
+back to `FileObject.loadData()`. Populates `source` with the parsed content.
 
 ### `build(options?)`
 
@@ -33,6 +49,7 @@ and mutates it — setting output, lookup, and pool upon completion.
 
 Writes the compiled output as `.color-theme.json`. Uses sha256 hashing to skip
 writes when the output has not changed. Supports dry-run mode via options.
+Guards against missing output configuration (no cwd or outputDir).
 
 Returns a `WriteStatus` symbol: `DRY_RUN`, `SKIPPED`, or `WRITTEN`.
 

@@ -44,21 +44,30 @@ Each phase receives and returns the working data structures (decomposed arrays o
 
 ## Adding Lint Rules
 
-`LintCommand` validates theme files through four analysis methods:
+The `Lint` engine class (exported as a named export from `LintCommand.js`) performs all analysis. `LintCommand` is a thin CLI adapter that delegates to `Lint` and handles terminal output.
+
+`Lint` validates theme files through four analysis methods:
 
 - Duplicate scope detection in tokenColors
 - Undefined variable references
-- Unused variable definitions
+- Unused variable definitions (scans all sections including vars cross-references)
 - Scope precedence issues (broad scopes masking specific ones)
 
 To add a new rule:
 
-1. Add a validation method to `LintCommand`.
+1. Add a validation method to the `Lint` class.
 2. Iterate over the relevant theme data (source, compiled, or both).
 3. Collect issues with a severity type (`error` or `warning`).
-4. Format and output results using the existing reporting pattern.
+4. Return the issues from your method — `LintCommand` handles terminal formatting.
 
-The lint command has access to both the raw source and the compiled theme, so rules can check either pre- or post-compilation state.
+The `Lint` engine receives a compiled `Theme` and has access to both the raw source (via `theme.getDependencies()`) and the compiled output (via `theme.getOutput()`), so rules can check either pre- or post-compilation state.
+
+API consumers can use `Lint` directly without CLI infrastructure:
+
+```javascript
+import {Theme, Lint} from '@gesslar/sassy'
+const results = await new Lint().run(theme)
+```
 
 ## Philosophy
 

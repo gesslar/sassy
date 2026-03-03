@@ -5,7 +5,7 @@ title: "Programmatic API"
 
 import CodeBlock from "@site/src/components/CodeBlock"
 
-Sassy exposes its core classes for programmatic use. The API is **experimental** and the interface may change between minor versions.
+Sassy exposes its core classes for programmatic use. As of v5, the API uses a **builder pattern** for Theme and provides standalone **engine classes** (`Lint`, `Resolve`, `Proof`) that work without CLI infrastructure.
 
 ## Installation
 
@@ -26,20 +26,16 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 
 <CodeBlock lang="javascript">{`
 
-    import {FileObject, DirectoryObject, Cache} from '@gesslar/toolkit'
+    import {FileObject, DirectoryObject} from '@gesslar/toolkit'
     import {Theme} from '@gesslar/sassy'
 
     const cwd = DirectoryObject.fromCwd()
-    const file = new FileObject('my-theme.yaml', cwd)
-    const cache = new Cache()
+    const file = cwd.getFile('my-theme.yaml')
 
-    const theme = new Theme(file, cwd, {
-      outputDir: './dist',
-      dryRun: false,
-      silent: false,
-    })
-
-    theme.setCache(cache)
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(file)
+      .withOptions({outputDir: './dist'})
 
     await theme.load()
     await theme.build()
@@ -49,42 +45,49 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 
 `}</CodeBlock>
 
+:::tip
+Cache is optional. Without one, `load()` reads the file directly via `FileObject.loadData()`. Set a cache with `.setCache(cache)` before `load()` when you want cross-theme file caching in a session.
+:::
+
 ## Exported Classes
+
+**Engine classes** are the preferred API surface for programmatic consumers. They have no CLI dependencies — give them a compiled Theme and they return structured data.
 
 | Export | Description |
 |--------|-------------|
 | `Theme` | Theme lifecycle: load, build, write, dependency tracking |
-| `Compiler` | Compilation pipeline (used internally by Theme) |
-| `Evaluator` | Variable substitution and colour function evaluation |
-| `Command` | Base class for CLI commands |
-| `BuildCommand` | Build subcommand implementation |
-| `LintCommand` | Lint subcommand and programmatic lint API |
-| `ProofCommand` | Proof subcommand and programmatic proof API |
-| `ResolveCommand` | Resolve subcommand and programmatic resolve API |
-| `Session` | Orchestrates theme processing sessions |
+| `Lint` | Lint engine — static analysis, returns structured issue data |
+| `Resolve` | Resolve engine — token/scope resolution with trails |
+| `Proof` | Proof engine — composed document view (pre-evaluation) |
 | `Colour` | Colour manipulation utilities (lighten, darken, mix, etc.) |
 
 ## Theme Class
 
-### Constructor
+### Builder Pattern
+
+Theme uses a chainable builder. All setters return `this`.
 
 <CodeBlock lang="javascript">{`
 
-    new Theme(fileObject, cwd, options)
+    const theme = new Theme()
+      .setCwd(cwd)                          // DirectoryObject
+      .setThemeFile(file)                   // FileObject
+      .withOptions({outputDir: './dist'})   // compilation options
+      .setCache(cache)                      // optional Cache instance
 
 `}</CodeBlock>
 
-| Parameter | Type | Description |
+| Builder Method | Type | Description |
 |-----------|------|-------------|
-| `fileObject` | `FileObject` | Source theme file |
-| `cwd` | `DirectoryObject` | Working directory for relative path resolution |
-| `options` | `object` | Compilation options (`outputDir`, `dryRun`, `silent`, `nerd`) |
+| `setCwd(dir)` | `DirectoryObject` | Working directory for relative path resolution |
+| `setThemeFile(file)` | `FileObject` | Source theme file (also derives theme name) |
+| `withOptions(opts)` | `object` | Compilation options (`outputDir`, `dryRun`, `silent`, `nerd`) |
+| `setCache(cache)` | `Cache` | File cache instance (optional — `load()` falls back to direct file read) |
 
 ### Methods
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `setCache(cache)` | `this` | Set the file cache instance (required before `load()`) |
 | `load()` | `Promise<this>` | Parse and validate the source file |
 | `build()` | `Promise<this>` | Run the full compilation pipeline |
 | `write(force?)` | `Promise<{status, file}>` | Write output to disk. Skips if hash unchanged unless `force` is true. |
@@ -96,29 +99,29 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 | `getDependencies()` | `Set` | Get tracked file dependencies |
 | `addDependency(file, source)` | `this` | Track an import dependency |
 | `hasOutput()` | `boolean` | Check if compilation produced output |
-| `isReady()` | `boolean` | Check if source and cache are available |
+| `isReady()` | `boolean` | Check if source data is available |
 | `isCompiled()` | `boolean` | Check if output, pool, and lookup are present |
 
-## LintCommand (Programmatic Linting)
+## Lint Engine
+
+The `Lint` class analyses a compiled theme and returns structured issue data. No CLI infrastructure needed.
 
 <CodeBlock lang="javascript">{`
 
-    import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
-    import {Theme, LintCommand} from '@gesslar/sassy'
+    import {DirectoryObject} from '@gesslar/toolkit'
+    import {Theme, Lint} from '@gesslar/sassy'
 
     const cwd = DirectoryObject.fromCwd()
-    const cache = new Cache()
-    const file = new FileObject('my-theme.yaml', cwd)
+    const file = cwd.getFile('my-theme.yaml')
 
-    const theme = new Theme(file, cwd, {})
-    theme.setCache(cache)
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(file)
+      .withOptions({})
     await theme.load()
     await theme.build()
 
-    const linter = new LintCommand({cwd, packageJson: {}})
-    linter.setCache(cache)
-
-    const results = await linter.lint(theme)
+    const results = await new Lint().run(theme)
     // results.tokenColors          - array of tokenColors issues
     // results.semanticTokenColors  - array of semanticTokenColors issues
     // results.colors               - array of colors issues
@@ -126,25 +129,35 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 
 `}</CodeBlock>
 
-## ProofCommand (Programmatic Proofing)
+Constants for issue types, severity levels, and section names are static properties on `Lint`:
 
 <CodeBlock lang="javascript">{`
 
-    import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
-    import {Theme, ProofCommand} from '@gesslar/sassy'
+    Lint.SECTIONS.TOKEN_COLORS        // "tokenColors"
+    Lint.SEVERITY.HIGH                // "high"
+    Lint.ISSUE_TYPES.DUPLICATE_SCOPE  // "duplicate-scope"
+
+`}</CodeBlock>
+
+## Proof Engine
+
+The `Proof` class returns the fully composed theme document (post-import, pre-evaluation).
+
+<CodeBlock lang="javascript">{`
+
+    import {DirectoryObject} from '@gesslar/toolkit'
+    import {Theme, Proof} from '@gesslar/sassy'
 
     const cwd = DirectoryObject.fromCwd()
-    const cache = new Cache()
-    const file = new FileObject('my-theme.yaml', cwd)
+    const file = cwd.getFile('my-theme.yaml')
 
-    const theme = new Theme(file, cwd, {})
-    theme.setCache(cache)
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(file)
+      .withOptions({})
     await theme.load()
 
-    const proofer = new ProofCommand({cwd, packageJson: {}})
-    proofer.setCache(cache)
-
-    const composed = await proofer.proof(theme)
+    const composed = await new Proof().run(theme)
     // composed.config             - resolved config (without import key)
     // composed.palette            - merged palette with séance inlined
     // composed.vars               - merged vars
@@ -154,33 +167,35 @@ Sassy exposes its core classes for programmatic use. The API is **experimental**
 
 `}</CodeBlock>
 
-## ResolveCommand (Programmatic Resolution)
+## Resolve Engine
+
+The `Resolve` class traces token resolution through the variable dependency chain.
 
 <CodeBlock lang="javascript">{`
 
-    import {Cache, DirectoryObject, FileObject} from '@gesslar/toolkit'
-    import {Theme, ResolveCommand} from '@gesslar/sassy'
+    import {DirectoryObject} from '@gesslar/toolkit'
+    import {Theme, Resolve} from '@gesslar/sassy'
 
     const cwd = DirectoryObject.fromCwd()
-    const cache = new Cache()
-    const file = new FileObject('my-theme.yaml', cwd)
+    const file = cwd.getFile('my-theme.yaml')
 
-    const theme = new Theme(file, cwd, {})
-    theme.setCache(cache)
+    const theme = new Theme()
+      .setCwd(cwd)
+      .setThemeFile(file)
+      .withOptions({})
     await theme.load()
     await theme.build()
 
-    const resolver = new ResolveCommand({cwd, packageJson: {}})
-    resolver.setCache(cache)
+    const resolver = new Resolve()
 
-    // Resolve a colour property
-    const colorResult = await resolver.resolve(theme, {color: 'editor.background'})
+    // Resolve a colour variable
+    const colorResult = resolver.color(theme, 'editor.background')
 
     // Resolve a tokenColors scope
-    const tokenResult = await resolver.resolve(theme, {tokenColor: 'keyword.control'})
+    const tokenResult = await resolver.tokenColor(theme, 'keyword.control')
 
     // Resolve a semanticTokenColors scope
-    const semanticResult = await resolver.resolve(theme, {semanticTokenColor: 'variable'})
+    const semanticResult = await resolver.semanticTokenColor(theme, 'variable')
 
 `}</CodeBlock>
 
