@@ -26,7 +26,9 @@ export class Proof {
    * Proofs a loaded theme, returning the composed document before
    * variable substitution or colour function evaluation.
    *
-   * @param {Theme} theme - A loaded Theme instance
+   * Automatically calls `theme.load()` if the theme is not ready.
+   *
+   * @param {Theme} theme - A Theme instance
    * @returns {Promise<object>} The composed, unevaluated theme structure
    */
   async run(theme) {

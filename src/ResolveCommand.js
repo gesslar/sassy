@@ -28,6 +28,8 @@ export class Resolve {
   /**
    * Resolves a colour token to its final value with trail.
    *
+   * Automatically calls `theme.load()` if the theme is not ready.
+   *
    * @param {Theme} theme - The compiled theme object with pool
    * @param {string} colorName - The colour key to resolve
    * @returns {Promise<object>} `{ found, name, resolution?, trail? }`
@@ -57,6 +59,8 @@ export class Resolve {
 
   /**
    * Resolves a tokenColors scope to its final value with trail.
+   *
+   * Automatically calls `theme.load()` if the theme is not ready.
    *
    * @param {Theme} theme - The compiled theme object with output
    * @param {string} scopeName - The scope to resolve
@@ -125,6 +129,8 @@ export class Resolve {
 
   /**
    * Resolves a semanticTokenColors scope to its final value with trail.
+   *
+   * Automatically calls `theme.load()` if the theme is not ready.
    *
    * @param {Theme} theme - The compiled theme object with output
    * @param {string} scopeName - The scope to resolve

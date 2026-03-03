@@ -49,6 +49,10 @@ Sassy exposes its core classes for programmatic use. As of v5, the API uses a **
 Cache is optional. Without one, `load()` reads the file directly via `FileObject.loadData()`. Set a cache with `.setCache(cache)` before `load()` when you want cross-theme file caching in a session.
 :::
 
+:::tip
+Engine methods will automatically call `theme.load()` if the Theme is not ready. They do not automatically call `theme.build()`, so build first when you need compiled output (e.g. Resolve, full linting).
+:::
+
 ## Exported Classes
 
 **Engine classes** are the preferred API surface for programmatic consumers. They have no CLI dependencies — give them a compiled Theme and they return structured data.
@@ -189,7 +193,7 @@ The `Resolve` class traces token resolution through the variable dependency chai
     const resolver = new Resolve()
 
     // Resolve a colour variable
-    const colorResult = resolver.color(theme, 'editor.background')
+    const colorResult = await resolver.color(theme, 'editor.background')
 
     // Resolve a tokenColors scope
     const tokenResult = await resolver.tokenColor(theme, 'keyword.control')
