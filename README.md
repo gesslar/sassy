@@ -531,6 +531,40 @@ npx @gesslar/sassy build my-theme.yaml --watch
 
 Now edit your YAML file and watch VS Code update automatically!
 
+## Programmatic API
+
+Sassy's core is fully usable without the CLI. The builder pattern on `Theme`
+and standalone engine classes (`Lint`, `Resolve`, `Proof`) make it embeddable
+in editors, extensions, and build tools.
+
+```javascript
+import {DirectoryObject} from '@gesslar/toolkit'
+import {Theme, Lint, Resolve} from '@gesslar/sassy'
+
+const cwd = DirectoryObject.fromCwd()
+const file = cwd.getFile('my-theme.yaml')
+
+// Build
+const theme = new Theme()
+  .setCwd(cwd)
+  .setThemeFile(file)
+  .withOptions({outputDir: './dist'})
+await theme.load()
+await theme.build()
+
+const output = theme.getOutput()          // compiled theme object
+
+// Lint
+const issues = await new Lint().run(theme) // structured issue data
+
+// Resolve
+const data = new Resolve().color(theme, 'editor.background')  // resolution trail
+```
+
+Cache is optional — `load()` falls back to direct file reads without one.
+See the [full API reference](https://sassy.gesslar.io/docs/reference/api) for
+details on all engine classes and return shapes.
+
 ## Tips for Great Themes
 
 ### Start with Meaning, Not Colours

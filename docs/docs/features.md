@@ -134,12 +134,15 @@ sidebar_position: 99
 
 ## Programmatic API
 
-- **ES Module Exports** — `import { Theme, Compiler, Colour, LintCommand } from '@gesslar/sassy'`
-- **Full Class Access** — Theme, Compiler, Evaluator, Session, Colour, and all command classes are importable
+- **ES Module Exports** — `import {Theme, Lint, Resolve, Proof, Colour} from '@gesslar/sassy'`
+- **Builder Pattern** — `new Theme().setCwd(cwd).setThemeFile(file).withOptions(opts)` — no CLI dependencies required
+- **Engine Classes** — `Lint`, `Resolve`, and `Proof` work standalone — give them a Theme, get structured data back
+- **Cache-Optional Loading** — `load()` falls back to `FileObject.loadData()` when no cache is set
 - **Embeddable Compilation** — Build themes programmatically without the CLI
-- **Proof API** — Retrieve the composed, unevaluated theme structure for external tooling
-- **Lint API** — Run lint checks and get structured results for external tooling
-- **Resolve API** — Programmatically resolve tokens and get structured resolution data
+- **Lint Engine** — `new Lint().run(theme)` — returns categorised issues with severity levels
+- **Resolve Engine** — `new Resolve().color(theme, key)` — trace any token through its resolution chain
+- **Proof Engine** — `new Proof().run(theme)` — composed document view before evaluation
+- **Full Class Access** — Theme, Colour, and all engine classes are importable
 
 ## Developer Experience
 
