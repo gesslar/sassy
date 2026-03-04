@@ -41,7 +41,8 @@ export default class TokenColorStructureRules {
     for(let i = 0; i < tokenColors.length; i++) {
       const entry = tokenColors[i]
 
-      if(!entry.scope && entry.settings)
+      if(!entry.scope && typeof entry.settings === "object" &&
+         entry.settings !== null && !Array.isArray(entry.settings))
         scopeless.push({
           index: i + 1,
           name: entry.name || `Entry ${i + 1}`,
