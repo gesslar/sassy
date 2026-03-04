@@ -71,6 +71,44 @@ A broad TextMate scope appearing before a more specific one. VS Code evaluates `
 
 The linter checks proper TextMate scope hierarchy -- `keyword` is broader than `keyword.control` because every `keyword.control` scope also matches `keyword`.
 
+### 5. Semantic Token Colour Validation
+
+The linter performs comprehensive validation of your `semanticTokenColors` section. VS Code silently ignores invalid entries here -- no errors, no warnings -- so these checks catch problems you'd otherwise never see.
+
+**Selector syntax** -- validates against VS Code's expected pattern. Catches malformed selectors like `.readonly` (leading dot), `variable..readonly` (double dot), or `variable:ts:js` (multiple languages).
+
+<CodeBlock lang="log">{`
+
+  ● Selector '.readonly' does not match VS Code's expected pattern
+
+`}</CodeBlock>
+
+**Token types and modifiers** -- checks selectors against VS Code's 23 standard token types and 10 standard modifiers. Typos like `vairable` or `readOnly` (should be `readonly`) are flagged at info level since they could also be extension-contributed types.
+
+<CodeBlock lang="log">{`
+
+  ● Token type 'vairable' is not a standard VS Code token type (may require an extension)
+
+`}</CodeBlock>
+
+**Value format** -- validates hex colour strings, fontStyle keywords, and style objects. Catches invalid hex values, unrecognised fontStyle keywords, and the common trap where `fontStyle` silently overrides boolean style properties (`bold`, `italic`, etc.) when both are present.
+
+<CodeBlock lang="log">{`
+
+  ● 'variable.declaration' has both fontStyle and bold — fontStyle overrides the boolean properties
+
+`}</CodeBlock>
+
+**Theme coherence** -- warns when `semanticTokenColors` rules are defined but `semanticHighlighting` is not enabled in `config.custom`. Without it, all your semantic rules are dead code.
+
+<CodeBlock lang="log">{`
+
+  ● semanticTokenColors rules are defined but semanticHighlighting is not enabled
+
+`}</CodeBlock>
+
+See the [Lint Rules](/docs/reference/lint-rules) reference for the full list of semantic token checks.
+
 ## Reading the Output
 
 Issues are sorted by severity: errors first, then warnings, then info. The summary at the end gives you counts:

@@ -6,6 +6,7 @@
 export class Resolve {
     /**
      * Resolves a colour token to its final value with trail.
+     *
      * Automatically calls `theme.load()` if the theme is not ready.
      *
      * @param {Theme} theme - The compiled theme object with pool
@@ -15,6 +16,7 @@ export class Resolve {
     color(theme: Theme, colorName: string): Promise<object>;
     /**
      * Resolves a tokenColors scope to its final value with trail.
+     *
      * Automatically calls `theme.load()` if the theme is not ready.
      *
      * @param {Theme} theme - The compiled theme object with output
@@ -24,6 +26,7 @@ export class Resolve {
     tokenColor(theme: Theme, scopeName: string): Promise<object>;
     /**
      * Resolves a semanticTokenColors scope to its final value with trail.
+     *
      * Automatically calls `theme.load()` if the theme is not ready.
      *
      * @param {Theme} theme - The compiled theme object with output

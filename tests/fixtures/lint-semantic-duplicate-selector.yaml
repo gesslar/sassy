@@ -1,0 +1,14 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Semantic Duplicate Selector Test
+  type: dark
+  custom:
+    semanticHighlighting: true
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    "variable.readonly.static":
+      foreground: "#ff0000"
+    "variable.static.readonly":
+      foreground: "#00ff00"
