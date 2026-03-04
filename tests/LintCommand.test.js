@@ -7,6 +7,8 @@ import LintCommand, {Lint} from "../src/LintCommand.js"
 import SemanticCoherenceRules from "../src/lint/SemanticCoherenceRules.js"
 import SemanticSelectorRules from "../src/lint/SemanticSelectorRules.js"
 import SemanticValueRules from "../src/lint/SemanticValueRules.js"
+import TokenColorStructureRules from "../src/lint/TokenColorStructureRules.js"
+import TokenColorValueRules from "../src/lint/TokenColorValueRules.js"
 import Theme from "../src/Theme.js"
 import path from "node:path"
 import {fileURLToPath} from "node:url"
@@ -448,6 +450,123 @@ describe("LintCommand", () => {
 
       assert.equal(semanticIssues.length, 0,
         `expected no semantic issues for clean theme, got: ${JSON.stringify(semanticIssues)}`)
+    })
+  })
+
+  describe("token colour linting", () => {
+    /**
+     * Helper to build a theme from a fixture and run the linter.
+     *
+     * @param {string} fixture - Fixture filename relative to fixtures/
+     * @returns {Promise<object>} Lint results
+     */
+    async function lintFixture(fixture) {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile(`./fixtures/${fixture}`)
+      const theme = new Theme()
+        .setCwd(cwd)
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      return new Lint().run(theme)
+    }
+
+    it("detects missing settings", async() => {
+      const results = await lintFixture("lint-tc-invalid-settings.yaml")
+      const issues = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.MISSING_SETTINGS)
+
+      assert.ok(issues.length > 0, "should detect missing settings")
+      assert.equal(issues[0].rule, "Missing Settings")
+      assert.equal(issues[0].severity, "high")
+    })
+
+    it("detects empty settings (direct)", () => {
+      // Empty settings may be stripped by compiler, test rule directly
+      const issues = TokenColorValueRules.run([
+        {name: "Empty", scope: "keyword", settings: {}},
+        {name: "Valid", scope: "string", settings: {foreground: "#ff0000"}},
+      ])
+
+      const empties = issues.filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.EMPTY_SETTINGS)
+
+      assert.ok(empties.length > 0, "should detect empty settings")
+      assert.equal(empties[0].rule, "Empty")
+    })
+
+    it("detects unknown settings properties", async() => {
+      const results = await lintFixture("lint-tc-invalid-settings.yaml")
+      const issues = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.UNKNOWN_SETTINGS_PROPERTY)
+
+      assert.ok(issues.length > 0, "should detect unknown settings properties")
+
+      const decoration = issues.find(i => i.property === "decoration")
+      assert.ok(decoration, "should flag 'decoration' as unknown")
+      assert.equal(decoration.severity, "low")
+    })
+
+    it("detects invalid hex colours in foreground", async() => {
+      const results = await lintFixture("lint-tc-invalid-hex.yaml")
+      const issues = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.INVALID_HEX_COLOUR)
+
+      assert.ok(issues.length >= 2, `expected at least 2 invalid hex colours, got ${issues.length}`)
+
+      const notAColour = issues.find(i => i.colour === "not-a-colour")
+      assert.ok(notAColour, "should flag 'not-a-colour'")
+      assert.equal(notAColour.property, "foreground")
+
+      const zzz = issues.find(i => i.colour === "zzz")
+      assert.ok(zzz, "should flag 'zzz' as invalid hex")
+      assert.equal(zzz.property, "background")
+    })
+
+    it("detects invalid fontStyle keywords", async() => {
+      const results = await lintFixture("lint-tc-invalid-fontstyle.yaml")
+      const issues = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.INVALID_FONTSTYLE)
+
+      assert.ok(issues.length >= 2, "should detect invalid fontStyle keywords")
+
+      const regular = issues.find(i => i.keyword === "regular")
+      assert.ok(regular, "should flag 'regular' as invalid fontStyle keyword")
+
+      const oblique = issues.find(i => i.keyword === "oblique")
+      assert.ok(oblique, "should flag 'oblique' as invalid fontStyle keyword")
+    })
+
+    it("detects deprecated background property", async() => {
+      const results = await lintFixture("lint-tc-deprecated-background.yaml")
+      const issues = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.DEPRECATED_BACKGROUND)
+
+      assert.ok(issues.length > 0, "should detect deprecated background property")
+      assert.equal(issues[0].rule, "With Background")
+      assert.equal(issues[0].severity, "medium")
+    })
+
+    it("detects multiple global defaults", async() => {
+      const results = await lintFixture("lint-tc-multiple-globals.yaml")
+      const issues = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === TokenColorStructureRules.ISSUE_TYPES.MULTIPLE_GLOBAL_DEFAULTS)
+
+      assert.ok(issues.length > 0, "should detect multiple global defaults")
+      assert.equal(issues[0].rule, "Global Default A")
+      assert.equal(issues[0].severity, "medium")
+    })
+
+    it("reports no issues for clean tokenColors", async() => {
+      const results = await lintFixture("lint-tc-clean.yaml")
+      const tcIssues = results[Lint.SECTIONS.TOKEN_COLORS]
+
+      assert.equal(tcIssues.length, 0,
+        `expected no tokenColors issues for clean theme, got: ${JSON.stringify(tcIssues)}`)
     })
   })
 })

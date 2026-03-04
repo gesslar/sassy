@@ -1,0 +1,25 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint TC Clean
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Global Default
+      settings:
+        foreground: "#e6e6e6"
+    - name: Keywords
+      scope: keyword
+      settings:
+        foreground: "#ff0000"
+        fontStyle: "bold"
+    - name: Strings
+      scope: string
+      settings:
+        foreground: "#00ff00"
+        fontStyle: "italic"
+    - name: Comments
+      scope: comment
+      settings:
+        foreground: "#888888"

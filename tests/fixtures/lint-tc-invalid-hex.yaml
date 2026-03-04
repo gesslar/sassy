@@ -1,0 +1,21 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint TC Invalid Hex
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Bad Foreground
+      scope: keyword
+      settings:
+        foreground: "not-a-colour"
+    - name: Bad Background
+      scope: string
+      settings:
+        foreground: "#ff0000"
+        background: "zzz"
+    - name: Good Hex
+      scope: comment
+      settings:
+        foreground: "#aabbcc"

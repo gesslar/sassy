@@ -87,6 +87,8 @@ Issue objects have this shape:
 | `SemanticSelectorRules` | `output.semanticTokenColors` keys | Selector syntax, token types, modifiers, duplicates |
 | `SemanticValueRules` | `output.semanticTokenColors` values | Hex colours, fontStyle, empty rules, deprecated props |
 | `SemanticCoherenceRules` | Full `output` object | Missing semanticHighlighting, shadowed rules |
+| `TokenColorValueRules` | `output.tokenColors` array | Settings validation: hex colours, fontStyle, missing/empty settings, unknown props |
+| `TokenColorStructureRules` | `output.tokenColors` array | Multiple global defaults |
 
 Shared constants (standard token types, modifiers, selector regex, parser) live in `src/lint/SemanticConstants.js`.
 

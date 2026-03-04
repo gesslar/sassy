@@ -1,0 +1,18 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint TC Invalid Settings
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Missing Settings
+      scope: keyword
+    - name: Empty Settings
+      scope: string
+      settings: {}
+    - name: Unknown Property
+      scope: comment
+      settings:
+        foreground: "#aaaaaa"
+        decoration: underline

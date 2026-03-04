@@ -71,7 +71,49 @@ A broad TextMate scope appearing before a more specific one. VS Code evaluates `
 
 The linter checks proper TextMate scope hierarchy -- `keyword` is broader than `keyword.control` because every `keyword.control` scope also matches `keyword`.
 
-### 5. Semantic Token Colour Validation
+### 5. Token Colour Settings Validation
+
+The linter validates the `settings` object inside each `tokenColors` entry. VS Code silently ignores entries with missing or malformed settings, so these checks catch dead rules you'd never notice.
+
+**Missing or empty settings** -- flags entries that have no `settings` key (error) or an empty `settings: {}` (info).
+
+<CodeBlock lang="log">{`
+
+  ● 'Keywords' has no valid settings object
+
+`}</CodeBlock>
+
+**Hex colour validation** -- checks that `foreground` and `background` values are valid hex colours.
+
+<CodeBlock lang="log">{`
+
+  ● 'not-a-colour' in 'Keywords' (foreground) is not a valid hex colour (#RGB, #RRGGBB, or #RRGGBBAA)
+
+`}</CodeBlock>
+
+**fontStyle validation** -- checks that fontStyle keywords are recognised (italic, bold, underline, strikethrough).
+
+<CodeBlock lang="log">{`
+
+  ● fontStyle keyword 'regular' in 'Keywords' is not recognised (valid: italic, bold, underline, strikethrough)
+
+`}</CodeBlock>
+
+**Deprecated background** -- warns when the `background` property is used, as it has limited support in VS Code.
+
+**Unknown properties** -- flags settings properties that aren't `foreground`, `background`, or `fontStyle`.
+
+**Multiple global defaults** -- warns when more than one scopeless entry exists, since only the last one takes effect.
+
+<CodeBlock lang="log">{`
+
+  ● 'Global Default A' has no scope and is overridden by a later scopeless entry — only the last global default takes effect
+
+`}</CodeBlock>
+
+See the [Lint Rules](/docs/reference/lint-rules) reference for the full list of tokenColors checks.
+
+### 6. Semantic Token Colour Validation
 
 The linter performs comprehensive validation of your `semanticTokenColors` section. VS Code silently ignores invalid entries here -- no errors, no warnings -- so these checks catch problems you'd otherwise never see.
 

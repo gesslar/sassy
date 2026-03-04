@@ -1,0 +1,13 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint TC Deprecated Background
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: With Background
+      scope: keyword
+      settings:
+        foreground: "#ff0000"
+        background: "#000000"

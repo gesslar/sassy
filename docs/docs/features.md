@@ -110,6 +110,11 @@ sidebar_position: 99
 - **Undefined Variable Detection** — Catches references to variables that don't exist
 - **Unused Variable Detection** — Identifies vars defined but never referenced in theme content
 - **Scope Precedence Analysis** — Warns when a broad scope masks a more specific one due to rule ordering
+- **Token Colour Settings Validation** — Validates settings objects: hex colours, fontStyle keywords, unknown properties
+- **Missing/Empty Settings Detection** — Catches tokenColors entries with no settings or empty settings objects
+- **Deprecated Background Detection** — Flags the deprecated `background` property in tokenColors settings
+- **Multiple Global Default Detection** — Warns when multiple scopeless tokenColors entries exist (only the last takes effect)
+- **Unknown Settings Property Detection** — Flags unrecognised properties in tokenColors settings objects
 - **Semantic Selector Validation** — Validates semanticTokenColors selectors against VS Code's parser rules
 - **Semantic Token Type Registry** — Checks token types and modifiers against VS Code's 23 standard types and 10 standard modifiers
 - **Semantic Value Validation** — Validates hex colours, fontStyle keywords, and catches the fontStyle-vs-boolean override trap

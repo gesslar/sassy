@@ -159,6 +159,126 @@ Precedence analysis uses TextMate scope hierarchy rules. A scope `A` is consider
 
 ---
 
+## Token Colour Settings Rules
+
+The following rules validate the `settings` object inside each `tokenColors` entry and the overall structure of the tokenColors array.
+
+---
+
+### Missing Settings
+
+**Severity:** error
+
+**What it detects:** A `tokenColors` entry that has no `settings` key, or where `settings` is not an object.
+
+**Why it matters:** Without a valid settings object, the rule does nothing. VS Code silently ignores it.
+
+**Fix:** Add a `settings` object with at least a `foreground` or `fontStyle` property.
+
+---
+
+### Empty Settings
+
+**Severity:** info
+
+**What it detects:** A `tokenColors` entry whose `settings` is an empty object (`{}`).
+
+**Why it matters:** An empty settings object is technically valid but contributes nothing to the theme.
+
+**Fix:** Add colour or style properties, or remove the entry.
+
+---
+
+### Invalid Hex Colour (tokenColors)
+
+**Severity:** error
+
+**What it detects:** A `foreground` or `background` value in `settings` that is not a valid hex colour in `#RGB`, `#RRGGBB`, or `#RRGGBBAA` format.
+
+**Example problem:**
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    tokenColors:
+      - name: Keywords
+        scope: keyword
+        settings:
+          foreground: "not-a-colour"
+
+`}</CodeBlock>
+
+**Fix:** Use a valid hex colour string.
+
+---
+
+### Invalid fontStyle Keyword (tokenColors)
+
+**Severity:** warning
+
+**What it detects:** A word in the `fontStyle` string that isn't one of the four recognised keywords: `italic`, `bold`, `underline`, `strikethrough`.
+
+**Why it matters:** Unrecognised words like `regular` or `oblique` are silently ignored — they don't cause errors but they don't do anything either.
+
+:::info
+`fontStyle: ""` (empty string) is valid and intentional — it clears all inherited font styles.
+:::
+
+---
+
+### Deprecated Background (tokenColors)
+
+**Severity:** warning
+
+**What it detects:** The `background` property in a `tokenColors` settings object.
+
+**Why it matters:** Token background colours have limited support in VS Code. The property is accepted by the schema but rarely has a visual effect.
+
+---
+
+### Unknown Settings Property
+
+**Severity:** info
+
+**What it detects:** A property in the `settings` object that isn't `foreground`, `background`, or `fontStyle`.
+
+**Why it matters:** VS Code ignores unknown properties. Common mistakes include `decoration`, `color`, or `font-style` (hyphenated).
+
+**Fix:** Use one of the three valid properties: `foreground`, `background`, `fontStyle`.
+
+---
+
+### Multiple Global Defaults
+
+**Severity:** warning
+
+**What it detects:** More than one `tokenColors` entry without a `scope` property. Scopeless entries act as global defaults. When multiple exist, only the last one takes effect — earlier ones are dead code.
+
+**Example problem:**
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    tokenColors:
+      - name: Global Default A
+        settings:
+          foreground: "#cccccc"
+      - name: Keywords
+        scope: keyword
+        settings:
+          foreground: "#ff0000"
+      - name: Global Default B
+        settings:
+          foreground: "#dddddd"
+
+`}</CodeBlock>
+
+`Global Default A` is overridden by `Global Default B`.
+
+**Fix:** Keep only one scopeless entry, or consolidate them.
+
+---
+
 ## Semantic Token Colour Rules
 
 The following rules validate the `semanticTokenColors` section of your compiled theme. VS Code silently ignores invalid entries in this section — no runtime errors, no warnings — making these checks especially valuable.

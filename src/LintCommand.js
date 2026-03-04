@@ -25,6 +25,8 @@ import Evaluator from "./Evaluator.js"
 import SemanticCoherenceRules from "./lint/SemanticCoherenceRules.js"
 import SemanticSelectorRules from "./lint/SemanticSelectorRules.js"
 import SemanticValueRules from "./lint/SemanticValueRules.js"
+import TokenColorStructureRules from "./lint/TokenColorStructureRules.js"
+import TokenColorValueRules from "./lint/TokenColorValueRules.js"
 import Theme from "./Theme.js"
 import {FileSystem, Term} from "@gesslar/toolkit"
 
@@ -144,6 +146,8 @@ export class Lint {
     return [
       ...this.#checkDuplicateScopes(tokenColors),
       ...this.#checkPrecedenceIssues(tokenColors),
+      ...TokenColorValueRules.run(tokenColors),
+      ...TokenColorStructureRules.run(tokenColors),
     ]
   }
 
@@ -793,7 +797,16 @@ export default class LintCommand extends Command {
       case SemanticValueRules.ISSUE_TYPES.EMPTY_RULE:
       // Semantic coherence rules
       case SemanticCoherenceRules.ISSUE_TYPES.MISSING_SEMANTIC_HIGHLIGHTING:
-      case SemanticCoherenceRules.ISSUE_TYPES.SHADOWED_RULE: {
+      case SemanticCoherenceRules.ISSUE_TYPES.SHADOWED_RULE:
+      // Token colour value rules
+      case TokenColorValueRules.ISSUE_TYPES.MISSING_SETTINGS:
+      case TokenColorValueRules.ISSUE_TYPES.EMPTY_SETTINGS:
+      case TokenColorValueRules.ISSUE_TYPES.INVALID_HEX_COLOUR:
+      case TokenColorValueRules.ISSUE_TYPES.INVALID_FONTSTYLE:
+      case TokenColorValueRules.ISSUE_TYPES.DEPRECATED_BACKGROUND:
+      case TokenColorValueRules.ISSUE_TYPES.UNKNOWN_SETTINGS_PROPERTY:
+      // Token colour structure rules
+      case TokenColorStructureRules.ISSUE_TYPES.MULTIPLE_GLOBAL_DEFAULTS: {
         Term.info(c`${indicator} ${issue.message}`)
         break
       }

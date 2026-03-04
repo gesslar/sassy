@@ -1,0 +1,18 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint TC Multiple Globals
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Global Default A
+      settings:
+        foreground: "#cccccc"
+    - name: Keywords
+      scope: keyword
+      settings:
+        foreground: "#ff0000"
+    - name: Global Default B
+      settings:
+        foreground: "#dddddd"
