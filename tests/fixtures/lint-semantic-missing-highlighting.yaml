@@ -1,0 +1,9 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Semantic Missing Highlighting Test
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    "variable": "#ff0000"

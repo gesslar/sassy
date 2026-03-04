@@ -1,0 +1,20 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Semantic Invalid Value Test
+  type: dark
+  custom:
+    semanticHighlighting: true
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    "variable":
+      foreground: "not-a-colour"
+    "keyword": "zzz"
+    "comment":
+      foreground: "#ff0000"
+      fontStyle: "italic regular"
+    "string":
+      foreground: "#ff0000"
+      background: "#00ff00"
+    "number": {}

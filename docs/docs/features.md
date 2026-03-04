@@ -110,10 +110,18 @@ sidebar_position: 99
 - **Undefined Variable Detection** — Catches references to variables that don't exist
 - **Unused Variable Detection** — Identifies vars defined but never referenced in theme content
 - **Scope Precedence Analysis** — Warns when a broad scope masks a more specific one due to rule ordering
+- **Semantic Selector Validation** — Validates semanticTokenColors selectors against VS Code's parser rules
+- **Semantic Token Type Registry** — Checks token types and modifiers against VS Code's 23 standard types and 10 standard modifiers
+- **Semantic Value Validation** — Validates hex colours, fontStyle keywords, and catches the fontStyle-vs-boolean override trap
+- **Semantic Coherence Checks** — Warns when semanticTokenColors rules exist but semanticHighlighting is not enabled
+- **Duplicate Selector Detection** — Finds semanticTokenColors selectors that are identical after modifier normalisation
+- **Shadowed Rule Detection** — Identifies semantic rules overshadowed by higher-specificity rules with the same properties
+- **Deprecated Usage Warnings** — Flags the deprecated `member` token type and non-functional `background` property
 - **Cross-Section Linting** — Validates variables in colors, tokenColors, and semanticTokenColors
 - **Strict Mode** — `--strict` treats warnings as errors for CI enforcement
 - **Severity Levels** — Issues categorised as high/medium/low with colour-coded terminal output
 - **Import-Aware Analysis** — Lints across all imported files, not just the main theme
+- **Modular Rule Architecture** — Lint rules organised in dedicated modules for maintainability
 
 ## Output
 

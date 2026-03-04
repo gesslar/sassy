@@ -4,6 +4,9 @@ import assert from "node:assert/strict"
 import {describe, it} from "node:test"
 import {DirectoryObject, FileObject, Cache} from "@gesslar/toolkit"
 import LintCommand, {Lint} from "../src/LintCommand.js"
+import SemanticCoherenceRules from "../src/lint/SemanticCoherenceRules.js"
+import SemanticSelectorRules from "../src/lint/SemanticSelectorRules.js"
+import SemanticValueRules from "../src/lint/SemanticValueRules.js"
 import Theme from "../src/Theme.js"
 import path from "node:path"
 import {fileURLToPath} from "node:url"
@@ -236,6 +239,215 @@ describe("LintCommand", () => {
 
       assert.equal(precedence.length, 0,
         "keyword, string, comment are not hierarchically related")
+    })
+  })
+
+  describe("semantic token linting", () => {
+    /**
+     * Helper to build a theme from a fixture and run the linter.
+     *
+     * @param {string} fixture - Fixture filename relative to fixtures/
+     * @returns {Promise<object>} Lint results
+     */
+    async function lintFixture(fixture) {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile(`./fixtures/${fixture}`)
+      const theme = new Theme()
+        .setCwd(cwd)
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      return new Lint().run(theme)
+    }
+
+    it("detects invalid selectors", async() => {
+      const results = await lintFixture("lint-semantic-invalid-selector.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticSelectorRules.ISSUE_TYPES.INVALID_SELECTOR)
+
+      assert.ok(issues.length >= 2, `expected at least 2 invalid selectors, got ${issues.length}`)
+
+      const leadingDot = issues.find(i => i.selector === ".readonly")
+      assert.ok(leadingDot, "should flag '.readonly' as invalid")
+      assert.equal(leadingDot.severity, "high")
+
+      const multiLang = issues.find(i => i.selector === "variable:typescript:javascript")
+      assert.ok(multiLang, "should flag 'variable:typescript:javascript' as invalid")
+    })
+
+    it("detects unrecognised token types", async() => {
+      const results = await lintFixture("lint-semantic-unrecognised-tokens.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticSelectorRules.ISSUE_TYPES.UNRECOGNISED_TOKEN_TYPE)
+
+      assert.ok(issues.length > 0, "should detect unrecognised token types")
+
+      const typo = issues.find(i => i.tokenType === "vairable")
+      assert.ok(typo, "should flag 'vairable' as unrecognised")
+      assert.equal(typo.severity, "low")
+    })
+
+    it("detects unrecognised modifiers", async() => {
+      const results = await lintFixture("lint-semantic-unrecognised-tokens.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticSelectorRules.ISSUE_TYPES.UNRECOGNISED_MODIFIER)
+
+      assert.ok(issues.length > 0, "should detect unrecognised modifiers")
+
+      const readOnly = issues.find(i => i.modifier === "readOnly")
+      assert.ok(readOnly, "should flag 'readOnly' (camelCase) as unrecognised")
+    })
+
+    it("detects deprecated token types", async() => {
+      const results = await lintFixture("lint-semantic-unrecognised-tokens.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticSelectorRules.ISSUE_TYPES.DEPRECATED_TOKEN_TYPE)
+
+      assert.ok(issues.length > 0, "should detect deprecated token types")
+
+      const member = issues.find(i => i.tokenType === "member")
+      assert.ok(member, "should flag 'member' as deprecated")
+      assert.equal(member.replacement, "method")
+      assert.equal(member.severity, "medium")
+    })
+
+    it("detects duplicate selectors with different modifier order", async() => {
+      const results = await lintFixture("lint-semantic-duplicate-selector.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticSelectorRules.ISSUE_TYPES.DUPLICATE_SELECTOR)
+
+      assert.ok(issues.length > 0, "should detect duplicate selectors")
+      assert.equal(issues[0].severity, "medium")
+    })
+
+    it("detects invalid hex colours in string values", async() => {
+      const results = await lintFixture("lint-semantic-invalid-value.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticValueRules.ISSUE_TYPES.INVALID_HEX_COLOUR)
+
+      assert.ok(issues.length >= 2, `expected at least 2 invalid hex colours, got ${issues.length}`)
+
+      const notAColour = issues.find(i => i.colour === "not-a-colour")
+      assert.ok(notAColour, "should flag 'not-a-colour'")
+
+      const zzz = issues.find(i => i.colour === "zzz")
+      assert.ok(zzz, "should flag 'zzz' as invalid hex")
+    })
+
+    it("detects invalid fontStyle keywords", async() => {
+      const results = await lintFixture("lint-semantic-invalid-value.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticValueRules.ISSUE_TYPES.INVALID_FONTSTYLE)
+
+      assert.ok(issues.length > 0, "should detect invalid fontStyle keywords")
+
+      const regular = issues.find(i => i.keyword === "regular")
+      assert.ok(regular, "should flag 'regular' as invalid fontStyle keyword")
+    })
+
+    it("detects deprecated background property", async() => {
+      const results = await lintFixture("lint-semantic-invalid-value.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticValueRules.ISSUE_TYPES.DEPRECATED_PROPERTY)
+
+      assert.ok(issues.length > 0, "should detect deprecated background property")
+      assert.equal(issues[0].property, "background")
+    })
+
+    it("detects empty rule objects (direct)", () => {
+      // Empty objects are stripped by the compiler, so test the rule directly
+      const issues = SemanticValueRules.run({
+        "number": {},
+        "variable": "#ff0000",
+      })
+
+      const empties = issues.filter(i => i.type === SemanticValueRules.ISSUE_TYPES.EMPTY_RULE)
+
+      assert.ok(empties.length > 0, "should detect empty rule objects")
+      assert.equal(empties[0].selector, "number")
+    })
+
+    it("detects non-string foreground as invalid (direct)", () => {
+      const issues = SemanticValueRules.run({
+        "variable": {foreground: 42},
+        "keyword": {foreground: true},
+      })
+
+      const invalids = issues.filter(i => i.type === SemanticValueRules.ISSUE_TYPES.INVALID_VALUE)
+
+      assert.equal(invalids.length, 2, `expected 2 invalid value issues, got ${invalids.length}`)
+      assert.ok(invalids[0].message.includes("foreground"))
+      assert.ok(invalids[0].message.includes("number"))
+      assert.ok(invalids[1].message.includes("boolean"))
+    })
+
+    it("detects non-string fontStyle as invalid (direct)", () => {
+      const issues = SemanticValueRules.run({
+        "variable": {fontStyle: true},
+        "keyword": {fontStyle: 42},
+      })
+
+      const invalids = issues.filter(i => i.type === SemanticValueRules.ISSUE_TYPES.INVALID_VALUE)
+
+      assert.equal(invalids.length, 2, `expected 2 invalid value issues, got ${invalids.length}`)
+      assert.ok(invalids[0].message.includes("fontStyle"))
+    })
+
+    it("does not report fontStyle conflict when fontStyle is non-string (direct)", () => {
+      const issues = SemanticValueRules.run({
+        "variable": {fontStyle: true, bold: true},
+      })
+
+      const conflicts = issues.filter(i => i.type === SemanticValueRules.ISSUE_TYPES.FONTSTYLE_CONFLICT)
+
+      assert.equal(conflicts.length, 0,
+        "non-string fontStyle should not trigger conflict check")
+
+      const invalids = issues.filter(i => i.type === SemanticValueRules.ISSUE_TYPES.INVALID_VALUE)
+
+      assert.equal(invalids.length, 1, "should flag fontStyle: true as invalid value")
+    })
+
+    it("detects fontStyle and boolean style property conflicts", async() => {
+      const results = await lintFixture("lint-semantic-fontstyle-conflict.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticValueRules.ISSUE_TYPES.FONTSTYLE_CONFLICT)
+
+      assert.ok(issues.length > 0, "should detect fontStyle conflicts")
+      assert.equal(issues[0].selector, "variable.declaration")
+      assert.ok(issues[0].conflictingProps.includes("bold"))
+    })
+
+    it("detects missing semanticHighlighting", async() => {
+      const results = await lintFixture("lint-semantic-missing-highlighting.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticCoherenceRules.ISSUE_TYPES.MISSING_SEMANTIC_HIGHLIGHTING)
+
+      assert.ok(issues.length > 0, "should detect missing semanticHighlighting")
+      assert.equal(issues[0].severity, "high")
+    })
+
+    it("detects shadowed rules", async() => {
+      const results = await lintFixture("lint-semantic-shadowed.yaml")
+      const issues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+        .filter(i => i.type === SemanticCoherenceRules.ISSUE_TYPES.SHADOWED_RULE)
+
+      assert.ok(issues.length > 0, "should detect shadowed rules")
+      assert.equal(issues[0].shadowedBy, "variable.readonly:typescript")
+      assert.equal(issues[0].selector, "variable.readonly")
+    })
+
+    it("reports no issues for clean semantic token colours", async() => {
+      const results = await lintFixture("lint-semantic-clean.yaml")
+      const semanticIssues = results[Lint.SECTIONS.SEMANTIC_TOKEN_COLORS]
+
+      assert.equal(semanticIssues.length, 0,
+        `expected no semantic issues for clean theme, got: ${JSON.stringify(semanticIssues)}`)
     })
   })
 })

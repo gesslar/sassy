@@ -22,6 +22,9 @@ import c from "@gesslar/colours"
 
 import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
+import SemanticCoherenceRules from "./lint/SemanticCoherenceRules.js"
+import SemanticSelectorRules from "./lint/SemanticSelectorRules.js"
+import SemanticValueRules from "./lint/SemanticValueRules.js"
 import Theme from "./Theme.js"
 import {FileSystem, Term} from "@gesslar/toolkit"
 
@@ -93,6 +96,13 @@ export class Lint {
     if(output?.tokenColors)
       results[LC.SECTIONS.TOKEN_COLORS]
         .push(...this.#lintTokenColorsStructure(output.tokenColors))
+
+    if(output?.semanticTokenColors)
+      results[LC.SECTIONS.SEMANTIC_TOKEN_COLORS].push(
+        ...SemanticSelectorRules.run(output.semanticTokenColors),
+        ...SemanticValueRules.run(output.semanticTokenColors),
+        ...SemanticCoherenceRules.run(output),
+      )
 
     const pool = theme.getPool()
 
@@ -765,6 +775,26 @@ export default class LintCommand extends Command {
           Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'`)
         }
 
+        break
+      }
+
+      // Semantic selector rules
+      case SemanticSelectorRules.ISSUE_TYPES.INVALID_SELECTOR:
+      case SemanticSelectorRules.ISSUE_TYPES.UNRECOGNISED_TOKEN_TYPE:
+      case SemanticSelectorRules.ISSUE_TYPES.UNRECOGNISED_MODIFIER:
+      case SemanticSelectorRules.ISSUE_TYPES.DEPRECATED_TOKEN_TYPE:
+      case SemanticSelectorRules.ISSUE_TYPES.DUPLICATE_SELECTOR:
+      // Semantic value rules
+      case SemanticValueRules.ISSUE_TYPES.INVALID_VALUE:
+      case SemanticValueRules.ISSUE_TYPES.INVALID_HEX_COLOUR:
+      case SemanticValueRules.ISSUE_TYPES.INVALID_FONTSTYLE:
+      case SemanticValueRules.ISSUE_TYPES.FONTSTYLE_CONFLICT:
+      case SemanticValueRules.ISSUE_TYPES.DEPRECATED_PROPERTY:
+      case SemanticValueRules.ISSUE_TYPES.EMPTY_RULE:
+      // Semantic coherence rules
+      case SemanticCoherenceRules.ISSUE_TYPES.MISSING_SEMANTIC_HIGHLIGHTING:
+      case SemanticCoherenceRules.ISSUE_TYPES.SHADOWED_RULE: {
+        Term.info(c`${indicator} ${issue.message}`)
         break
       }
     }

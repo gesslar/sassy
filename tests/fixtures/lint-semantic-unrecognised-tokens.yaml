@@ -1,0 +1,13 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Semantic Unrecognised Tokens Test
+  type: dark
+  custom:
+    semanticHighlighting: true
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    "vairable": "#ff0000"
+    "variable.readOnly": "#00ff00"
+    "member": "#0000ff"

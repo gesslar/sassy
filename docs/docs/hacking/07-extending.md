@@ -44,30 +44,105 @@ Each phase receives and returns the working data structures (decomposed arrays o
 
 ## Adding Lint Rules
 
-The `Lint` engine class (exported as a named export from `LintCommand.js`) performs all analysis. `LintCommand` is a thin CLI adapter that delegates to `Lint` and handles terminal output.
+Lint rules live in `src/lint/` as self-contained modules. The `Lint` engine class (in `LintCommand.js`) orchestrates them, and `LintCommand` handles terminal output.
 
-`Lint` validates theme files through four analysis methods:
+### Architecture
 
-- Duplicate scope detection in tokenColors
-- Undefined variable references
-- Unused variable definitions (scans all sections including vars cross-references)
-- Scope precedence issues (broad scopes masking specific ones)
+Each rule module is a class with a static `run()` method that receives compiled theme data and returns an array of issue objects:
 
-To add a new rule:
+<CodeBlock lang="javascript">{`
 
-1. Add a validation method to the `Lint` class.
-2. Iterate over the relevant theme data (source, compiled, or both).
-3. Collect issues with a severity type (`error` or `warning`).
-4. Return the issues from your method — `LintCommand` handles terminal formatting.
+  // src/lint/MyNewRules.js
+  export default class MyNewRules {
+    static ISSUE_TYPES = Object.freeze({
+      MY_CHECK: "my-check",
+    })
 
-The `Lint` engine receives a compiled `Theme` and has access to both the raw source (via `theme.getDependencies()`) and the compiled output (via `theme.getOutput()`), so rules can check either pre- or post-compilation state.
+    static run(semanticTokenColors) {
+      const issues = []
+      // ... analyse data, push issues
+      return issues
+    }
+  }
+
+`}</CodeBlock>
+
+Issue objects have this shape:
+
+<CodeBlock lang="javascript">{`
+
+  {
+    type: MyNewRules.ISSUE_TYPES.MY_CHECK,
+    severity: "high",   // "high" | "medium" | "low"
+    selector: "variable.readonly",
+    message: "Human-readable description of the problem",
+  }
+
+`}</CodeBlock>
+
+### Existing modules
+
+| Module | Operates on | Checks |
+|--------|------------|--------|
+| `SemanticSelectorRules` | `output.semanticTokenColors` keys | Selector syntax, token types, modifiers, duplicates |
+| `SemanticValueRules` | `output.semanticTokenColors` values | Hex colours, fontStyle, empty rules, deprecated props |
+| `SemanticCoherenceRules` | Full `output` object | Missing semanticHighlighting, shadowed rules |
+
+Shared constants (standard token types, modifiers, selector regex, parser) live in `src/lint/SemanticConstants.js`.
+
+### Adding a new rule module
+
+1. Create a class in `src/lint/` with a static `run()` method and `ISSUE_TYPES`.
+2. Import it in `LintCommand.js` and call it from `Lint.run()`:
+
+<CodeBlock lang="javascript">{`
+
+  import MyNewRules from "./lint/MyNewRules.js"
+
+  // In Lint.run(), add to the appropriate results array:
+  results[LC.SECTIONS.SEMANTIC_TOKEN_COLORS].push(
+    ...MyNewRules.run(output.semanticTokenColors),
+  )
+
+`}</CodeBlock>
+
+1. Add reporting cases to `LintCommand.#reportSingleIssue()` — the generic pattern uses `issue.message`:
+
+<CodeBlock lang="javascript">{`
+
+  case MyNewRules.ISSUE_TYPES.MY_CHECK: {
+    Term.info(\`\${indicator} \${issue.message}\`)
+    break
+  }
+
+`}</CodeBlock>
+
+### Data available to rules
+
+The `Lint` engine receives a compiled `Theme` and has access to:
+
+- **Compiled output** via `theme.getOutput()` — the final JSON that becomes `.color-theme.json`. Use this for structural validation (selectors, values, coherence).
+- **Source data** via `theme.getDependencies()` — raw theme data from each file before compilation. Use this for variable analysis.
+
+### Programmatic API
 
 API consumers can use `Lint` directly without CLI infrastructure:
 
-```javascript
-import {Theme, Lint} from '@gesslar/sassy'
-const results = await new Lint().run(theme)
-```
+<CodeBlock lang="javascript">{`
+
+  import {Theme, Lint} from '@gesslar/sassy'
+  const results = await new Lint().run(theme)
+
+`}</CodeBlock>
+
+Individual rule modules are also importable for targeted validation:
+
+<CodeBlock lang="javascript">{`
+
+  import SemanticSelectorRules from '@gesslar/sassy/lint/SemanticSelectorRules.js'
+  const issues = SemanticSelectorRules.run(mySemanticTokenColors)
+
+`}</CodeBlock>
 
 ## Philosophy
 

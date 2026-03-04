@@ -156,3 +156,204 @@ Precedence analysis uses TextMate scope hierarchy rules. A scope `A` is consider
 | `entity.name` | `entity.name.function` | `entity.name` masks `entity.name.function` |
 | `keyword` | `string` | No relationship (different roots) |
 | `keyword.control` | `keyword.operator` | No relationship (diverges at segment 2) |
+
+---
+
+## Semantic Token Colour Rules
+
+The following rules validate the `semanticTokenColors` section of your compiled theme. VS Code silently ignores invalid entries in this section — no runtime errors, no warnings — making these checks especially valuable.
+
+---
+
+### Invalid Selector
+
+**Severity:** error
+
+**What it detects:** A selector key that doesn't match VS Code's expected pattern: `(*|tokenType)(.tokenModifier)*(:tokenLanguage)?`
+
+**Why it matters:** VS Code's parser produces an internal `$invalid` selector that never matches anything. The rule is silently dead code.
+
+**Examples of invalid selectors:**
+
+| Selector | Problem |
+|----------|---------|
+| `.readonly` | Leading dot — empty token type |
+| `variable..readonly` | Double dot |
+| `variable:typescript:javascript` | Multiple language suffixes |
+| `variable·` | Trailing space |
+
+**Fix:** Correct the selector syntax. Valid examples: `variable`, `variable.readonly`, `variable.readonly:typescript`, `*.declaration`.
+
+---
+
+### Unrecognised Token Type
+
+**Severity:** info
+
+**What it detects:** A token type that is not one of VS Code's 23 standard types.
+
+**Why it matters:** Unrecognised types silently never match any tokens unless an extension registers them. Common causes are typos (`vairable` instead of `variable`) or assuming a type exists when it doesn't.
+
+**Standard types:** `comment`, `string`, `keyword`, `number`, `regexp`, `operator`, `namespace`, `type`, `struct`, `class`, `interface`, `enum`, `typeParameter`, `function`, `method`, `macro`, `variable`, `parameter`, `property`, `enumMember`, `event`, `decorator`, `label`
+
+**Why info, not error:** Extensions can contribute custom token types via `semanticTokenTypes` in their `package.json`. A type like `templateType` is valid when the contributing extension is installed.
+
+---
+
+### Unrecognised Modifier
+
+**Severity:** info
+
+**What it detects:** A modifier that is not one of VS Code's 10 standard modifiers.
+
+**Why it matters:** Same as unrecognised types — the rule silently never matches. Watch for camelCase mistakes like `readOnly` (should be `readonly`) or `defaultlibrary` (should be `defaultLibrary`).
+
+**Standard modifiers:** `declaration`, `definition`, `readonly`, `static`, `deprecated`, `abstract`, `async`, `modification`, `documentation`, `defaultLibrary`
+
+---
+
+### Deprecated Token Type
+
+**Severity:** warning
+
+**What it detects:** The `member` token type, which still exists in VS Code's registry but is deprecated.
+
+**Fix:** Use `method` instead. VS Code defines `member` with `superType: method`, so `method` covers the same tokens.
+
+---
+
+### Duplicate Selector
+
+**Severity:** warning
+
+**What it detects:** Two selectors that resolve to the same internal ID after modifier normalisation. VS Code sorts modifiers alphabetically when generating IDs, so `variable.readonly.static` and `variable.static.readonly` are identical.
+
+**Fix:** Remove the duplicate entry — only one can take effect.
+
+---
+
+### Invalid Hex Colour
+
+**Severity:** error
+
+**What it detects:** A colour value (either a string shorthand or the `foreground` property in a style object) that is not a valid hex colour in `#RGB`, `#RRGGBB`, or `#RRGGBBAA` format.
+
+**Example problem:**
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    semanticTokenColors:
+      "keyword": "zzz"
+      "variable":
+        foreground: "not-a-colour"
+
+`}</CodeBlock>
+
+**Fix:** Use a valid hex colour string.
+
+---
+
+### Invalid fontStyle Keyword
+
+**Severity:** warning
+
+**What it detects:** A word in the `fontStyle` string property that isn't one of the four recognised keywords: `italic`, `bold`, `underline`, `strikethrough`.
+
+**Why it matters:** VS Code extracts keywords from fontStyle using a regex match. Unrecognised words like `regular` are silently ignored — they don't cause errors but they also don't do anything.
+
+:::info
+`fontStyle: ""` (empty string) is valid and intentional — it clears all inherited font styles from higher-level rules.
+:::
+
+---
+
+### fontStyle Conflict
+
+**Severity:** warning
+
+**What it detects:** A style object that contains both a `fontStyle` string property and individual boolean style properties (`bold`, `italic`, `underline`, `strikethrough`).
+
+**Why it matters:** When `fontStyle` is present, VS Code resets all styles to `false` and then applies only the keywords named in the `fontStyle` string. The boolean properties are silently ignored.
+
+**Example problem:**
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    semanticTokenColors:
+      "variable.declaration":
+        foreground: "#e6e6e6"
+        fontStyle: "italic"
+        bold: true          # silently ignored — fontStyle wins
+
+`}</CodeBlock>
+
+**Fix:** Either use `fontStyle: "italic bold"` to combine styles, or remove `fontStyle` and use only boolean properties.
+
+---
+
+### Deprecated Property
+
+**Severity:** warning
+
+**What it detects:** The `background` property in a style object.
+
+**Why it matters:** Token background colours are not supported in VS Code. The property is accepted by the schema but has no visual effect.
+
+---
+
+### Empty Rule
+
+**Severity:** info
+
+**What it detects:** A style object with no properties (`{}`).
+
+**Why it matters:** An empty object is technically valid but does nothing — it doesn't set any colour or style.
+
+---
+
+### Missing Semantic Highlighting
+
+**Severity:** error
+
+**What it detects:** `semanticTokenColors` rules are defined in the theme but `semanticHighlighting` is not set to `true`.
+
+**Why it matters:** This is the most common `semanticTokenColors` mistake. Without `semanticHighlighting: true` (set via `config.custom` in Sassy), VS Code's default behaviour (`editor.semanticHighlighting.enabled: "configuredByTheme"`) means your semantic rules are never evaluated. All your carefully crafted `semanticTokenColors` entries become dead code.
+
+**Fix:** Add `semanticHighlighting: true` to your `config.custom` section:
+
+<CodeBlock lang="yaml">{`
+
+  config:
+    name: My Theme
+    type: dark
+    custom:
+      semanticHighlighting: true
+
+`}</CodeBlock>
+
+---
+
+### Shadowed Rule
+
+**Severity:** info
+
+**What it detects:** A rule whose style properties are completely overridden by a higher-specificity rule for every token that matches it.
+
+**Why it matters:** The lower-specificity rule's properties are unreachable for the subset of tokens that also match the higher-specificity rule. This may be intentional (language-specific overrides) but is worth knowing about.
+
+**Example:**
+
+<CodeBlock lang="yaml">{`
+
+  theme:
+    semanticTokenColors:
+      "variable.readonly":
+        foreground: "#ff0000"
+      "variable.readonly:typescript":
+        foreground: "#00ff00"    # shadows the rule above for TypeScript files
+
+`}</CodeBlock>
+
+VS Code uses a numerical specificity scoring system: exact type match adds 100, each modifier adds 100, and a language suffix adds 10. The highest-scoring rule wins for each style property independently.

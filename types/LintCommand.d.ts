@@ -31,6 +31,7 @@ export class Lint {
     }>;
     /**
      * Lints a compiled theme and returns categorised results.
+     *
      * Automatically calls `theme.load()` if the theme is not ready.
      *
      * @param {Theme} theme - The compiled theme object

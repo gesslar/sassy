@@ -1,0 +1,14 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint Semantic Invalid Selector Test
+  type: dark
+  custom:
+    semanticHighlighting: true
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  semanticTokenColors:
+    ".readonly":
+      foreground: "#ff0000"
+    "variable:typescript:javascript":
+      foreground: "#00ff00"
