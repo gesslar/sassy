@@ -20,6 +20,7 @@ export default class TokenColorValueRules {
     EMPTY_SETTINGS: "tc-empty-settings",
     INVALID_HEX_COLOUR: "tc-invalid-hex-colour",
     INVALID_FONTSTYLE: "tc-invalid-fontstyle",
+    INVALID_VALUE: "tc-invalid-value",
     DEPRECATED_BACKGROUND: "tc-deprecated-background",
     UNKNOWN_SETTINGS_PROPERTY: "tc-unknown-settings-property",
   })
@@ -105,8 +106,18 @@ export default class TokenColorValueRules {
     }
 
     // Check foreground hex
-    if(settings.foreground !== undefined && typeof settings.foreground === "string")
-      issues.push(...this.#checkHexColour(name, settings.foreground, "foreground"))
+    if(settings.foreground !== undefined) {
+      if(typeof settings.foreground === "string")
+        issues.push(...this.#checkHexColour(name, settings.foreground, "foreground"))
+      else
+        issues.push({
+          type: this.ISSUE_TYPES.INVALID_VALUE,
+          severity: "high",
+          rule: name,
+          value: String(settings.foreground),
+          message: `'foreground' in '${name}' should be a hex colour string, got ${typeof settings.foreground}`,
+        })
+    }
 
     // Check background (deprecated + hex validation)
     if(settings.background !== undefined) {
@@ -119,21 +130,39 @@ export default class TokenColorValueRules {
 
       if(typeof settings.background === "string")
         issues.push(...this.#checkHexColour(name, settings.background, "background"))
+      else
+        issues.push({
+          type: this.ISSUE_TYPES.INVALID_VALUE,
+          severity: "high",
+          rule: name,
+          value: String(settings.background),
+          message: `'background' in '${name}' should be a hex colour string, got ${typeof settings.background}`,
+        })
     }
 
     // Check fontStyle keywords
-    if(settings.fontStyle !== undefined && typeof settings.fontStyle === "string" && settings.fontStyle !== "") {
-      const keywords = settings.fontStyle.split(/\s+/)
+    if(settings.fontStyle !== undefined) {
+      if(typeof settings.fontStyle !== "string") {
+        issues.push({
+          type: this.ISSUE_TYPES.INVALID_VALUE,
+          severity: "high",
+          rule: name,
+          value: String(settings.fontStyle),
+          message: `'fontStyle' in '${name}' should be a string, got ${typeof settings.fontStyle}`,
+        })
+      } else if(settings.fontStyle !== "") {
+        const keywords = settings.fontStyle.split(/\s+/)
 
-      for(const keyword of keywords) {
-        if(!VALID_FONTSTYLE_KEYWORDS.has(keyword)) {
-          issues.push({
-            type: this.ISSUE_TYPES.INVALID_FONTSTYLE,
-            severity: "medium",
-            rule: name,
-            keyword,
-            message: `fontStyle keyword '${keyword}' in '${name}' is not recognised (valid: italic, bold, underline, strikethrough)`,
-          })
+        for(const keyword of keywords) {
+          if(!VALID_FONTSTYLE_KEYWORDS.has(keyword)) {
+            issues.push({
+              type: this.ISSUE_TYPES.INVALID_FONTSTYLE,
+              severity: "medium",
+              rule: name,
+              keyword,
+              message: `fontStyle keyword '${keyword}' in '${name}' is not recognised (valid: italic, bold, underline, strikethrough)`,
+            })
+          }
         }
       }
     }

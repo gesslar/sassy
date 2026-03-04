@@ -803,6 +803,7 @@ export default class LintCommand extends Command {
       case TokenColorValueRules.ISSUE_TYPES.EMPTY_SETTINGS:
       case TokenColorValueRules.ISSUE_TYPES.INVALID_HEX_COLOUR:
       case TokenColorValueRules.ISSUE_TYPES.INVALID_FONTSTYLE:
+      case TokenColorValueRules.ISSUE_TYPES.INVALID_VALUE:
       case TokenColorValueRules.ISSUE_TYPES.DEPRECATED_BACKGROUND:
       case TokenColorValueRules.ISSUE_TYPES.UNKNOWN_SETTINGS_PROPERTY:
       // Token colour structure rules
