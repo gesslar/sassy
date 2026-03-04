@@ -61,11 +61,12 @@ export default class Colour {
     static decimalAlphaToHex(dec: number): string;
     static isHex(value: any): boolean;
     /**
-     * Normalises a short hex colour code to a full 6-character format.
-     * Converts 3-character hex codes like "#f00" to "#ff0000".
+     * Normalises a short hex colour code to a full 6- or 8-character format.
+     * Converts 3-character hex codes like "#f00" to "#ff0000" and
+     * 4-character codes like "#f00a" to "#ff0000aa".
      *
      * @param {string} code - The short hex colour code
-     * @returns {string} The normalized 6-character hex colour code
+     * @returns {string} The normalized hex colour code
      */
     static normaliseHex(code: string): string;
     /**
