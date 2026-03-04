@@ -561,6 +561,38 @@ describe("LintCommand", () => {
       assert.equal(issues[0].severity, "medium")
     })
 
+    it("detects non-string foreground as invalid (direct)", () => {
+      const issues = TokenColorValueRules.run([
+        {name: "Numeric FG", scope: "keyword", settings: {foreground: 42}},
+        {name: "Boolean FG", scope: "string", settings: {foreground: true}},
+        {name: "Array FG", scope: "comment", settings: {foreground: ["#ff0000"]}},
+      ])
+
+      const invalids = issues.filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.INVALID_VALUE)
+      assert.equal(invalids.length, 3, `expected 3 invalid value issues, got ${invalids.length}`)
+    })
+
+    it("detects non-string background as invalid (direct)", () => {
+      const issues = TokenColorValueRules.run([
+        {name: "Object BG", scope: "keyword", settings: {foreground: "#ff0000", background: {value: "#000"}}},
+      ])
+
+      const invalids = issues.filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.INVALID_VALUE)
+      assert.equal(invalids.length, 1, `expected 1 invalid value issue, got ${invalids.length}`)
+      assert.ok(invalids[0].message.includes("background"))
+    })
+
+    it("detects non-string fontStyle as invalid (direct)", () => {
+      const issues = TokenColorValueRules.run([
+        {name: "Array FS", scope: "keyword", settings: {foreground: "#ff0000", fontStyle: ["italic"]}},
+        {name: "Object FS", scope: "string", settings: {foreground: "#00ff00", fontStyle: {value: "italic"}}},
+        {name: "Boolean FS", scope: "comment", settings: {foreground: "#0000ff", fontStyle: true}},
+      ])
+
+      const invalids = issues.filter(i => i.type === TokenColorValueRules.ISSUE_TYPES.INVALID_VALUE)
+      assert.equal(invalids.length, 3, `expected 3 invalid value issues, got ${invalids.length}`)
+    })
+
     it("reports no issues for clean tokenColors", async() => {
       const results = await lintFixture("lint-tc-clean.yaml")
       const tcIssues = results[Lint.SECTIONS.TOKEN_COLORS]

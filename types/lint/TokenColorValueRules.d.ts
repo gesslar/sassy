@@ -7,6 +7,7 @@ export default class TokenColorValueRules {
         EMPTY_SETTINGS: "tc-empty-settings";
         INVALID_HEX_COLOUR: "tc-invalid-hex-colour";
         INVALID_FONTSTYLE: "tc-invalid-fontstyle";
+        INVALID_VALUE: "tc-invalid-value";
         DEPRECATED_BACKGROUND: "tc-deprecated-background";
         UNKNOWN_SETTINGS_PROPERTY: "tc-unknown-settings-property";
     }>;
