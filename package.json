@@ -5,9 +5,9 @@
     "name": "gesslar",
     "url": "https://gesslar.dev"
   },
-  "version": "5.1.0",
+  "version": "5.2.0",
   "license": "Unlicense",
-  "homepage": "https://sassy.gesslar.io",
+  "homepage": "https://sassy.gesslar.io/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gesslar/sassy.git"
