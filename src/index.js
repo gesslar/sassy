@@ -34,5 +34,26 @@ export {Resolve} from "./ResolveCommand.js"
 // Colour utilities
 export {default as Colour} from "./Colour.js"
 
+// Lint rule modules — importable for targeted validation
+export {default as SemanticSelectorRules} from "./lint/SemanticSelectorRules.js"
+export {default as SemanticValueRules} from "./lint/SemanticValueRules.js"
+export {default as SemanticCoherenceRules} from "./lint/SemanticCoherenceRules.js"
+export {default as TokenColorValueRules} from "./lint/TokenColorValueRules.js"
+export {default as TokenColorStructureRules} from "./lint/TokenColorStructureRules.js"
+
+// Lint constants and utilities
+export {
+  SELECTOR_PATTERN,
+  STANDARD_TOKEN_TYPES,
+  DEPRECATED_TOKEN_TYPES,
+  STANDARD_MODIFIERS,
+  VALID_FONTSTYLE_KEYWORDS,
+  HEX_COLOUR_PATTERN,
+  BOOLEAN_STYLE_PROPS,
+  parseSelector,
+  normaliseSelector,
+  computeSpecificity,
+} from "./lint/SemanticConstants.js"
+
 // Note: CLI functionality remains in cli.js and is accessible via the 'sassy'
 // command when installed globally or via npx

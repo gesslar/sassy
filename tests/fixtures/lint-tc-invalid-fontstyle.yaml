@@ -1,0 +1,18 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Lint TC Invalid FontStyle
+  type: dark
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - name: Bad FontStyle
+      scope: keyword
+      settings:
+        foreground: "#ff0000"
+        fontStyle: "regular oblique"
+    - name: Good FontStyle
+      scope: string
+      settings:
+        foreground: "#00ff00"
+        fontStyle: "italic bold"
