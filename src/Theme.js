@@ -71,7 +71,7 @@ export default class Theme {
   setThemeFile(file) {
     this.#sourceFile = file
     const {name} = /^(?<name>.*?)(?:\.sassy)?$/.test(file.module)?.groups ?? {}
-    this.#name = name
+    this.#name = name ?? file.module
     this.#computeOutputPath()
 
     return this
