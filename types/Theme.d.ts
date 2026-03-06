@@ -71,6 +71,14 @@ export default class Theme {
      */
     getSourceFile(): FileObject;
     /**
+     * Gets the YAML source built from the main theme file during load().
+     * Used by Compiler to add the main file as the last dependency after
+     * all imports have been registered.
+     *
+     * @returns {import("./YamlSource.js").default|null} The YAML source or null
+     */
+    getMainYamlSource(): import("./YamlSource.js").default | null;
+    /**
      * Sets the compiled theme output object and updates derived JSON and hash.
      *
      * @param {object} data - The compiled theme output object

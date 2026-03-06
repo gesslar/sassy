@@ -66,10 +66,10 @@ export default class Evaluator {
     /**
      * Sets the theme reference for source-location lookups in error messages.
      *
-     * @param {import("./Theme.js").default} theme - The theme being evaluated
+     * @param {import("./Theme.js").default|null} theme - The theme being evaluated, or null to clear the reference
      * @returns {this} This instance for chaining
      */
-    setTheme(theme: import("./Theme.js").default): this;
+    setTheme(theme: import("./Theme.js").default | null): this;
     /**
      * Resolve variables and theme token entries in two distinct passes to ensure
      * deterministic scoping and to prevent partially-resolved values from
