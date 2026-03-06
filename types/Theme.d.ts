@@ -12,9 +12,10 @@ export default class Theme {
      * dependencies are added before it in composition order).
      *
      * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
+     * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
      * @returns {string|null} Formatted "file:line:col" string or null
      */
-    findSourceLocation(dottedPath: string): string | null;
+    findSourceLocation(dottedPath: string, target?: "key" | "value"): string | null;
     /**
      * Resets the theme's compilation state, clearing output and lookup data.
      * Used when recompiling in watch mode or clearing previous state.

@@ -250,7 +250,7 @@ export class Lint {
    * @private
    */
   #enrichLocations(results, theme) {
-    const find = path => theme.findSourceLocation(path)
+    const find = (path, target) => theme.findSourceLocation(path, target)
     const output = theme.getOutput()
     const tokenColors = output?.tokenColors ?? []
 
