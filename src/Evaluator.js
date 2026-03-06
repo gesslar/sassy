@@ -87,9 +87,24 @@ export default class Evaluator {
     return {func, args}
   }
 
+  /** @type {import("./Theme.js").default|null} */
+  #theme = null
+
   #pool = new ThemePool()
   get pool() {
     return this.#pool
+  }
+
+  /**
+   * Sets the theme reference for source-location lookups in error messages.
+   *
+   * @param {import("./Theme.js").default} theme - The theme being evaluated
+   * @returns {this} This instance for chaining
+   */
+  setTheme(theme) {
+    this.#theme = theme
+
+    return this
   }
 
   /**
@@ -206,7 +221,11 @@ export default class Evaluator {
     if(it === this.#maxIterations) {
       const unresolved = decomposed
         .filter(this.#tokenCheck)
-        .map(token => token.flatPath)
+        .map(token => {
+          const loc = this.#theme?.findSourceLocation(token.flatPath)
+
+          return loc ? `${token.flatPath} (at ${loc})` : token.flatPath
+        })
 
       throw Sass.new(
         "The following tokens could not be resolved: " +
@@ -237,7 +256,7 @@ export default class Evaluator {
       else if(Evaluator.sub.test(value))
         resolved = this.#resolveVariable(value)
       else if(Evaluator.func.test(value))
-        resolved = this.#resolveFunction(value)
+        resolved = this.#resolveFunction(value, parentTokenKeyString)
       else
         resolved = this.#resolveLiteral(value)
 
@@ -252,8 +271,11 @@ export default class Evaluator {
 
     if(it === this.#maxIterations) {
       throw Sass.new(
-        `Potential circular reference detected trying to resolve ` +
-        `'${parentTokenKeyString}'.`
+        this.#enrichMessage(
+          `Potential circular reference detected trying to resolve ` +
+          `'${parentTokenKeyString}'.`,
+          parentTokenKeyString
+        )
       )
     }
 
@@ -333,9 +355,10 @@ export default class Evaluator {
    *
    * @private
    * @param {string} value - The function token string.
+   * @param {string} [parentKey] - Parent token key for location lookups.
    * @returns {ThemeToken|null} The resolved token or null.
    */
-  #resolveFunction(value) {
+  #resolveFunction(value, parentKey) {
     const {captured} = Evaluator.func.exec(value).groups
     const result = Evaluator.extractFunctionCall(value)
 
@@ -352,8 +375,10 @@ export default class Evaluator {
              null
     })
 
-    const applied =
-      this.#colourFunction(func, split, value, sourceTokens, captured)
+    const applied = this.#colourFunction(
+      func, split, value, sourceTokens,
+      captured, parentKey
+    )
 
     if(!applied)
       return null
@@ -382,7 +407,10 @@ export default class Evaluator {
    * @param {string} [captured] - The matched function call string (may be a nested inner call).
    * @returns {object} Object with result and colorSpace info.
    */
-  #colourFunction(func, args, raw, sourceTokens = [], captured = raw) {
+  #colourFunction(
+    func, args, raw, sourceTokens = [],
+    captured = raw, parentKey
+  ) {
     return (() => {
       try {
         const sourceToken = sourceTokens[0]
@@ -436,7 +464,9 @@ export default class Evaluator {
             return Colour.toHex(captured)
         }
       } catch(e) {
-        throw Sass.new(`Performing colour function '${raw}'`, e)
+        throw Sass.new(
+          this.#enrichMessage(`Performing colour function '${raw}'`, parentKey), e
+        )
       }
     })()
   }
@@ -450,6 +480,26 @@ export default class Evaluator {
    */
   #hasUnresolvedTokens(arr) {
     return arr.some(item => this.#tokenCheck(item))
+  }
+
+  /**
+   * Enriches an error message with source-location information when available.
+   *
+   * @private
+   * @param {string} message - The base error message
+   * @param {string} [flatPath] - The dotted path to look up in source
+   * @returns {string} Message with location appended, or the original message
+   */
+  #enrichMessage(message, flatPath) {
+    if(!this.#theme || !flatPath)
+      return message
+
+    const loc = this.#theme.findSourceLocation(flatPath)
+
+    if(!loc)
+      return message
+
+    return `${message} (at ${loc})`
   }
 
   /**

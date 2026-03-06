@@ -50,7 +50,7 @@ Compile one or more theme files into VS Code `.color-theme.json` output.
     sassy build --watch --output-dir ./dist my-theme.yaml
 
     # Preview output without writing
-    sassy build --dry-run my-theme.json5
+    sassy build --dry-run my-theme.yaml
 
 `}</CodeBlock>
 
@@ -202,6 +202,8 @@ Validate a theme file for common issues.
     sassy lint --strict my-theme.yaml
 
 `}</CodeBlock>
+
+Each issue includes a source location (`file:line:col`) pointing to the exact position in the source file — including across imports. Unnamed `tokenColors` entries are labelled `(unnamed rule #N)` for easier identification.
 
 See [Lint Rules](./07-lint-rules.md) for details on each check.
 

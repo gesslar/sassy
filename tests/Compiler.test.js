@@ -319,5 +319,26 @@ theme:
       // String-style entry should remain a plain string
       assert.equal(output.semanticTokenColors["string:escape"], "#ffd93d")
     })
+
+    it("attaches yamlSource to dependencies after compilation", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      await compiler.compile(theme)
+
+      const deps = theme.getDependencies()
+      assert.ok(deps.size > 0, "theme should have dependencies after compilation")
+      for(const dep of deps) {
+        if(dep.hasYamlSource()) {
+          assert.ok(dep.getYamlSource(), "dependency should have yamlSource attached")
+        }
+      }
+    })
   })
 })

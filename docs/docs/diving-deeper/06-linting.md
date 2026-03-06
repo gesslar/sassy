@@ -24,7 +24,7 @@ The linter compiles your theme (including all imports) and then analyses the res
 The same TextMate scope appearing in more than one `tokenColors` entry. VS Code uses the first matching rule, so later entries with the same scope are dead code.
 
 <CodeBlock lang="log">{`
-● Scope 'keyword' is duplicated in 'Keywords', 'Control Flow'
+● Scope 'keyword' is duplicated in 'Keywords', 'Control Flow' (ocean.yaml:18:5)
 `}</CodeBlock>
 
 This usually means you have two rules that should be consolidated, or one should use a more specific scope like `keyword.control`.
@@ -35,7 +35,7 @@ Referencing a variable that doesn't exist in your `vars` section or any imported
 
 <CodeBlock lang="log">{`
 
-  ● Variable '$(scope.operator)' is used but not defined in 'Operators' (foreground property)
+  ● Variable '$(scope.operator)' is used but not defined in 'Operators' (foreground property) (ocean.yaml:35:17)
 
 `}</CodeBlock>
 
@@ -59,13 +59,13 @@ A broad TextMate scope appearing before a more specific one. VS Code evaluates `
 
 <CodeBlock lang="log">{`
 
-  ● Scope 'keyword' in 'Base Syntax' masks more specific 'keyword.control' in 'Control Flow'
+  ● Scope 'keyword' in 'Base Syntax' masks more specific 'keyword.control' in 'Control Flow' (ocean.yaml:22:5)
 
 `}</CodeBlock>
 
 <CodeBlock lang="log">{`
 
-  ● Scope 'entity.name' makes more specific 'entity.name.function' redundant in 'Entities'
+  ● Scope 'entity.name' makes more specific 'entity.name.function' redundant in 'Entities' (ocean.yaml:48:5)
 
 `}</CodeBlock>
 
@@ -79,7 +79,7 @@ The linter validates the `settings` object inside each `tokenColors` entry. VS C
 
 <CodeBlock lang="log">{`
 
-  ● 'Keywords' has no valid settings object
+  ● 'Keywords' has no valid settings object (ocean.yaml:30:5)
 
 `}</CodeBlock>
 
@@ -87,7 +87,7 @@ The linter validates the `settings` object inside each `tokenColors` entry. VS C
 
 <CodeBlock lang="log">{`
 
-  ● 'not-a-colour' in 'Keywords' (foreground) is not a valid hex colour (#RGB, #RRGGBB, or #RRGGBBAA)
+  ● 'not-a-colour' in 'Keywords' (foreground) is not a valid hex colour (#RGB, #RRGGBB, or #RRGGBBAA) (ocean.yaml:33:17)
 
 `}</CodeBlock>
 
@@ -95,7 +95,7 @@ The linter validates the `settings` object inside each `tokenColors` entry. VS C
 
 <CodeBlock lang="log">{`
 
-  ● fontStyle keyword 'regular' in 'Keywords' is not recognised (valid: italic, bold, underline, strikethrough)
+  ● fontStyle keyword 'regular' in 'Keywords' is not recognised (valid: italic, bold, underline, strikethrough) (ocean.yaml:34:17)
 
 `}</CodeBlock>
 
@@ -150,6 +150,18 @@ The linter performs comprehensive validation of your `semanticTokenColors` secti
 `}</CodeBlock>
 
 See the [Lint Rules](/docs/reference/lint-rules) reference for the full list of semantic token checks.
+
+## Source Locations
+
+Every lint issue includes a source location — the file, line, and column where the problem originates. This works across imported files, so when a duplicate scope comes from a shared partial, you see exactly where it lives.
+
+<CodeBlock lang="log">{`
+
+  ● Scope 'keyword' is duplicated in 'Keywords', 'Control Flow' (themes/ocean.yaml:42:5)
+
+`}</CodeBlock>
+
+Unnamed `tokenColors` entries (those without a `name` property) are displayed as `(unnamed rule #N)` rather than a numeric index, making it easier to locate them in the source.
 
 ## Reading the Output
 

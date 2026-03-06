@@ -7,6 +7,8 @@ import CodeBlock from "@site/src/components/CodeBlock"
 
 The `sassy lint` command performs static analysis on compiled theme data. It reports issues at three severity levels: **error** (high), **warning** (medium), and **info** (low).
 
+Every issue includes a source location (`file:line:col`) pointing to where the problem originates in your source files. Locations work across imported files — if a duplicate scope comes from a shared partial, the location points into that file. Unnamed `tokenColors` entries are displayed as `(unnamed rule #N)` rather than a numeric index.
+
 Lint always exits with code 0, even when issues are found.
 
 ---

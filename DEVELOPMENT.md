@@ -97,7 +97,7 @@ lifecycle:
 ```ts
 interface Theme {
   sourceFile: FileObject            // entry theme file
-  source: object                    // parsed YAML / JSON5 (must contain config)
+  source: object                    // parsed YAML (must contain config)
   output: object                    // final theme JSON object
   dependencies: FileObject[]        // all secondary sources discovered during compile
   lookup: object                    // variable lookup data for compilation
@@ -105,7 +105,7 @@ interface Theme {
   outputFileName: string            // computed output file path
 
   // Methods
-  load(): Promise<Theme>            // Loads and parses the source YAML/JSON5 file
+  load(): Promise<Theme>            // Loads and parses the source YAML file
   build(options?): Promise<Theme>   // Runs complete compilation pipeline via Compiler class
   write(forceWrite?): Promise<object> // Writes to .color-theme.json or stdout, skips if hash unchanged
   addDependency(file): Theme        // Tracks import files for watch mode dependency tracking
@@ -115,7 +115,7 @@ interface Theme {
 
 The Theme class manages its complete lifecycle including:
 
-- File loading and parsing (JSON5/YAML support)
+- File loading and parsing (YAML support)
 - Dependency tracking for imports
 - Internal watch mode with chokidar integration
 - Hash-based output skipping to prevent unnecessary writes

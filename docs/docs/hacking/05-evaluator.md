@@ -8,6 +8,14 @@ import CodeBlock from "@site/src/components/CodeBlock"
 `Evaluator.js` handles variable substitution and colour function dispatch
 during theme compilation.
 
+## Theme Reference
+
+`setTheme(theme)` gives the Evaluator a back-reference to the owning `Theme`
+instance. This enables source-location lookups: when an evaluation error occurs,
+the Evaluator calls `theme.findSourceLocation(dottedPath)` and, if a location is
+found, appends `file:line:col` to the error's trace context. The result is error
+messages that point directly to the offending line in the original YAML source.
+
 ## Regex Patterns
 
 Three static patterns drive token detection:
@@ -41,6 +49,10 @@ Resolution is then iterative:
    reached.
 4. If max iterations are exhausted, a `Sass` error is thrown listing the
    unresolved tokens. This catches circular references.
+
+All errors thrown during evaluation are enriched with source locations when
+available — the Evaluator uses its `Theme` reference to resolve the dotted path
+back to a file:line:col position in the original YAML.
 
 ## Function Dispatch
 

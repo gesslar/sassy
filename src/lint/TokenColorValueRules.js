@@ -44,7 +44,7 @@ export default class TokenColorValueRules {
 
     for(let i = 0; i < tokenColors.length; i++) {
       const entry = tokenColors[i]
-      const name = entry.name || `Entry ${i + 1}`
+      const name = entry.name || `(unnamed rule #${i + 1})`
 
       issues.push(...this.#checkEntry(entry, name))
     }

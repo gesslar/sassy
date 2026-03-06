@@ -74,7 +74,7 @@ Tests use the built-in `node:test` runner and live in `tests/`.
 - **Run everything**: `pnpm test`
 - **Targeted runs**: `node --test tests/Colour.test.js`
 - **Helpers**: `tests/helpers/` provides shared test utilities
-- **Fixtures**: `tests/fixtures/` contains YAML/JSON5 theme files for testing
+- **Fixtures**: `tests/fixtures/` contains YAML theme files for testing
 
 #### Test Template
 

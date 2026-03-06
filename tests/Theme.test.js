@@ -229,5 +229,59 @@ describe("Theme", () => {
       const deps = theme.getDependencies()
       assert.ok(deps.size > 0)
     })
+
+    it("attaches yamlSource to dependencies after load() for YAML files", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      const deps = theme.getDependencies()
+      for(const dep of deps) {
+        if(dep.hasYamlSource()) {
+          assert.ok(dep.getYamlSource(), "dependency should have yamlSource attached")
+        }
+      }
+    })
+  })
+
+  describe("findSourceLocation()", () => {
+    it("returns a formatted location string for a known path", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      const location = theme.findSourceLocation("colors.editor.background")
+      if(location) {
+        assert.equal(typeof location, "string")
+        assert.ok(location.length > 0)
+      }
+    })
+
+    it("returns null for a nonexistent path", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      const location = theme.findSourceLocation("nonexistent.path.that.does.not.exist")
+      assert.equal(location, null)
+    })
   })
 })

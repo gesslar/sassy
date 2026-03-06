@@ -16,6 +16,7 @@
 import {Sass, Term, Util} from "@gesslar/toolkit"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
+import YamlSource from "./YamlSource.js"
 
 /**
  * @import {Cache} from "@gesslar/toolkit"
@@ -116,6 +117,30 @@ export default class Theme {
       : this.#cwd
 
     this.#outputFile = this.#outputDir?.getFile(this.#outputFileName) ?? null
+  }
+
+  /**
+   * Looks up a source location for a dotted key path across all dependencies.
+   * Returns the first match found (main theme file checked last since
+   * dependencies are added before it in composition order).
+   *
+   * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
+   * @returns {string|null} Formatted "file:line:col" string or null
+   */
+  findSourceLocation(dottedPath) {
+    for(const dep of this.#dependencies) {
+      const yamlSource = dep.getYamlSource()
+
+      if(!yamlSource)
+        continue
+
+      const formatted = yamlSource.formatLocation(dottedPath)
+
+      if(formatted)
+        return formatted
+    }
+
+    return null
   }
 
   /**
@@ -337,11 +362,15 @@ export default class Theme {
    * @param {object} source - The parsed source data from the file
    * @returns {this} Returns this instance for method chaining
    */
-  addDependency(file, source) {
-    this.#dependencies.add(
-      new Dependency()
-        .setSourceFile(file)
-        .setSource(source))
+  addDependency(file, source, yamlSource = null) {
+    const dep = new Dependency()
+      .setSourceFile(file)
+      .setSource(source)
+
+    if(yamlSource)
+      dep.setYamlSource(yamlSource)
+
+    this.#dependencies.add(dep)
 
     return this
   }
@@ -532,9 +561,42 @@ export default class Theme {
 
     this.#source = source
 
-    this.addDependency(this.#sourceFile, new Map(Object.entries(this.#source)))
+    // Build YAML AST for source-location tracking
+    const yamlSource = await this.#buildYamlSource(this.#sourceFile)
+
+    this.addDependency(
+      this.#sourceFile,
+      new Map(Object.entries(this.#source)),
+      yamlSource
+    )
 
     return this
+  }
+
+  /**
+   * Builds a YamlSource from a file for source-location tracking.
+   * Returns null for non-YAML files or on parse failure.
+   *
+   * @param {FileObject} file - The file to parse
+   * @returns {Promise<YamlSource|null>} The parsed YAML source or null
+   * @private
+   */
+  async #buildYamlSource(file) {
+    const ext = file.extension
+
+    if(ext !== ".yaml" && ext !== ".yml")
+      return null
+
+    try {
+      const label = this.#cwd
+        ? file.relativeTo(this.#cwd)
+        : file.path
+      const text = await file.read()
+
+      return new YamlSource(text, label)
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -598,6 +660,8 @@ export default class Theme {
 export class Dependency {
   #sourceFile = null
   #source = null
+  /** @type {import("./YamlSource.js").default|null} */
+  #yamlSource = null
 
   /**
    * Sets the file object for this dependency.
@@ -641,6 +705,37 @@ export class Dependency {
    */
   getSource() {
     return this.#source
+  }
+
+  /**
+   * Sets the YAML AST source for location tracking.
+   *
+   * @param {import("./YamlSource.js").default} yamlSource - The parsed YAML source
+   * @returns {this} This.
+   */
+  setYamlSource(yamlSource) {
+    if(!this.#yamlSource)
+      this.#yamlSource = yamlSource
+
+    return this
+  }
+
+  /**
+   * Gets the YAML AST source for location tracking.
+   *
+   * @returns {import("./YamlSource.js").default|null} The YAML source or null
+   */
+  getYamlSource() {
+    return this.#yamlSource
+  }
+
+  /**
+   * Checks if the dependency has a YAML source.
+   *
+   * @returns {boolean} True if YAML source is available
+   */
+  hasYamlSource() {
+    return this.#yamlSource !== null
   }
 
   /**

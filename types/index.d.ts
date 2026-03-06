@@ -3,6 +3,7 @@ export { Lint } from "./LintCommand.js";
 export { Proof } from "./ProofCommand.js";
 export { Resolve } from "./ResolveCommand.js";
 export { default as Colour } from "./Colour.js";
+export { default as YamlSource } from "./YamlSource.js";
 export { default as SemanticSelectorRules } from "./lint/SemanticSelectorRules.js";
 export { default as SemanticValueRules } from "./lint/SemanticValueRules.js";
 export { default as SemanticCoherenceRules } from "./lint/SemanticCoherenceRules.js";

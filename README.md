@@ -490,7 +490,7 @@ config:
 Imports are a simple array of file paths. Each file gets merged into your theme:
 
 - **Files:** `["./file1.yaml", "./file2.yaml", "./file3.yaml"]`
-- **File types:** Both `.yaml` and `.json5` are supported
+- **File types:** Files in `.yaml` format are supported
 
 **Merge Order:**
 
@@ -678,8 +678,8 @@ licenses:
 | [commander](https://github.com/tj/commander.js) | MIT |
 | [culori](https://github.com/Evercoder/culori) | MIT |
 | [globby](https://github.com/sindresorhus/globby) | MIT |
-| [json5](https://github.com/json5/json5) | MIT |
 | [yaml](https://github.com/eemeli/yaml) | ISC |
+| [yaml-eslint-parser](https://github.com/ota-meshi/yaml-eslint-parser) | MIT |
 
 ---
 

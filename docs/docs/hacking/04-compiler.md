@@ -37,7 +37,7 @@ processes it through all phases.
 
 `}</CodeBlock>
 
-Each import filename is resolved relative to the entry file's directory. Files are loaded through the theme's cache (`Cache.loadCachedData`) for mtime-based invalidation.
+Each import filename is resolved relative to the entry file's directory. Files are loaded through the theme's cache (`Cache.loadCachedData`) for mtime-based invalidation. For YAML imports, a `YamlSource` is created from the raw file content and stored on the `Dependency` via `setYamlSource()`. This enables downstream error messages to include the originating file, line, and column.
 
 Merge behaviour:
 

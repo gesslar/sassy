@@ -52,14 +52,14 @@ const sources = []
 await Promise.all(
   EXAMPLES_DIRS.map(async dir => {
     for await(const file of walk(dir)) {
-      if([".yaml", ".json5"].includes(file.extension))
+      if([".yaml"].includes(file.extension))
         sources.push(file)
     }
   })
 )
 
 if(sources.length === 0) {
-  console.log("No YAML/JSON5 examples found.")
+  console.log("No YAML examples found.")
   process.exit(0)
 }
 

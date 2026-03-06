@@ -24,9 +24,9 @@ This makes Theme usable from both the CLI (which provides a cwd and options) and
 | Property | Type | Description |
 |---|---|---|
 | `sourceFile` | `FileObject` | The entry theme file (set via `setThemeFile`) |
-| `source` | `object` | Parsed YAML/JSON5 content |
+| `source` | `object` | Parsed YAML content |
 | `output` | `object` | Final compiled VS Code theme JSON |
-| `dependencies` | `Set<Dependency>` | Tracked import files for watch mode |
+| `dependencies` | `Set<Dependency>` | Tracked import files for watch mode (each may carry a `YamlSource`) |
 | `lookup` | `object` | Variable resolution data |
 | `pool` | `ThemePool` | Token registry from compilation |
 | `outputFileName` | `string` | Derived output filename (`.color-theme.json`) |
@@ -36,9 +36,10 @@ This makes Theme usable from both the CLI (which provides a cwd and options) and
 
 ### `load()`
 
-Parses the source file. Format is auto-detected from the file extension (JSON5
-or YAML). Uses `Cache.loadCachedData()` when a cache is set, otherwise falls
-back to `FileObject.loadData()`. Populates `source` with the parsed content.
+Parses the YAML source file. Uses `Cache.loadCachedData()` when a cache is set,
+otherwise falls back to `FileObject.loadData()`. Populates `source` with the
+parsed content. A `YamlSource` is created and attached so that source locations
+are available for error reporting.
 
 ### `build(options?)`
 
@@ -58,6 +59,13 @@ Returns a `WriteStatus` symbol: `DRY_RUN`, `SKIPPED`, or `WRITTEN`.
 Registers an imported file as a dependency. Used by the compiler during import
 resolution. Dependencies are tracked for watch mode so that changes to imported
 files trigger recompilation.
+
+### `findSourceLocation(dottedPath)`
+
+Searches all dependencies (and the entry file itself) for a `YamlSource` that
+maps the given dotted path to a source location. Returns `{file, line, column}`
+when found, or `undefined` otherwise. Used by the Evaluator to enrich error
+messages with precise origin information.
 
 ### `reset()`
 

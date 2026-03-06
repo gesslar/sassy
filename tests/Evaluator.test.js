@@ -223,4 +223,17 @@ describe("Evaluator", () => {
       )
     })
   })
+
+  describe("setTheme()", () => {
+    it("returns this for chaining", () => {
+      const evaluator = new Evaluator()
+      const result = evaluator.setTheme(null)
+      assert.equal(result, evaluator)
+    })
+
+    it("accepts null without crashing", () => {
+      const evaluator = new Evaluator()
+      assert.doesNotThrow(() => evaluator.setTheme(null))
+    })
+  })
 })

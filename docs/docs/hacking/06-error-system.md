@@ -48,6 +48,24 @@ Errors are caught at each layer and re-wrapped with additional context:
 
 This builds a chain of context from the point of failure up to the session level.
 
+### Source Location Enrichment
+
+When a YAML file has been parsed with `YamlSource`, errors can include precise
+origin information. The Evaluator calls `theme.findSourceLocation(dottedPath)` to
+resolve a token's dotted path back to its source position. When found, the
+location is added as a trace entry in `file:line:col` format:
+
+<CodeBlock lang="javascript">{`
+
+  Sass.new("Unknown variable $(missing)")
+    .trace("palette.yaml:12:5")
+    .trace("evaluating palette.accent")
+
+`}</CodeBlock>
+
+This makes it straightforward to jump directly to the problematic line in an
+editor, especially in themes composed from many imported files.
+
 ## Tantrum
 
 An `AggregateError` that auto-wraps plain `Error` instances in `Sass`. Used when multiple errors need to be reported together.

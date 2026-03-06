@@ -34,6 +34,9 @@ export {Resolve} from "./ResolveCommand.js"
 // Colour utilities
 export {default as Colour} from "./Colour.js"
 
+// YAML AST and source-location tracking
+export {default as YamlSource} from "./YamlSource.js"
+
 // Lint rule modules — importable for targeted validation
 export {default as SemanticSelectorRules} from "./lint/SemanticSelectorRules.js"
 export {default as SemanticValueRules} from "./lint/SemanticValueRules.js"

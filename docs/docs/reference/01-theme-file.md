@@ -5,7 +5,8 @@ title: "Theme File Anatomy"
 
 import CodeBlock from "@site/src/components/CodeBlock"
 
-A Sassy theme file is a YAML or JSON5 document with up to four top-level keys. When compiled, it produces a `<name>.color-theme.json` file suitable for VS Code.
+A Sassy theme file is a YAML  document with up to four top-level keys. When
+compiled, it produces a `<name>.color-theme.json` file suitable for VS Code.
 
 ## Top-Level Structure
 
@@ -194,12 +195,11 @@ Both forms support variable references, palette aliases, and colour functions.
 
 ## Supported File Formats
 
-Both `.yaml` and `.json5` are supported with identical behaviour. Choose whichever you prefer.
+Files in `.yaml` format are supported.
 
 | Format | Extension | Notes |
 |--------|-----------|-------|
 | YAML | `.yaml` | Supports comments, multiline strings, anchors |
-| JSON5 | `.json5` | Supports comments, trailing commas, unquoted keys |
 
 ## Output
 
