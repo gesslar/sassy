@@ -586,7 +586,7 @@ export default class Theme {
       ? await this.#cache.loadCachedData(this.#sourceFile)
       : await this.#sourceFile.loadData()
 
-    if(!source[PropertyKey.CONFIG.description]) {
+    if(!source?.[PropertyKey.CONFIG.description]) {
       const label = this.#cwd
         ? this.#sourceFile.relativeTo(this.#cwd)
         : this.#sourceFile.path
