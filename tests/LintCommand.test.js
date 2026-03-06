@@ -278,6 +278,59 @@ describe("LintCommand", () => {
       }
     })
 
+    it("duplicate scope issues have locations on each occurrence", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new LintCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/lint-duplicate-scope.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(command.getCache())
+
+      await theme.load()
+      await theme.build()
+
+      const results = await new Lint().run(theme)
+      const duplicates = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === Lint.ISSUE_TYPES.DUPLICATE_SCOPE)
+
+      assert.ok(duplicates.length > 0, "should have duplicate scope issues")
+
+      for(const issue of duplicates) {
+        for(const occ of issue.occurrences) {
+          assert.ok(occ.location, `occurrence '${occ.name}' should have a location`)
+          assert.equal(typeof occ.location, "string")
+        }
+      }
+    })
+
+    it("precedence issues have locations for both broad and specific rules", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new LintCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/lint-precedence.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(command.getCache())
+
+      await theme.load()
+      await theme.build()
+
+      const results = await new Lint().run(theme)
+      const precedence = results[Lint.SECTIONS.TOKEN_COLORS]
+        .filter(i => i.type === Lint.ISSUE_TYPES.PRECEDENCE_ISSUE)
+
+      assert.ok(precedence.length > 0, "should have precedence issues")
+
+      for(const issue of precedence) {
+        assert.ok(issue.broadLocation, "should have broadLocation")
+        assert.equal(typeof issue.broadLocation, "string")
+        assert.ok(issue.specificLocation, "should have specificLocation")
+        assert.equal(typeof issue.specificLocation, "string")
+        assert.notEqual(issue.broadLocation, issue.specificLocation)
+      }
+    })
+
     it("reports no precedence issues for non-hierarchical scopes", async() => {
       const cwd = new DirectoryObject(__dirname)
       const packageJson = {}
