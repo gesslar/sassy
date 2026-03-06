@@ -656,7 +656,7 @@ export default class Theme {
     const file = this.#outputFile
 
     if(!file)
-      throw Sass.new("No output file configured. Set cwd and options before writing.")
+      throw Sass.new("No output file configured. Set themeFile and options before writing. cwd is optional when themeFile is set.")
 
     if(this.#options?.dryRun) {
       Term.log(this.#outputJson)

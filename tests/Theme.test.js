@@ -264,7 +264,7 @@ describe("Theme", () => {
       assert.ok(result.endsWith(".color-theme.json"))
       // Write result file path should be under the absolute dir
       const outputFile = theme.getOutputFile()
-      assert.ok(outputFile.path.startsWith(absDir))
+      assert.strictEqual(path.dirname(outputFile.path), absDir)
     })
 
     it("resolves relative outputDir against cwd", () => {
@@ -277,9 +277,10 @@ describe("Theme", () => {
 
       const outputFile = theme.getOutputFile()
       const expected = path.join(__dirname, "fixtures", "output")
-      assert.ok(
-        outputFile.path.startsWith(expected),
-        `expected ${outputFile.path} to start with ${expected}`
+      assert.strictEqual(
+        path.dirname(outputFile.path),
+        expected,
+        `expected ${outputFile.path} to be inside ${expected}`
       )
     })
 
@@ -292,9 +293,10 @@ describe("Theme", () => {
         .withOptions({outputDir: "."})
 
       const outputFile = theme.getOutputFile()
-      assert.ok(
-        outputFile.path.startsWith(__dirname),
-        `expected ${outputFile.path} to start with ${__dirname}`
+      assert.strictEqual(
+        path.dirname(outputFile.path),
+        __dirname,
+        `expected ${outputFile.path} to be inside ${__dirname}`
       )
     })
 
@@ -309,9 +311,10 @@ describe("Theme", () => {
 
       const outputFile = theme.getOutputFile()
       const expected = path.join(fixturesDir, "output")
-      assert.ok(
-        outputFile.path.startsWith(expected),
-        `expected ${outputFile.path} to start with ${expected}`
+      assert.strictEqual(
+        path.dirname(outputFile.path),
+        expected,
+        `expected ${outputFile.path} to be inside ${expected}`
       )
     })
 
@@ -326,9 +329,10 @@ describe("Theme", () => {
 
       const outputFile = theme.getOutputFile()
       const expected = path.join(__dirname, "output")
-      assert.ok(
-        outputFile.path.startsWith(expected),
-        `expected ${outputFile.path} to start with ${expected}`
+      assert.strictEqual(
+        path.dirname(outputFile.path),
+        expected,
+        `expected ${outputFile.path} to be inside ${expected}`
       )
     })
   })
