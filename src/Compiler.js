@@ -492,9 +492,23 @@ export default class Compiler {
 
     // Add main theme file last so findSourceLocation() checks imports first,
     // matching the import-first composition order of tokenColors and other sections.
+    const mainDepSource = new Map()
+
+    if (source?.theme?.colors) {
+      mainDepSource.set("colors", source.theme.colors)
+    }
+
+    if (source?.theme?.tokenColors) {
+      mainDepSource.set("tokenColors", source.theme.tokenColors)
+    }
+
+    if (source?.theme?.semanticTokenColors) {
+      mainDepSource.set("semanticTokenColors", source.theme.semanticTokenColors)
+    }
+
     theme.addDependency(
       theme.getSourceFile(),
-      new Map(Object.entries(source)),
+      mainDepSource,
       theme.getMainYamlSource()
     )
 
