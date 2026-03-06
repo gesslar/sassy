@@ -490,6 +490,14 @@ export default class Compiler {
         theme.addDependency(file, source, yamlSource)
     )
 
+    // Add main theme file last so findSourceLocation() checks imports first,
+    // matching the import-first composition order of tokenColors and other sections.
+    theme.addDependency(
+      theme.getSourceFile(),
+      new Map(Object.entries(source)),
+      theme.getMainYamlSource()
+    )
+
     // Handle tokenColors separately - imports first, then main source
     // (append-only)
     const mergedTokenColors = [

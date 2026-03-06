@@ -304,8 +304,8 @@ export class Lint {
 
     // TokenColor issues from rule modules — keyed by rule name
     if(issue.rule) {
-      // Match "Entry N" pattern to extract index directly
-      const match = /^Entry (\d+)$/.exec(issue.rule)
+      // Match "(unnamed rule #N)" pattern to extract index directly
+      const match = /^\(unnamed rule #(\d+)\)$/.exec(issue.rule)
 
       if(match) {
         const tcPath =

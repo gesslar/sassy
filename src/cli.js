@@ -4,7 +4,7 @@
  * @file Sassy theme compiler CLI.
  *
  * Responsibilities:
- *  - Parse CLI arguments (supports  YAML theme entries, globs resolved externally by the shell)
+ *  - Parse CLI arguments (supports YAML theme entries, globs resolved externally by the shell)
  *  - Create Theme instances for compilation units
  *  - Delegate compilation to Theme.build() which internally uses Compiler.compile()
  *  - Write (or print with --dry-run) the resulting VS Code colour theme JSON
