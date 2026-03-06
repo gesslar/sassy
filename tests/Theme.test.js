@@ -250,6 +250,89 @@ describe("Theme", () => {
     })
   })
 
+  describe("computeOutputPath", () => {
+    it("uses absolute outputDir as-is", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const absDir = path.resolve(__dirname, "fixtures", "output")
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme()
+        .setCwd(cwd)
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: absDir})
+
+      const result = theme.getOutputFileName()
+      assert.ok(result.endsWith(".color-theme.json"))
+      // Write result file path should be under the absolute dir
+      const outputFile = theme.getOutputFile()
+      assert.ok(outputFile.path.startsWith(absDir))
+    })
+
+    it("resolves relative outputDir against cwd", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme()
+        .setCwd(cwd)
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: "fixtures/output"})
+
+      const outputFile = theme.getOutputFile()
+      const expected = path.join(__dirname, "fixtures", "output")
+      assert.ok(
+        outputFile.path.startsWith(expected),
+        `expected ${outputFile.path} to start with ${expected}`
+      )
+    })
+
+    it("resolves '.' outputDir to cwd", () => {
+      const cwd = new DirectoryObject(__dirname)
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme()
+        .setCwd(cwd)
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: "."})
+
+      const outputFile = theme.getOutputFile()
+      assert.ok(
+        outputFile.path.startsWith(__dirname),
+        `expected ${outputFile.path} to start with ${__dirname}`
+      )
+    })
+
+    it("resolves relative outputDir against sourceFile parent when no cwd", () => {
+      const fixturesDir = path.join(__dirname, "fixtures")
+      const themeFile = new FileObject(
+        path.join(fixturesDir, "simple-theme.yaml")
+      )
+      const theme = new Theme()
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: "output"})
+
+      const outputFile = theme.getOutputFile()
+      const expected = path.join(fixturesDir, "output")
+      assert.ok(
+        outputFile.path.startsWith(expected),
+        `expected ${outputFile.path} to start with ${expected}`
+      )
+    })
+
+    it("resolves ../ outputDir against sourceFile parent when no cwd", () => {
+      const fixturesDir = path.join(__dirname, "fixtures")
+      const themeFile = new FileObject(
+        path.join(fixturesDir, "simple-theme.yaml")
+      )
+      const theme = new Theme()
+        .setThemeFile(themeFile)
+        .withOptions({outputDir: "../output"})
+
+      const outputFile = theme.getOutputFile()
+      const expected = path.join(__dirname, "output")
+      assert.ok(
+        outputFile.path.startsWith(expected),
+        `expected ${outputFile.path} to start with ${expected}`
+      )
+    })
+  })
+
   describe("findSourceLocation()", () => {
     it("returns a formatted location string for a known path", async() => {
       const cwd = new DirectoryObject(__dirname)

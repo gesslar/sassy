@@ -65,6 +65,12 @@ export default class Theme {
      */
     getOutputFileName(): string;
     /**
+     * Gets the output file object.
+     *
+     * @returns {FileObject|null} The output file object
+     */
+    getOutputFile(): FileObject | null;
+    /**
      * Gets the source file object.
      *
      * @returns {FileObject} The source theme file
@@ -363,7 +369,7 @@ export class Dependency {
     isComplete(): boolean;
     #private;
 }
-import type { DirectoryObject } from "@gesslar/toolkit";
+import { DirectoryObject } from "@gesslar/toolkit";
 import type { Cache } from "@gesslar/toolkit";
 import type { FileObject } from "@gesslar/toolkit";
 import ThemePool from "./ThemePool.js";

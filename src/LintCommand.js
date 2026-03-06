@@ -325,20 +325,31 @@ export class Lint {
       }
     }
 
-    // Duplicate scope — use first occurrence
+    // Duplicate scope — resolve locations for all occurrences
     if(issue.occurrences?.length > 0) {
-      const idx = issue.occurrences[0].index
-      const tcPath = `theme.tokenColors.${idx - 1}`
+      for(const occ of issue.occurrences) {
+        const loc = find(`theme.tokenColors.${occ.index - 1}`)
 
-      return find(tcPath)
+        if(loc)
+          occ.location = loc
+      }
+
+      return issue.occurrences[0]?.location ?? null
     }
 
-    // Precedence — use the broad rule index
+    // Precedence — resolve locations for both participants
     if(issue.broadIndex !== undefined) {
-      const tcPath =
+      issue.broadLocation = find(
         `theme.tokenColors.${issue.broadIndex - 1}`
+      ) ?? null
 
-      return find(tcPath)
+      if(issue.specificIndex !== undefined) {
+        issue.specificLocation = find(
+          `theme.tokenColors.${issue.specificIndex - 1}`
+        ) ?? null
+      }
+
+      return issue.broadLocation
     }
 
     // Coherence — missing semanticHighlighting
@@ -879,13 +890,16 @@ export default class LintCommand extends Command {
     switch(issue.type) {
       case LC.ISSUE_TYPES.DUPLICATE_SCOPE: {
         const rules = issue.occurrences
-          .map(occ => `{loc}'${occ.name}{/}'`)
-          .join(", ")
-        const loc = issue.location
-          ? c` ({loc}${issue.location}{/})`
-          : ""
+          .map(occ => {
+            const ol = occ.location
+              ? c` ({loc}${occ.location}{/})`
+              : ""
 
-        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}${loc}`)
+            return c`{loc}'${occ.name}'{/}${ol}`
+          })
+          .join(", ")
+
+        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
         break
       }
 
@@ -912,14 +926,17 @@ export default class LintCommand extends Command {
       }
 
       case LC.ISSUE_TYPES.PRECEDENCE_ISSUE: {
-        const loc = issue.location
-          ? c` ({loc}${issue.location}{/})`
+        const broadLoc = issue.broadLocation
+          ? c` ({loc}${issue.broadLocation}{/})`
+          : ""
+        const specificLoc = issue.specificLocation
+          ? c` ({loc}${issue.specificLocation}{/})`
           : ""
 
         if(issue.broadIndex === issue.specificIndex) {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'${loc}`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'${broadLoc}`)
         } else {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'${loc}`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}'${broadLoc} masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'${specificLoc}`)
         }
 
         break

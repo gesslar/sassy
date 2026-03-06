@@ -13,7 +13,8 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import {Sass, Term, Util} from "@gesslar/toolkit"
+import {DirectoryObject, FileSystem as FS, Sass, Term, Util} from "@gesslar/toolkit"
+import path from "node:path"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
 import YamlSource from "./YamlSource.js"
@@ -114,9 +115,22 @@ export default class Theme {
 
     this.#outputFileName = `${this.#name}.${outputFileExtension}`
 
-    this.#outputDir = outputDir !== "."
-      ? this.#cwd?.getDirectory(outputDir)
-      : this.#cwd
+    if(path.isAbsolute(outputDir)) {
+      this.#outputDir = new DirectoryObject(outputDir)
+    } else {
+      if(this.#cwd) {
+        if(outputDir === ".") {
+          this.#outputDir = this.#cwd
+        } else {
+          this.#outputDir = this.#cwd.getDirectory(outputDir)
+        }
+      } else {
+        const parentPath = this.#sourceFile.parentPath
+        const resolved = FS.resolvePath(parentPath, outputDir)
+
+        this.#outputDir = new DirectoryObject(resolved)
+      }
+    }
 
     this.#outputFile = this.#outputDir?.getFile(this.#outputFileName) ?? null
   }
@@ -225,6 +239,15 @@ export default class Theme {
    */
   getOutputFileName() {
     return this.#outputFileName
+  }
+
+  /**
+   * Gets the output file object.
+   *
+   * @returns {FileObject|null} The output file object
+   */
+  getOutputFile() {
+    return this.#outputFile
   }
 
   /**
