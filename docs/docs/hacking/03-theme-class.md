@@ -63,9 +63,9 @@ files trigger recompilation.
 ### `findSourceLocation(dottedPath)`
 
 Searches all dependencies (and the entry file itself) for a `YamlSource` that
-maps the given dotted path to a source location. Returns `{file, line, column}`
-when found, or `undefined` otherwise. Used by the Evaluator to enrich error
-messages with precise origin information.
+maps the given dotted path to a source location. Returns a formatted string
+of the form `file:line:col` when found, or `null` otherwise. Used by the
+Evaluator to enrich error messages with precise origin information.
 
 ### `reset()`
 

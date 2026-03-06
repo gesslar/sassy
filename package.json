@@ -56,7 +56,7 @@
     "major": "npm version major"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "@gesslar/colours": "^0.8.0",

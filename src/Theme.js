@@ -58,6 +58,8 @@ export default class Theme {
   #pool = null
   #cache = null
   #name = null
+  /** @type {import("./YamlSource.js").default|null} */
+  #mainYamlSource = null
 
   // Write-related properties
   #output = null
@@ -154,6 +156,7 @@ export default class Theme {
     this.#lookup = null
     this.#pool = null
     this.#dependencies = new Set()
+    this.#mainYamlSource = null
   }
 
   /**
@@ -231,6 +234,17 @@ export default class Theme {
    */
   getSourceFile() {
     return this.#sourceFile
+  }
+
+  /**
+   * Gets the YAML source built from the main theme file during load().
+   * Used by Compiler to add the main file as the last dependency after
+   * all imports have been registered.
+   *
+   * @returns {import("./YamlSource.js").default|null} The YAML source or null
+   */
+  getMainYamlSource() {
+    return this.#mainYamlSource
   }
 
   /**
@@ -561,14 +575,9 @@ export default class Theme {
 
     this.#source = source
 
-    // Build YAML AST for source-location tracking
-    const yamlSource = await this.#buildYamlSource(this.#sourceFile)
-
-    this.addDependency(
-      this.#sourceFile,
-      new Map(Object.entries(this.#source)),
-      yamlSource
-    )
+    // Build YAML AST for source-location tracking; deferred to after imports
+    // are added by Compiler so dependency order matches composition order.
+    this.#mainYamlSource = await this.#buildYamlSource(this.#sourceFile)
 
     return this
   }
