@@ -106,7 +106,7 @@ Theme uses a chainable builder. All setters return `this`.
 | `hasOutput()` | `boolean` | Check if compilation produced output |
 | `isReady()` | `boolean` | Check if source data is available |
 | `isCompiled()` | `boolean` | Check if output, pool, and lookup are present |
-| `findSourceLocation(path)` | `{file, line, col} \| null` | Look up the source file, line, and column for a dot-path in the compiled theme |
+| `findSourceLocation(path)` | `string \| null` | Look up the source location for a dot-path; returns a formatted `"file:line:col"` string or `null` |
 
 ## Lint Engine
 
