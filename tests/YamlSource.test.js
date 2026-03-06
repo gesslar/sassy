@@ -98,15 +98,15 @@ describe("YamlSource", () => {
       assert.deepEqual(loc, {line: 13, column: 20})
     })
 
-    it("falls back to key location for container keys", () => {
+    it("returns a distinct value location for a block mapping key", () => {
       const source = new YamlSource(SAMPLE_YAML)
       const keyLoc = source.getLocation("config")
       const valLoc = source.getValueLocation("config")
-      // config: has a mapping value starting on the next line,
-      // so value location should differ from key location
-      assert.ok(keyLoc)
-      assert.ok(valLoc)
-      assert.equal(keyLoc.line, 1)
+      // config: is a block mapping whose value starts on the next line,
+      // so value location points to the first child, not the key itself
+      assert.deepEqual(keyLoc, {line: 1, column: 0})
+      assert.deepEqual(valLoc, {line: 2, column: 2})
+      assert.notDeepEqual(keyLoc, valLoc)
     })
 
     it("returns null for a nonexistent path", () => {
