@@ -64,6 +64,7 @@ Engine methods will automatically call `theme.load()` if the Theme is not ready.
 | `Resolve` | Resolve engine — token/scope resolution with trails |
 | `Proof` | Proof engine — composed document view (pre-evaluation) |
 | `Colour` | Colour manipulation utilities (lighten, darken, mix, etc.) |
+| `YamlSource` | YAML source tracking — maps compiled output back to source locations |
 
 ## Theme Class
 
@@ -105,6 +106,7 @@ Theme uses a chainable builder. All setters return `this`.
 | `hasOutput()` | `boolean` | Check if compilation produced output |
 | `isReady()` | `boolean` | Check if source data is available |
 | `isCompiled()` | `boolean` | Check if output, pool, and lookup are present |
+| `findSourceLocation(path)` | `{file, line, col} \| null` | Look up the source file, line, and column for a dot-path in the compiled theme |
 
 ## Lint Engine
 
@@ -130,6 +132,9 @@ The `Lint` class analyses a compiled theme and returns structured issue data. No
     // results.semanticTokenColors  - array of semanticTokenColors issues
     // results.colors               - array of colors issues
     // results.variables            - array of variable issues
+    //
+    // Each issue object includes a location property (string):
+    // "path/to/file.yaml:42:5"
 
 `}</CodeBlock>
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (and similar coding agents) when work
 
 ## Project Overview
 
-@gesslar/sassy is a VS Code theme generator that transforms YAML/JSON5 theme definitions into VS Code `.color-theme.json` files. It provides variable systems, colour functions (via Culori), import/composition, and watch mode for live development.
+@gesslar/sassy is a VS Code theme generator that transforms YAML theme definitions into VS Code `.color-theme.json` files. It provides variable systems, colour functions (via Culori), import/composition, and watch mode for live development.
 
 ## Development Commands
 
@@ -33,7 +33,7 @@ npm run types
 
 ```bash
 # Via npm script
-npx sassy build --watch --output-dir ./examples/output ./examples/simple/midnight-ocean-json5.json5
+npx sassy build --watch --output-dir ./examples/output ./examples/simple/midnight-ocean-yaml.yaml
 
 # Direct
 node ./src/cli.js build my-theme.yaml
@@ -150,7 +150,7 @@ import assert from 'node:assert/strict'
 
 ## Dependencies
 
-**Runtime:** `@gesslar/colours`, `@gesslar/toolkit`, `chokidar`, `color-support`, `commander`, `culori`, `globby`, `json5`, `yaml`
+**Runtime:** `@gesslar/colours`, `@gesslar/toolkit`, `chokidar`, `color-support`, `commander`, `culori`, `globby`, `yaml`
 
 **Dev:** `@gesslar/uglier`, `eslint`, `typescript`
 

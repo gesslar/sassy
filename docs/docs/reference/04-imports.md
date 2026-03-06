@@ -17,11 +17,11 @@ Sassy supports splitting a theme across multiple files using the `config.import`
     import:
       - ./shared/variables.yaml
       - ./shared/colors.yaml
-      - ./shared/tokenColors.json5
+      - ./shared/tokenColors.yaml
 
 `}</CodeBlock>
 
-Paths are relative to the importing file. Both `.yaml` and `.json5` formats are supported.
+Paths are relative to the importing file.
 
 ## Merge Behaviour
 

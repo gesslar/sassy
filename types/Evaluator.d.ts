@@ -64,6 +64,13 @@ export default class Evaluator {
     static expandPaletteAliases(value: string): string;
     get pool(): ThemePool;
     /**
+     * Sets the theme reference for source-location lookups in error messages.
+     *
+     * @param {import("./Theme.js").default} theme - The theme being evaluated
+     * @returns {this} This instance for chaining
+     */
+    setTheme(theme: import("./Theme.js").default): this;
+    /**
      * Resolve variables and theme token entries in two distinct passes to ensure
      * deterministic scoping and to prevent partially-resolved values from
      * leaking between stages:

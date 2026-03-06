@@ -68,7 +68,7 @@ export class Lint {
 
   // Template strings for dynamic rule names
   static TEMPLATES = Object.freeze({
-    ENTRY_NAME: index => `Entry ${index + 1}`,
+    ENTRY_NAME: index => `(unnamed rule #${index + 1})`,
     OBJECT_NAME: index => `Object ${index + 1}`,
     VARIABLE_PREFIX: "$"
   })
@@ -124,10 +124,14 @@ export class Lint {
       results[LC.SECTIONS.TOKEN_COLORS]
         .push(...this.#lintTokenColors(tokenColorTuples, pool))
       results[LC.SECTIONS.SEMANTIC_TOKEN_COLORS]
-        .push(...this.#lintSemanticTokenColors(semanticTokenColors, pool))
+        .push(...this.#lintSemanticTokenColors(
+          semanticTokenColors, pool))
       results.variables
         .push(...await this.#lintVariables(theme, pool))
     }
+
+    // Enrich all issues with source locations
+    this.#enrichLocations(results, theme)
 
     return results
   }
@@ -238,6 +242,118 @@ export class Lint {
   }
 
   /**
+   * Enriches all issues in the results with source locations
+   * by mapping issue fields back to YAML AST positions.
+   *
+   * @param {object} results - The categorised lint results
+   * @param {Theme} theme - The theme with YAML source data
+   * @private
+   */
+  #enrichLocations(results, theme) {
+    const find = path => theme.findSourceLocation(path)
+    const output = theme.getOutput()
+    const tokenColors = output?.tokenColors ?? []
+
+    const allIssues = [
+      ...results[LC.SECTIONS.TOKEN_COLORS],
+      ...results[LC.SECTIONS.SEMANTIC_TOKEN_COLORS],
+      ...results[LC.SECTIONS.COLORS],
+      ...results.variables,
+    ]
+
+    for(const issue of allIssues) {
+      // Skip if already has a location
+      if(issue.location)
+        continue
+
+      const loc = this.#resolveIssueLocation(
+        issue, find, tokenColors
+      )
+
+      if(loc)
+        issue.location = loc
+    }
+  }
+
+  /**
+   * Resolves a source location for a single issue based on its
+   * identifying fields.
+   *
+   * @param {object} issue - The lint issue
+   * @param {Function} find - Location lookup function
+   * @param {Array} tokenColors - Compiled tokenColors array
+   * @returns {string|null} Formatted location or null
+   * @private
+   */
+  #resolveIssueLocation(issue, find, tokenColors) {
+    // Semantic issues — keyed by selector
+    if(issue.selector) {
+      const stcPath =
+        `theme.semanticTokenColors.${issue.selector}`
+
+      return find(stcPath)
+    }
+
+    // TokenColor issues — keyed by 1-based index
+    if(issue.index !== undefined) {
+      const tcPath =
+        `theme.tokenColors.${issue.index - 1}`
+
+      return find(tcPath)
+    }
+
+    // TokenColor issues from rule modules — keyed by rule name
+    if(issue.rule) {
+      // Match "Entry N" pattern to extract index directly
+      const match = /^Entry (\d+)$/.exec(issue.rule)
+
+      if(match) {
+        const tcPath =
+          `theme.tokenColors.${Number(match[1]) - 1}`
+
+        return find(tcPath)
+      }
+
+      // Named rule — scan compiled tokenColors for matching name
+      const idx = tokenColors
+        .findIndex(tc => tc.name === issue.rule)
+
+      if(idx !== -1) {
+        const tcPath = `theme.tokenColors.${idx}`
+
+        return find(tcPath)
+      }
+    }
+
+    // Duplicate scope — use first occurrence
+    if(issue.occurrences?.length > 0) {
+      const idx = issue.occurrences[0].index
+      const tcPath = `theme.tokenColors.${idx - 1}`
+
+      return find(tcPath)
+    }
+
+    // Precedence — use the broad rule index
+    if(issue.broadIndex !== undefined) {
+      const tcPath =
+        `theme.tokenColors.${issue.broadIndex - 1}`
+
+      return find(tcPath)
+    }
+
+    // Coherence — missing semanticHighlighting
+    if(issue.type ===
+      SemanticCoherenceRules
+        .ISSUE_TYPES.MISSING_SEMANTIC_HIGHLIGHTING) {
+      return find("config.custom.semanticHighlighting")
+        ?? find("config.custom")
+        ?? find("config")
+    }
+
+    return null
+  }
+
+  /**
    * Extracts a specific section from all theme dependencies (including main theme).
    *
    * Returns an array of [FileObject, sectionData] tuples for linting methods that need
@@ -253,7 +369,7 @@ export class Lint {
       const source = dep.getSource()
 
       if(source?.has(section))
-        return [dep.getSourceFile(),source.get(section)]
+        return [dep.getSourceFile(), source.get(section), dep.getYamlSource()]
 
       return false
     }).filter(Boolean)
@@ -425,6 +541,7 @@ export class Lint {
       try {
         const depData = dependency.getSource()
         const depFile = dependency.getSourceFile()
+        const yamlSource = dependency.getYamlSource()
 
         // Collect vars definitions
         const vars = depData?.get("vars")
@@ -438,7 +555,8 @@ export class Lint {
             vars,
             definedVars,
             "",
-            relativeDependencyPath
+            relativeDependencyPath,
+            yamlSource
           )
         }
 
@@ -458,13 +576,14 @@ export class Lint {
     }
 
     // Find vars-defined variables that are never used in content sections
-    for(const [varName, filename] of definedVars) {
+    for(const [varName, {filename, location}] of definedVars) {
       if(!usedVars.has(varName)) {
         issues.push({
           type: LC.ISSUE_TYPES.UNUSED_VARIABLE,
           severity: LC.SEVERITY.LOW,
           variable: `${LC.TEMPLATES.VARIABLE_PREFIX}${varName}`,
           occurrence: filename,
+          location,
         })
       }
     }
@@ -482,16 +601,21 @@ export class Lint {
    * @param {string} filename - The filename where this variable is defined
    * @private
    */
-  #collectVarsDefinitions(vars, definedVars, prefix = "", filename = "") {
+  #collectVarsDefinitions(vars, definedVars, prefix = "", filename = "", yamlSource = null) {
     for(const [key, value] of Object.entries(vars ?? {})) {
       const varName = prefix ? `${prefix}.${key}` : key
 
       if(typeof value === "object" && !Array.isArray(value)) {
         // Container/namespace — recurse but don't register as a variable
-        this.#collectVarsDefinitions(value, definedVars, varName, filename)
+        this.#collectVarsDefinitions(
+          value, definedVars, varName,
+          filename, yamlSource
+        )
       } else {
         // Leaf value (string, array, etc.) — actual variable definition
-        definedVars.set(varName, filename)
+        const location = yamlSource?.formatLocation(`vars.${varName}`) ?? null
+
+        definedVars.set(varName, {filename, location})
       }
     }
   }
@@ -754,29 +878,48 @@ export default class LintCommand extends Command {
 
     switch(issue.type) {
       case LC.ISSUE_TYPES.DUPLICATE_SCOPE: {
-        const rules = issue.occurrences.map(occ => `{loc}'${occ.name}{/}'`).join(", ")
+        const rules = issue.occurrences
+          .map(occ => `{loc}'${occ.name}{/}'`)
+          .join(", ")
+        const loc = issue.location
+          ? c` ({loc}${issue.location}{/})`
+          : ""
 
-        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}`)
+        Term.info(c`${indicator} Scope '{context}${issue.scope}{/}' is duplicated in ${rules}${loc}`)
         break
       }
 
       case LC.ISSUE_TYPES.UNDEFINED_VARIABLE: {
-        const sectionInfo = issue.section && issue.section !== LC.SECTIONS.TOKEN_COLORS ? ` in ${issue.section}` : ""
+        const sectionInfo = issue.section &&
+          issue.section !== LC.SECTIONS.TOKEN_COLORS
+          ? ` in ${issue.section}`
+          : ""
+        const loc = issue.location
+          ? c` ({loc}${issue.location}{/})`
+          : ""
 
-        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)${sectionInfo}`)
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is used but not defined in '${issue.rule}' (${issue.property} property)${sectionInfo}${loc}`)
         break
       }
 
       case LC.ISSUE_TYPES.UNUSED_VARIABLE: {
-        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined in '{loc}${issue.occurrence}{/}', but is never used`)
+        const loc = issue.location
+          ? ` at {loc}${issue.location}{/}`
+          : ""
+
+        Term.info(c`${indicator} Variable '{context}${issue.variable}{/}' is defined in '{loc}${issue.occurrence}{/}'${loc}, but is never used`)
         break
       }
 
       case LC.ISSUE_TYPES.PRECEDENCE_ISSUE: {
+        const loc = issue.location
+          ? c` ({loc}${issue.location}{/})`
+          : ""
+
         if(issue.broadIndex === issue.specificIndex) {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' makes more specific '{context}${issue.specificScope}{/}' redundant in '{loc}${issue.broadRule}{/}'${loc}`)
         } else {
-          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'`)
+          Term.info(c`${indicator} Scope '{context}${issue.broadScope}{/}' in '{loc}${issue.broadRule}{/}' masks more specific '{context}${issue.specificScope}{/}' in '{loc}${issue.specificRule}{/}'${loc}`)
         }
 
         break
@@ -808,7 +951,11 @@ export default class LintCommand extends Command {
       case TokenColorValueRules.ISSUE_TYPES.UNKNOWN_SETTINGS_PROPERTY:
       // Token colour structure rules
       case TokenColorStructureRules.ISSUE_TYPES.MULTIPLE_GLOBAL_DEFAULTS: {
-        Term.info(c`${indicator} ${issue.message}`)
+        const loc = issue.location
+          ? c` ({loc}${issue.location}{/})`
+          : ""
+
+        Term.info(c`${indicator} ${issue.message}${loc}`)
         break
       }
     }

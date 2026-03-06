@@ -7,7 +7,7 @@ import CodeBlock from "@site/src/components/CodeBlock"
 
 ## Compilation Pipeline
 
-Sassy uses a phase-based compilation pipeline to transform YAML/JSON5 theme
+Sassy uses a phase-based compilation pipeline to transform YAML theme
 definitions into VS Code `.color-theme.json` files:
 
 1. **Import Resolution** — load and merge modular theme files. Objects (palette,
@@ -33,12 +33,21 @@ definitions into VS Code `.color-theme.json` files:
 ## Class Relationships
 
 ```text
-CLI → Session → Theme → Compiler → Evaluator
-                  ↓                    ↓
-                Theme.js           ThemePool ← ThemeToken
-                  ↓                    ↓
-               chokidar             Colour.js
+CLI → Session → Theme → Compiler  →   Evaluator
+                  ↓         ↓            ↓
+                Theme.js  YamlSource  ThemePool ← ThemeToken
+                  ↓                      ↓
+               chokidar               Colour.js
 ```
+
+### YamlSource
+
+`YamlSource` parses YAML files using `yaml-eslint-parser` and builds a map from
+dotted paths to source locations (file, line, column). During import resolution,
+each YAML dependency receives a `YamlSource` instance stored on its `Dependency`
+object. When the Evaluator encounters an error, it asks the `Theme` to look up
+the originating source location via `findSourceLocation(dottedPath)`, enriching
+error messages with precise file:line:col references.
 
 ## Session
 

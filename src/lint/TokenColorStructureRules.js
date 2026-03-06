@@ -45,7 +45,7 @@ export default class TokenColorStructureRules {
          entry.settings !== null && !Array.isArray(entry.settings))
         scopeless.push({
           index: i + 1,
-          name: entry.name || `Entry ${i + 1}`,
+          name: entry.name || `(unnamed rule #${i + 1})`,
         })
     }
 

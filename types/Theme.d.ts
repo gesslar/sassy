@@ -7,6 +7,15 @@ export default class Theme {
     setCwd(cwd: any): this;
     withOptions(options: any): this;
     /**
+     * Looks up a source location for a dotted key path across all dependencies.
+     * Returns the first match found (main theme file checked last since
+     * dependencies are added before it in composition order).
+     *
+     * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
+     * @returns {string|null} Formatted "file:line:col" string or null
+     */
+    findSourceLocation(dottedPath: string): string | null;
+    /**
      * Resets the theme's compilation state, clearing output and lookup data.
      * Used when recompiling in watch mode or clearing previous state.
      */
@@ -141,7 +150,7 @@ export default class Theme {
      * @param {object} source - The parsed source data from the file
      * @returns {this} Returns this instance for method chaining
      */
-    addDependency(file: FileObject, source: object): this;
+    addDependency(file: FileObject, source: object, yamlSource?: any): this;
     /**
      * Checks if the theme has any dependencies.
      *
@@ -307,6 +316,25 @@ export class Dependency {
      * @returns {object|null} The parsed source data
      */
     getSource(): object | null;
+    /**
+     * Sets the YAML AST source for location tracking.
+     *
+     * @param {import("./YamlSource.js").default} yamlSource - The parsed YAML source
+     * @returns {this} This.
+     */
+    setYamlSource(yamlSource: import("./YamlSource.js").default): this;
+    /**
+     * Gets the YAML AST source for location tracking.
+     *
+     * @returns {import("./YamlSource.js").default|null} The YAML source or null
+     */
+    getYamlSource(): import("./YamlSource.js").default | null;
+    /**
+     * Checks if the dependency has a YAML source.
+     *
+     * @returns {boolean} True if YAML source is available
+     */
+    hasYamlSource(): boolean;
     /**
      * Checks if the dependency has a source file.
      *

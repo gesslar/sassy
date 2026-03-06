@@ -6,8 +6,6 @@ sidebar_position: 99
 ## Authoring Formats
 
 - **YAML Input** — Write themes in clean, human-readable YAML
-- **JSON5 Input** — Write themes in JSON5 with comments and trailing commas
-- **Mixed Format Ecosystem** — Import YAML from JSON5 or vice versa — they compose freely
 
 ## Variable System
 
@@ -50,7 +48,7 @@ sidebar_position: 99
 
 ## Import & Composition
 
-- **File Imports** — Pull in external YAML/JSON5 files via `config.import`
+- **File Imports** — Pull in external YAML files via `config.import`
 - **Deep Object Merging** — Palette, vars, colors, semanticTokenColors merge by deep key override
 - **Append-Only tokenColors** — Imported tokenColors prepend, your file's rules append — correct precedence by default
 - **Multi-File Import Chains** — Import as many files as needed, merged in declaration order
@@ -125,6 +123,8 @@ sidebar_position: 99
 - **Cross-Section Linting** — Validates variables in colors, tokenColors, and semanticTokenColors
 - **Strict Mode** — `--strict` treats warnings as errors for CI enforcement
 - **Severity Levels** — Issues categorised as high/medium/low with colour-coded terminal output
+- **Source Location Reporting** — Every lint issue includes file, line, and column — even across imported files
+- **Unnamed Rule Labels** — Unnamed tokenColors entries display as `(unnamed rule #N)` for easy identification
 - **Import-Aware Analysis** — Lints across all imported files, not just the main theme
 - **Modular Rule Architecture** — Lint rules organised in dedicated modules for maintainability
 
@@ -155,6 +155,9 @@ sidebar_position: 99
 - **Lint Engine** — `new Lint().run(theme)` — returns categorised issues with severity levels
 - **Resolve Engine** — `new Resolve().color(theme, key)` — trace any token through its resolution chain
 - **Proof Engine** — `new Proof().run(theme)` — composed document view before evaluation
+- **YamlSource Export** — `YamlSource` class available for source location tracking in custom tooling
+- **Source Location Lookup** — `Theme.findSourceLocation(path)` maps compiled output paths back to source file positions
+- **Lint Issue Locations** — Lint issue objects include a `location` property with file, line, and column
 - **Full Class Access** — Theme, Colour, and all engine classes are importable
 
 ## Developer Experience

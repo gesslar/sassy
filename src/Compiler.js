@@ -17,6 +17,7 @@
 import {Collection, Data, Sass, Term, Util} from "@gesslar/toolkit"
 
 import Evaluator from "./Evaluator.js"
+import YamlSource from "./YamlSource.js"
 
 /**
  * @import {Theme} from "./Theme.js"
@@ -58,7 +59,7 @@ export default class Compiler {
         merged.palette.__prior__ = priorTree
       }
 
-      const evaluator = new Evaluator()
+      const evaluator = new Evaluator().setTheme(theme)
       const evaluate = (...arg) => evaluator.evaluate(...arg)
 
       // Palette first — self-contained, cannot reach outside itself
@@ -181,8 +182,11 @@ export default class Compiler {
           ], theme.getOptions())
         }
 
-        if(result)
-          loaded.set(file, result)
+        if(result) {
+          const ys = await this.#buildYamlSource(file, theme)
+
+          loaded.set(file, {data: result, yamlSource: ys})
+        }
 
       } catch(error) {
         throw Sass.new(`Attempting to import '${importing}'`, error)
@@ -191,20 +195,23 @@ export default class Compiler {
 
     const allPriors = new Map()
 
-    loaded.forEach((load, file) => {
+    loaded.forEach(({data: load, yamlSource}, file) => {
       const palette = load?.palette ?? {}
       const vars = load?.vars ?? {}
       const colors = load?.theme?.colors ?? {}
       const tokenColors = load?.theme?.tokenColors ?? []
       const semanticTokenColors = load?.theme?.semanticTokenColors ?? {}
 
-      importByFile.set(file, new Map([
-        ["palette", palette],
-        ["vars", vars],
-        ["colors", colors],
-        ["tokenColors", tokenColors],
-        ["semanticTokenColors", semanticTokenColors]
-      ]))
+      importByFile.set(file, {
+        source: new Map([
+          ["palette", palette],
+          ["vars", vars],
+          ["colors", colors],
+          ["tokenColors", tokenColors],
+          ["semanticTokenColors", semanticTokenColors]
+        ]),
+        yamlSource,
+      })
 
       const {transformed, priors} =
         this.#séance(imported.palette, palette, allPriors)
@@ -262,7 +269,7 @@ export default class Compiler {
             }
           })
         })
-      } else {
+      } else if(item != null) {
         result.push({key, value: String(item), path, flatPath: currPath.join(".")})
       }
     }
@@ -479,7 +486,8 @@ export default class Compiler {
       await this.#import(imports, theme)
 
     importByFile.forEach(
-      (themeData, file) => theme.addDependency(file, themeData)
+      ({source, yamlSource}, file) =>
+        theme.addDependency(file, source, yamlSource)
     )
 
     // Handle tokenColors separately - imports first, then main source
@@ -535,6 +543,34 @@ export default class Compiler {
     }
 
     walk(obj)
+  }
+
+  /**
+   * Builds a YamlSource from a file for source-location tracking.
+   * Returns null for non-YAML files or on parse failure.
+   *
+   * @param {import("@gesslar/toolkit").FileObject} file - The file to parse
+   * @param {Theme} theme - The theme (for cwd-relative labels)
+   * @returns {Promise<YamlSource|null>} The parsed YAML source or null
+   * @private
+   */
+  async #buildYamlSource(file, theme) {
+    const ext = file.extension
+
+    if(ext !== ".yaml" && ext !== ".yml")
+      return null
+
+    try {
+      const cwd = theme.getCwd()
+      const label = cwd
+        ? file.relativeTo(cwd)
+        : file.path
+      const text = await file.read()
+
+      return new YamlSource(text, label)
+    } catch {
+      return null
+    }
   }
 
   /**
