@@ -16,10 +16,16 @@ import {parseForESLint} from "yaml-eslint-parser"
  */
 
 /**
+ * @typedef {object} LocationEntry
+ * @property {SourceLocation} key - Location of the key
+ * @property {SourceLocation} value - Location of the value (falls back to key)
+ */
+
+/**
  * Wraps a parsed YAML AST and provides fast path-to-location lookups.
  */
 export default class YamlSource {
-  /** @type {Map<string, SourceLocation>} */
+  /** @type {Map<string, LocationEntry>} */
   #locationMap = new Map()
 
   /** @type {object} */
@@ -43,23 +49,36 @@ export default class YamlSource {
   }
 
   /**
-   * Gets the source location for a dotted key path.
+   * Gets the key source location for a dotted key path.
    *
    * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
    * @returns {SourceLocation|null} Location or null if not found
    */
   getLocation(dottedPath) {
-    return this.#locationMap.get(dottedPath) ?? null
+    return this.#locationMap.get(dottedPath)?.key ?? null
+  }
+
+  /**
+   * Gets the value source location for a dotted key path.
+   *
+   * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
+   * @returns {SourceLocation|null} Location or null if not found
+   */
+  getValueLocation(dottedPath) {
+    return this.#locationMap.get(dottedPath)?.value ?? null
   }
 
   /**
    * Formats a location as "file:line:column" or "line:column" for display.
    *
    * @param {string} dottedPath - Dot-separated key path
+   * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
    * @returns {string|null} Formatted location string or null if not found
    */
-  formatLocation(dottedPath) {
-    const loc = this.getLocation(dottedPath)
+  formatLocation(dottedPath, target = "key") {
+    const loc = target === "value"
+      ? this.getValueLocation(dottedPath)
+      : this.getLocation(dottedPath)
 
     if(!loc)
       return null
@@ -127,10 +146,13 @@ export default class YamlSource {
       const fullPath = [...path, key]
       const pathStr = fullPath.join(".")
 
-      // Store location of the value node (points to the actual data)
-      const loc = pair.value?.loc?.start ?? pair.key.loc.start
+      const keyLoc = pair.key.loc.start
+      const valLoc = pair.value?.loc?.start ?? keyLoc
 
-      this.#locationMap.set(pathStr, {line: loc.line, column: loc.column})
+      this.#locationMap.set(pathStr, {
+        key: {line: keyLoc.line, column: keyLoc.column},
+        value: {line: valLoc.line, column: valLoc.column},
+      })
 
       if(pair.value?.type === "YAMLMapping")
         this.#walkMapping(pair.value, fullPath)
@@ -151,11 +173,11 @@ export default class YamlSource {
       const fullPath = [...path, String(i)]
       const pathStr = fullPath.join(".")
 
-      if(entry.loc)
-        this.#locationMap.set(pathStr, {
-          line: entry.loc.start.line,
-          column: entry.loc.start.column
-        })
+      if(entry.loc) {
+        const loc = {line: entry.loc.start.line, column: entry.loc.start.column}
+
+        this.#locationMap.set(pathStr, {key: loc, value: loc})
+      }
 
       if(entry.type === "YAMLMapping")
         this.#walkMapping(entry, fullPath)

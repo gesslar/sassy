@@ -49,33 +49,28 @@ describe("YamlSource", () => {
   })
 
   describe("getLocation()", () => {
-    it("returns location for a simple scalar", () => {
+    it("returns key location for a simple scalar", () => {
       const source = new YamlSource(SAMPLE_YAML)
       const loc = source.getLocation("config.name")
-      assert.ok(loc)
-      assert.equal(typeof loc.line, "number")
-      assert.equal(typeof loc.column, "number")
+      assert.deepEqual(loc, {line: 2, column: 2})
     })
 
-    it("returns location for a nested mapping", () => {
+    it("returns key location for a nested mapping", () => {
       const source = new YamlSource(SAMPLE_YAML)
       const loc = source.getLocation("vars.std.fg.primary")
-      assert.ok(loc)
-      assert.equal(typeof loc.line, "number")
+      assert.deepEqual(loc, {line: 7, column: 6})
     })
 
     it("returns location for a sequence entry", () => {
       const source = new YamlSource(SAMPLE_YAML)
       const loc = source.getLocation("theme.tokenColors.0")
-      assert.ok(loc)
-      assert.equal(typeof loc.line, "number")
+      assert.deepEqual(loc, {line: 10, column: 6})
     })
 
-    it("returns location for a sequence entry mapping value", () => {
+    it("returns key location for a sequence entry mapping value", () => {
       const source = new YamlSource(SAMPLE_YAML)
       const loc = source.getLocation("theme.tokenColors.0.settings.foreground")
-      assert.ok(loc)
-      assert.equal(typeof loc.line, "number")
+      assert.deepEqual(loc, {line: 13, column: 8})
     })
 
     it("returns null for a nonexistent path", () => {
@@ -84,19 +79,62 @@ describe("YamlSource", () => {
     })
   })
 
+  describe("getValueLocation()", () => {
+    it("returns value location for a simple scalar", () => {
+      const source = new YamlSource(SAMPLE_YAML)
+      const loc = source.getValueLocation("config.name")
+      assert.deepEqual(loc, {line: 2, column: 8})
+    })
+
+    it("returns value location for a nested mapping", () => {
+      const source = new YamlSource(SAMPLE_YAML)
+      const loc = source.getValueLocation("vars.std.fg.primary")
+      assert.deepEqual(loc, {line: 7, column: 15})
+    })
+
+    it("returns value location for a sequence entry mapping value", () => {
+      const source = new YamlSource(SAMPLE_YAML)
+      const loc = source.getValueLocation("theme.tokenColors.0.settings.foreground")
+      assert.deepEqual(loc, {line: 13, column: 20})
+    })
+
+    it("falls back to key location for container keys", () => {
+      const source = new YamlSource(SAMPLE_YAML)
+      const keyLoc = source.getLocation("config")
+      const valLoc = source.getValueLocation("config")
+      // config: has a mapping value starting on the next line,
+      // so value location should differ from key location
+      assert.ok(keyLoc)
+      assert.ok(valLoc)
+      assert.equal(keyLoc.line, 1)
+    })
+
+    it("returns null for a nonexistent path", () => {
+      const source = new YamlSource(SAMPLE_YAML)
+      assert.equal(source.getValueLocation("does.not.exist"), null)
+    })
+  })
+
   describe("formatLocation()", () => {
-    it("returns file:line:col when filePath is set", () => {
+    it("returns file:line:col for key by default", () => {
       const source = new YamlSource(SAMPLE_YAML, "/themes/test.yaml")
-      const formatted = source.formatLocation("config.name")
-      assert.ok(formatted)
-      assert.match(formatted, /^\/themes\/test\.yaml:\d+:\d+$/)
+      assert.equal(
+        source.formatLocation("config.name"),
+        "/themes/test.yaml:2:3"
+      )
+    })
+
+    it("returns file:line:col for value when target is 'value'", () => {
+      const source = new YamlSource(SAMPLE_YAML, "/themes/test.yaml")
+      assert.equal(
+        source.formatLocation("config.name", "value"),
+        "/themes/test.yaml:2:9"
+      )
     })
 
     it("returns line:col when no filePath", () => {
       const source = new YamlSource(SAMPLE_YAML)
-      const formatted = source.formatLocation("config.name")
-      assert.ok(formatted)
-      assert.match(formatted, /^\d+:\d+$/)
+      assert.equal(source.formatLocation("config.name"), "2:3")
     })
 
     it("returns null for a nonexistent path", () => {

@@ -222,7 +222,7 @@ export default class Evaluator {
       const unresolved = decomposed
         .filter(this.#tokenCheck)
         .map(token => {
-          const loc = this.#theme?.findSourceLocation(token.flatPath)
+          const loc = this.#theme?.findSourceLocation(token.flatPath, "value")
 
           return loc ? `${token.flatPath} (at ${loc})` : token.flatPath
         })
@@ -494,7 +494,7 @@ export default class Evaluator {
     if(!this.#theme || !flatPath)
       return message
 
-    const loc = this.#theme.findSourceLocation(flatPath)
+    const loc = this.#theme.findSourceLocation(flatPath, "value")
 
     if(!loc)
       return message

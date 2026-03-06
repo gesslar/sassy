@@ -141,16 +141,17 @@ export default class Theme {
    * dependencies are added before it in composition order).
    *
    * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
+   * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
    * @returns {string|null} Formatted "file:line:col" string or null
    */
-  findSourceLocation(dottedPath) {
+  findSourceLocation(dottedPath, target = "key") {
     for(const dep of this.#dependencies) {
       const yamlSource = dep.getYamlSource()
 
       if(!yamlSource)
         continue
 
-      const formatted = yamlSource.formatLocation(dottedPath)
+      const formatted = yamlSource.formatLocation(dottedPath, target)
 
       if(formatted)
         return formatted

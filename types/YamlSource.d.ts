@@ -4,6 +4,11 @@
  * @property {number} column - 0-based column offset
  */
 /**
+ * @typedef {object} LocationEntry
+ * @property {SourceLocation} key - Location of the key
+ * @property {SourceLocation} value - Location of the value (falls back to key)
+ */
+/**
  * Wraps a parsed YAML AST and provides fast path-to-location lookups.
  */
 export default class YamlSource {
@@ -15,19 +20,27 @@ export default class YamlSource {
      */
     constructor(text: string, filePath?: string);
     /**
-     * Gets the source location for a dotted key path.
+     * Gets the key source location for a dotted key path.
      *
      * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
      * @returns {SourceLocation|null} Location or null if not found
      */
     getLocation(dottedPath: string): SourceLocation | null;
     /**
+     * Gets the value source location for a dotted key path.
+     *
+     * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
+     * @returns {SourceLocation|null} Location or null if not found
+     */
+    getValueLocation(dottedPath: string): SourceLocation | null;
+    /**
      * Formats a location as "file:line:column" or "line:column" for display.
      *
      * @param {string} dottedPath - Dot-separated key path
+     * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
      * @returns {string|null} Formatted location string or null if not found
      */
-    formatLocation(dottedPath: string): string | null;
+    formatLocation(dottedPath: string, target?: "key" | "value"): string | null;
     /**
      * Gets the parsed AST.
      *
@@ -57,5 +70,15 @@ export type SourceLocation = {
      * - 0-based column offset
      */
     column: number;
+};
+export type LocationEntry = {
+    /**
+     * - Location of the key
+     */
+    key: SourceLocation;
+    /**
+     * - Location of the value (falls back to key)
+     */
+    value: SourceLocation;
 };
 //# sourceMappingURL=YamlSource.d.ts.map
