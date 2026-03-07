@@ -616,14 +616,17 @@ export class Lint {
     for(const [key, value] of Object.entries(vars ?? {})) {
       const varName = prefix ? `${prefix}.${key}` : key
 
-      if(typeof value === "object" && !Array.isArray(value)) {
-        // Container/namespace — recurse but don't register as a variable
-        this.#collectVarsDefinitions(
-          value, definedVars, varName,
-          filename, yamlSource
-        )
+      if(typeof value === "object") {
+        // Container/namespace (object or array) — recurse but don't
+        // register as a variable
+        if(!Array.isArray(value)) {
+          this.#collectVarsDefinitions(
+            value, definedVars, varName,
+            filename, yamlSource
+          )
+        }
       } else {
-        // Leaf value (string, array, etc.) — actual variable definition
+        // Leaf scalar value (string, number, etc.) — actual variable definition
         const location = yamlSource?.formatLocation(`vars.${varName}`) ?? null
 
         definedVars.set(varName, {filename, location})
