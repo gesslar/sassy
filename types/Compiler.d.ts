@@ -21,9 +21,10 @@ export default class Compiler {
      * substitution or colour function evaluation.
      *
      * @param {Theme} theme - The theme object to proof
+     * @param {boolean} withImports - Do not strip imports from the proof
      * @returns {Promise<object>} The composed, unevaluated theme structure
      */
-    proof(theme: Theme): Promise<object>;
+    proof(theme: Theme, withImports?: boolean): Promise<object>;
     #private;
 }
 //# sourceMappingURL=Compiler.d.ts.map
