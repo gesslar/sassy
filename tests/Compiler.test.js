@@ -374,9 +374,14 @@ theme:
       const compiler = new Compiler()
       const result = await compiler.proof(theme)
 
-      assert.equal(result.import, undefined, "import key should be stripped by default")
+      assert.equal(result.config.import, undefined, "config.import should be stripped by default")
       assert.ok(result.vars)
       assert.ok(result.theme)
+      // Verify that imports were actually applied — values from import-base.yaml
+      // should appear in the merged vars/colors
+      assert.ok(result.vars.baseBg, "imported var 'baseBg' from base fixture should be present")
+      assert.ok(result.vars.baseFg, "imported var 'baseFg' from base fixture should be present")
+      assert.ok(result.theme.colors["editor.background"], "imported color 'editor.background' from base fixture should be present")
     })
 
     it("preserves import key when withImports is true", async() => {
@@ -391,7 +396,14 @@ theme:
       const compiler = new Compiler()
       const result = await compiler.proof(theme, true)
 
-      assert.ok(result.import, "import key should be preserved when withImports is true")
+      assert.ok(result.config.import, "config.import should be preserved when withImports is true")
+      assert.ok(Array.isArray(result.config.import), "config.import should be an array")
+      assert.ok(result.config.import.length > 0, "config.import should have at least one entry")
+      // Verify that imports were actually applied — values from import-base.yaml
+      // should appear in the merged vars/colors
+      assert.ok(result.vars.baseBg, "imported var 'baseBg' from base fixture should be present")
+      assert.ok(result.vars.baseFg, "imported var 'baseFg' from base fixture should be present")
+      assert.ok(result.theme.colors["editor.background"], "imported color 'editor.background' from base fixture should be present")
     })
   })
 })

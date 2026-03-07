@@ -154,7 +154,7 @@ The output is YAML — the same language you author in. It shows:
 - Séance `^` operators replaced with the actual prior values (e.g. `shade(#4b8ebd, 25)`)
 - All variable references (`$(std.bg)`, `$$blue`) left untouched
 - All colour functions left unevaluated
-- The `import` key removed (imports are already applied)
+- The `config.import` key removed (imports are already applied)
 
 **Examples:**
 
