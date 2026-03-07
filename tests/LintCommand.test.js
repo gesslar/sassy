@@ -222,6 +222,12 @@ describe("LintCommand", () => {
 
       const paletteIssue = unused.find(i => i.variable === "$palette")
       assert.equal(paletteIssue, undefined, "object container $palette should not be flagged as unused")
+
+      // Children should still be tracked as unused
+      const primaryIssue = unused.find(i => i.variable === "$palette.primary")
+      assert.ok(primaryIssue, "should flag unused child $palette.primary")
+      const secondaryIssue = unused.find(i => i.variable === "$palette.secondary")
+      assert.ok(secondaryIssue, "should flag unused child $palette.secondary")
     })
 
     it("does not flag array containers as unused variables", async() => {
@@ -242,6 +248,14 @@ describe("LintCommand", () => {
 
       const levelsIssue = unused.find(i => i.variable === "$levels")
       assert.equal(levelsIssue, undefined, "array container $levels should not be flagged as unused")
+
+      // Array elements should still be tracked as unused
+      const level1 = unused.find(i => i.variable === "$levels.1")
+      assert.ok(level1, "should flag unused array element $levels.1")
+      const level2 = unused.find(i => i.variable === "$levels.2")
+      assert.ok(level2, "should flag unused array element $levels.2")
+      const level3 = unused.find(i => i.variable === "$levels.3")
+      assert.ok(level3, "should flag unused array element $levels.3")
     })
 
     it("reports no duplicate scopes for clean theme", async() => {
