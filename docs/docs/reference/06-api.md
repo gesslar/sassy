@@ -175,10 +175,10 @@ The `Proof` class returns the fully composed theme document (post-import, pre-ev
     // composed.theme.semanticTokenColors - merged semanticTokenColors
 
     // Pass withImports=true to include the import list in the output.
-    // Useful for discovering dependencies without a full compilation,
-    // since Theme only tracks dependencies after evaluation.
+    // Useful for discovering imports and dependencies as recorded during
+    // composition/compile/proof, without requiring a full evaluation.
     const withImports = await new Proof().run(theme, true)
-    // withImports.import          - original import list from the source file
+    // withImports.config.import   - imports derived from config.import after composition
 
 `}</CodeBlock>
 

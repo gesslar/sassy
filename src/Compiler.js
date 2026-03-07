@@ -431,10 +431,10 @@ export default class Compiler {
    * @returns {Promise<object>} The composed, unevaluated theme structure
    */
   async proof(theme, withImports=false) {
-    try {
-      Valid.type(theme, "Theme")
-      Valid.type(withImports, "Boolean")
+    Valid.type(theme, "Theme")
+    Valid.type(withImports, "Boolean")
 
+    try {
       const {recompConfig, merged, allPriors} = await this.#compose(theme)
 
       // Inline séance references: replace $(palette.__prior__.<key>) with
@@ -445,8 +445,13 @@ export default class Compiler {
       // Strip internal bookkeeping
       delete merged.palette?.__prior__
 
+      // Prepare config for proof; strip imports unless explicitly requested
+      const config = {...recompConfig}
+      if(!withImports)
+        delete config.import
+
       const result = {
-        config: {...recompConfig},
+        config,
         palette: merged.palette ?? {},
         vars: merged.vars ?? {},
         theme: {
@@ -454,13 +459,6 @@ export default class Compiler {
           tokenColors: merged.tokenColors ?? [],
           semanticTokenColors: merged.semanticTokenColors ?? {},
         }
-      }
-
-      if(withImports) {
-        const source = theme.getSource()
-
-        if(source?.import)
-          result.import = source.import
       }
 
       return result
