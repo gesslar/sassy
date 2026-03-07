@@ -5,6 +5,13 @@ config:
 vars:
   used: "#4b8ebd"
   orphan: "#ff0000"
+  palette:
+    primary: "#336699"
+    secondary: "#996633"
+  levels:
+    - "#ff0000"
+    - "#00ff00"
+    - "#0000ff"
 theme:
   colors:
     "editor.background": $(used)

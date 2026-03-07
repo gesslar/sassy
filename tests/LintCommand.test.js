@@ -204,6 +204,46 @@ describe("LintCommand", () => {
       assert.equal(orphanIssue.severity, Lint.SEVERITY.LOW)
     })
 
+    it("does not flag object containers as unused variables", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new LintCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(command.getCache())
+
+      await theme.load()
+      await theme.build()
+
+      const results = await new Lint().run(theme)
+      const unused = results.variables
+        .filter(i => i.type === Lint.ISSUE_TYPES.UNUSED_VARIABLE)
+
+      const paletteIssue = unused.find(i => i.variable === "$palette")
+      assert.equal(paletteIssue, undefined, "object container $palette should not be flagged as unused")
+    })
+
+    it("does not flag array containers as unused variables", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new LintCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(command.getCache())
+
+      await theme.load()
+      await theme.build()
+
+      const results = await new Lint().run(theme)
+      const unused = results.variables
+        .filter(i => i.type === Lint.ISSUE_TYPES.UNUSED_VARIABLE)
+
+      const levelsIssue = unused.find(i => i.variable === "$levels")
+      assert.equal(levelsIssue, undefined, "array container $levels should not be flagged as unused")
+    })
+
     it("reports no duplicate scopes for clean theme", async() => {
       const cwd = new DirectoryObject(__dirname)
       const packageJson = {}
