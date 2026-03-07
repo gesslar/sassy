@@ -11,9 +11,10 @@ export class Proof {
      * Automatically calls `theme.load()` if the theme is not ready.
      *
      * @param {Theme} theme - A Theme instance
+     * @param {boolean} withImports - Do not strip imports from the proof
      * @returns {Promise<object>} The composed, unevaluated theme structure
      */
-    run(theme: Theme): Promise<object>;
+    run(theme: Theme, withImports?: boolean): Promise<object>;
 }
 /**
  * Command handler for proofing theme files.
