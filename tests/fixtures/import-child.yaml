@@ -1,0 +1,14 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Child Theme
+  type: dark
+
+import:
+  - ./import-base.yaml
+
+vars:
+  accent: "#4a9eff"
+
+theme:
+  colors:
+    "statusBar.background": $(accent)

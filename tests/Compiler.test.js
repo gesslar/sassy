@@ -340,5 +340,58 @@ theme:
         }
       }
     })
+
+  })
+
+  describe("proof()", () => {
+    it("returns the composed document without evaluation", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      const result = await compiler.proof(theme)
+
+      assert.ok(result.config)
+      assert.equal(result.config.name, "Simple Test Theme")
+      // Variables should NOT be evaluated — still contain $(ref) syntax
+      assert.equal(result.theme.colors["editor.background"], "$(background)")
+    })
+
+    it("strips import key by default", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/import-child.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      const result = await compiler.proof(theme)
+
+      assert.equal(result.import, undefined, "import key should be stripped by default")
+      assert.ok(result.vars)
+      assert.ok(result.theme)
+    })
+
+    it("preserves import key when withImports is true", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/import-child.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler()
+      const result = await compiler.proof(theme, true)
+
+      assert.ok(result.import, "import key should be preserved when withImports is true")
+    })
   })
 })

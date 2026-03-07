@@ -29,15 +29,16 @@ export class Proof {
    * Automatically calls `theme.load()` if the theme is not ready.
    *
    * @param {Theme} theme - A Theme instance
+   * @param {boolean} withImports - Do not strip imports from the proof
    * @returns {Promise<object>} The composed, unevaluated theme structure
    */
-  async run(theme) {
+  async run(theme, withImports=false) {
     if(!theme.isReady())
       await theme.load()
 
     const compiler = new Compiler()
 
-    return await compiler.proof(theme)
+    return await compiler.proof(theme, withImports)
   }
 }
 
