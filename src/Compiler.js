@@ -14,7 +14,7 @@
  * Supports extension points for custom phases and output formats.
  */
 
-import {Collection, Data, Sass, Term, Util} from "@gesslar/toolkit"
+import {Collection, Data, Sass, Term, Util, Valid} from "@gesslar/toolkit"
 
 import Evaluator from "./Evaluator.js"
 import YamlSource from "./YamlSource.js"
@@ -427,16 +427,15 @@ export default class Compiler {
    * substitution or colour function evaluation.
    *
    * @param {Theme} theme - The theme object to proof
+   * @param {boolean} withImports - Do not strip imports from the proof
    * @returns {Promise<object>} The composed, unevaluated theme structure
    */
-  async proof(theme) {
+  async proof(theme, withImports=false) {
     try {
+      Valid.type(theme, "Theme")
+      Valid.type(withImports, "Boolean")
+
       const {recompConfig, merged, allPriors} = await this.#compose(theme)
-
-      // Strip import — it's been applied
-      const proofConfig = {...recompConfig}
-
-      delete proofConfig.import
 
       // Inline séance references: replace $(palette.__prior__.<key>) with
       // the actual prior value so the proof reads naturally
@@ -446,8 +445,8 @@ export default class Compiler {
       // Strip internal bookkeeping
       delete merged.palette?.__prior__
 
-      return {
-        config: proofConfig,
+      const result = {
+        config: {...recompConfig},
         palette: merged.palette ?? {},
         vars: merged.vars ?? {},
         theme: {
@@ -456,6 +455,15 @@ export default class Compiler {
           semanticTokenColors: merged.semanticTokenColors ?? {},
         }
       }
+
+      if(withImports) {
+        const source = theme.getSource()
+
+        if(source?.import)
+          result.import = source.import
+      }
+
+      return result
     } catch(error) {
       throw Sass.new(`Proofing '${theme.getName()}'`, error)
     }

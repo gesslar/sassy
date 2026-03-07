@@ -1,0 +1,13 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Base Theme
+  type: dark
+
+vars:
+  baseBg: "#1a1a1a"
+  baseFg: "#e6e6e6"
+
+theme:
+  colors:
+    "editor.background": $(baseBg)
+    "editor.foreground": $(baseFg)
