@@ -616,15 +616,29 @@ export class Lint {
     for(const [key, value] of Object.entries(vars ?? {})) {
       const varName = prefix ? `${prefix}.${key}` : key
 
-      if(typeof value === "object") {
-        // Container/namespace (object or array) — recurse but don't
-        // register as a variable
-        if(!Array.isArray(value)) {
-          this.#collectVarsDefinitions(
-            value, definedVars, varName,
-            filename, yamlSource
-          )
-        }
+      if(Array.isArray(value)) {
+        // Array container — recurse into elements with 1-based indexing
+        // to match Compiler.#decomposeObject behaviour
+        value.forEach((element, index) => {
+          const indexedName = `${varName}.${index + 1}`
+
+          if(element !== null && typeof element === "object" && !Array.isArray(element)) {
+            this.#collectVarsDefinitions(
+              element, definedVars, indexedName,
+              filename, yamlSource
+            )
+          } else {
+            const location = yamlSource?.formatLocation(`vars.${indexedName}`) ?? null
+
+            definedVars.set(indexedName, {filename, location})
+          }
+        })
+      } else if(value !== null && typeof value === "object") {
+        // Object container — recurse but don't register as a variable
+        this.#collectVarsDefinitions(
+          value, definedVars, varName,
+          filename, yamlSource
+        )
       } else {
         // Leaf scalar value (string, number, etc.) — actual variable definition
         const location = yamlSource?.formatLocation(`vars.${varName}`) ?? null
