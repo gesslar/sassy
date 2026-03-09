@@ -84,6 +84,53 @@ describe("Theme", () => {
 
       assert.ok(theme.hasSource())
     })
+
+    it("applies cache to source file when cache is set via setCache()", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+
+      let withCacheCalled = false
+      const originalWithCache = themeFile.withCache.bind(themeFile)
+      themeFile.withCache = c => {
+        withCacheCalled = true
+        return originalWithCache(c)
+      }
+
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+
+      assert.ok(withCacheCalled, "withCache should be called on source file when cache is set")
+      assert.ok(theme.hasSource())
+    })
+
+    it("does not call withCache on source file when cache is already attached", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+
+      // Pre-attach cache as the CLI does via fileObject.withCache(cache)
+      themeFile.withCache(cache)
+
+      let withCacheCalled = false
+      const originalWithCache = themeFile.withCache.bind(themeFile)
+      themeFile.withCache = c => {
+        withCacheCalled = true
+        return originalWithCache(c)
+      }
+
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+
+      assert.ok(!withCacheCalled, "withCache should not be called again when cache already attached")
+      assert.ok(theme.hasSource())
+    })
   })
 
   describe("build()", () => {
