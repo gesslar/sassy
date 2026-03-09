@@ -367,15 +367,15 @@ export default class Session {
   async #handleFileChange(changedFile) {
     let startedPipeline = false
 
+    const cwd = this.#theme.getCwd()
+    const fileName = changedFile.relativeTo(cwd)
+
     try {
       if(this.#building)
         return
 
       this.#building = true
       await this.#command.asyncEmit("building")
-
-      const cwd = this.#theme.getCwd()
-      const fileName = changedFile.relativeTo(cwd)
 
       const message = [
         ["info", "REBUILDING", ["[","]"]],
@@ -391,7 +391,7 @@ export default class Session {
       startedPipeline = true
       await this.#buildPipeline()
     } catch(error) {
-      const sassError = Sass.new(`'${changedFile}' modified.`, error)
+      const sassError = Sass.new(`'${fileName}' modified.`, error)
       sassError.report(this.#options?.nerd)
 
       if(!startedPipeline)
