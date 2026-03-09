@@ -2,8 +2,11 @@
 /**
  * @file ThemePool.js
  *
- * Defines the ThemePool class, a collection of ThemeTokens for lookup and dependency tracking.
- * Manages resolved values, raw resolutions, and token relationships during theme compilation.
+ * Defines the ThemePool class, a collection of ThemeTokens for lookup and
+ * dependency tracking.
+ *
+ * Manages resolved values, raw resolutions, and token relationships during
+ * theme compilation.
  */
 
 import {Sass} from "@gesslar/toolkit"
