@@ -93,9 +93,9 @@ describe("Theme", () => {
 
       let withCacheCalled = false
       const originalWithCache = themeFile.withCache.bind(themeFile)
-      themeFile.withCache = c => {
+      themeFile.withCache = cache => {
         withCacheCalled = true
-        return originalWithCache(c)
+        return originalWithCache(cache)
       }
 
       const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
@@ -118,9 +118,9 @@ describe("Theme", () => {
 
       let withCacheCalled = false
       const originalWithCache = themeFile.withCache.bind(themeFile)
-      themeFile.withCache = c => {
+      themeFile.withCache = cache => {
         withCacheCalled = true
-        return originalWithCache(c)
+        return originalWithCache(cache)
       }
 
       const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions(options)
