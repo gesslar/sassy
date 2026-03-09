@@ -1,7 +1,6 @@
 /**
  * @import {Command} from "./Command.js"
  * @import {Theme} from "./Theme.js"
- * @import {FSWatcher} from "chokidar"
  */
 /**
  * @typedef {object} SessionOptions
@@ -32,20 +31,20 @@ export default class Session {
      * @param {Theme} theme - The theme instance to manage
      * @param {SessionOptions} options - Build configuration options
      */
-    constructor(command: path, theme: path, options: SessionOptions);
+    constructor(command: Command, theme: Theme, options: SessionOptions);
     get theme(): any;
     /**
      * Gets the theme instance managed by this session.
      *
      * @returns {Theme} The theme instance
      */
-    getTheme(): path;
+    getTheme(): Theme;
     /**
      * Gets the command instance orchestrating this session.
      *
      * @returns {Command} The command instance
      */
-    getCommand(): path;
+    getCommand(): Command;
     /**
      * Gets the session options.
      *

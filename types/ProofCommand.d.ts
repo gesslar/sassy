@@ -5,6 +5,15 @@
  */
 export class Proof {
     /**
+     * Creates a new Proof instance.
+     *
+     * @param {object} [options] - Proof options
+     * @param {import("@gesslar/toolkit").Cache} [options.cache] - Cache instance for imported files
+     */
+    constructor({ cache }?: {
+        cache?: import("@gesslar/toolkit").Cache;
+    });
+    /**
      * Proofs a loaded theme, returning the composed document before
      * variable substitution or colour function evaluation.
      *
@@ -15,6 +24,7 @@ export class Proof {
      * @returns {Promise<object>} The composed, unevaluated theme structure
      */
     run(theme: Theme, withImports?: boolean): Promise<object>;
+    #private;
 }
 /**
  * Command handler for proofing theme files.

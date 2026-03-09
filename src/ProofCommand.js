@@ -22,6 +22,19 @@ import Theme from "./Theme.js"
  * No CLI awareness — takes a loaded Theme and returns data.
  */
 export class Proof {
+  /** @type {import("@gesslar/toolkit").Cache|null} */
+  #cache = null
+
+  /**
+   * Creates a new Proof instance.
+   *
+   * @param {object} [options] - Proof options
+   * @param {import("@gesslar/toolkit").Cache} [options.cache] - Cache instance for imported files
+   */
+  constructor({cache} = {}) {
+    this.#cache = cache ?? null
+  }
+
   /**
    * Proofs a loaded theme, returning the composed document before
    * variable substitution or colour function evaluation.
@@ -36,7 +49,7 @@ export class Proof {
     if(!theme.isReady())
       await theme.load()
 
-    const compiler = new Compiler()
+    const compiler = new Compiler({cache: this.#cache})
 
     return await compiler.proof(theme, withImports)
   }
@@ -71,14 +84,19 @@ export default class ProofCommand extends Command {
   async execute(inputArg, options = {}) {
     const cwd = this.getCwd()
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
+    const cache = this.getCache()
+
+    if(cache)
+      fileObject.withCache(cache)
+
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(fileObject)
       .withOptions(options)
-      .setCache(this.getCache())
+      .setCache(cache)
     await theme.load()
 
-    const proof = new Proof()
+    const proof = new Proof({cache})
     const result = await proof.run(theme)
 
     Term.log(stringify(result, {lineWidth: 0}))
