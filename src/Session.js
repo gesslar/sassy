@@ -374,6 +374,12 @@ export default class Session {
       if(this.#building)
         return
 
+      const isCurrentDep = Array.from(this.#theme.getDependencies())
+        .some(dep => dep.getSourceFile()?.path === changedFile.path)
+
+      if(!isCurrentDep)
+        return
+
       this.#building = true
       await this.#command.asyncEmit("building")
 
@@ -387,9 +393,9 @@ export default class Session {
 
       Term.status(message)
 
-      await this.#resetWatcher()
       startedPipeline = true
       await this.#buildPipeline()
+      await this.#resetWatcher()
     } catch(error) {
       const sassError = Sass.new(`'${fileName}' modified.`, error)
       sassError.report(this.#options?.nerd)
@@ -483,7 +489,12 @@ export default class Session {
 
     this.#watcher = new Watcher()
     await this.#watcher.watch(depFiles, {
-      onChange: target => this.#handleFileChange(target),
+      onChange: target => {
+        if(Array.isArray(target))
+          return Promise.all(target.map(t => this.#handleFileChange(t)))
+
+        return this.#handleFileChange(target)
+      },
       debounceMs: 100,
     })
   }
