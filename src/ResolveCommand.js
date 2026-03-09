@@ -13,9 +13,9 @@
 
 import c from "@gesslar/colours"
 
-import Command from "./Command.js"
 import {Collection, Sass, Term, Util} from "@gesslar/toolkit"
 import Colour from "./Colour.js"
+import Command from "./Command.js"
 import Evaluator from "./Evaluator.js"
 import Theme from "./Theme.js"
 
@@ -533,11 +533,16 @@ export default class ResolveCommand extends Command {
       throw Sass.new(`No such function '${resolveFunctionName}'`)
 
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
+    const cache = this.getCache()
+
+    if(cache)
+      fileObject.withCache(cache)
+
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(fileObject)
       .withOptions(options)
-      .setCache(this.getCache())
+      .setCache(cache)
 
     await theme.load()
     await theme.build()

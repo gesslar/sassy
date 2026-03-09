@@ -203,25 +203,16 @@ export default class Theme {
   }
 
   /**
-   * Sets the cache instance for theme compilation.
+   * Sets the cache instance, used for propagation to imported files.
    *
-   * @param {Cache} cache - The cache instance to use for file operations
+   * @param {Cache} cache - The cache instance
    * @returns {this} Returns this instance for method chaining
    */
   setCache(cache) {
     if(!this.#cache)
-      this.#cache=cache
+      this.#cache = cache
 
     return this
-  }
-
-  /**
-   * Gets the cache instance.
-   *
-   * @returns {Cache|null} The cache instance or null if not set
-   */
-  getCache() {
-    return this.#cache
   }
 
   /**
@@ -507,15 +498,6 @@ export default class Theme {
   }
 
   /**
-   * Checks if the theme has a cache instance.
-   *
-   * @returns {boolean} True if cache is available
-   */
-  hasCache() {
-    return this.#cache !== null
-  }
-
-  /**
    * Checks if the theme has lookup data.
    *
    * @returns {boolean} True if lookup data exists
@@ -583,9 +565,7 @@ export default class Theme {
    * @throws {Sass} If source file lacks required 'config' property
    */
   async load() {
-    const source = this.#cache
-      ? await this.#cache.loadCachedData(this.#sourceFile)
-      : await this.#sourceFile.loadData()
+    const source = await this.#sourceFile.loadData()
 
     if(!source?.[PropertyKey.CONFIG.description]) {
       const label = this.#cwd
@@ -639,7 +619,7 @@ export default class Theme {
    * @returns {Promise<this>} Returns this instance for method chaining
    */
   async build() {
-    const compiler = new Compiler()
+    const compiler = new Compiler({cache: this.#cache})
     await compiler.compile(this)
 
     return this

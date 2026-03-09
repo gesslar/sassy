@@ -28,6 +28,19 @@ import YamlSource from "./YamlSource.js"
  * Handles the complete compilation pipeline from source to VS Code theme output.
  */
 export default class Compiler {
+  /** @type {import("@gesslar/toolkit").Cache|null} */
+  #cache = null
+
+  /**
+   * Creates a new Compiler instance.
+   *
+   * @param {object} [options] - Compiler options
+   * @param {import("@gesslar/toolkit").Cache} [options.cache] - Cache instance for imported files
+   */
+  constructor({cache} = {}) {
+    this.#cache = cache ?? null
+  }
+
   /**
    * Compiles a theme source file into a VS Code colour theme.
    * Composes the theme via {@link #compose}, then evaluates all variables
@@ -161,12 +174,12 @@ export default class Compiler {
       try {
         const file = themeDirectory.getFile(importing)
 
-        // Get the cached version or a new version. Who knows? I don't know.
-        const {result, cost} = await Util.time(async() => {
-          return theme.hasCache()
-            ? await theme.getCache().loadCachedData(file)
-            : await file.loadData()
-        })
+        if(this.#cache)
+          file.withCache(this.#cache)
+
+        const {result, cost} = await Util.time(
+          async() => await file.loadData()
+        )
 
         if(theme.getOption("nerd")) {
           const cwd = theme.getCwd()

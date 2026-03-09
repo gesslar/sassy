@@ -1,12 +1,8 @@
-import chokidar from "chokidar"
-import path from "node:path"
-
-import {Promised, Sass, Term, Util} from "@gesslar/toolkit"
+import {Promised, Sass, Term, Util, Watcher} from "@gesslar/toolkit"
 
 /**
  * @import {Command} from "./Command.js"
  * @import {Theme} from "./Theme.js"
- * @import {FSWatcher} from "chokidar"
  */
 
 /**
@@ -59,7 +55,7 @@ export default class Session {
   /**
    * Active file system watcher for theme dependencies.
    *
-   * @type {FSWatcher}
+   * @type {Watcher}
    * @private
    */
   #watcher = null
@@ -365,15 +361,11 @@ export default class Session {
   /**
    * Handles a file change event and triggers a rebuild for the theme.
    *
-   * @param {string} changed - Path to the changed file (from chokidar)
-   * @param {object} _stats - OS-level file stat information
+   * @param {import("@gesslar/toolkit").FileObject} changedFile - The changed file object
    * @returns {Promise<void>}
    */
-  async #handleFileChange(changed, _stats) {
+  async #handleFileChange(changedFile) {
     let startedPipeline = false
-
-    // Normalize the changed path from chokidar for comparison
-    const normalizedChanged = path.resolve(changed)
 
     try {
       if(this.#building)
@@ -381,18 +373,6 @@ export default class Session {
 
       this.#building = true
       await this.#command.asyncEmit("building")
-
-      const changedFile = Array.from(this.#theme.getDependencies()).find(
-        dep => {
-          const depPath = dep.getSourceFile().path
-          const normalizedDepPath = path.resolve(depPath)
-
-          return normalizedDepPath === normalizedChanged
-        }
-      )?.getSourceFile()
-
-      if(!changedFile)
-        return
 
       const cwd = this.#theme.getCwd()
       const fileName = changedFile.relativeTo(cwd)
@@ -411,7 +391,7 @@ export default class Session {
       startedPipeline = true
       await this.#buildPipeline()
     } catch(error) {
-      const sassError = Sass.new(`'${normalizedChanged}' modified.`, error)
+      const sassError = Sass.new(`'${changedFile}' modified.`, error)
       sassError.report(this.#options?.nerd)
 
       if(!startedPipeline)
@@ -495,29 +475,17 @@ export default class Session {
    */
   async #resetWatcher() {
     if(this.#watcher)
-      await this.#watcher.close()
+      this.#watcher.stopWatching()
 
-    // Get real paths for chokidar (normalized for consistency)
-    const dependencies = Array.from(this.#theme
-      .getDependencies())
-      .map(d => {
-        const filePath = d.getSourceFile().path
+    const depFiles = Array.from(this.#theme.getDependencies())
+      .map(d => d.getSourceFile())
+      .filter(Boolean)
 
-        // Normalize to absolute path for chokidar
-        return path.resolve(filePath)
-      })
-
-    this.#watcher = chokidar.watch(dependencies, {
-      // Prevent watching own output files
-      ignored: [this.#theme.getOutputFileName()],
-      // Add some stability options
-      awaitWriteFinish: {
-        stabilityThreshold: 100,
-        pollInterval: 50
-      }
+    this.#watcher = new Watcher()
+    await this.#watcher.watch(depFiles, {
+      onChange: target => this.#handleFileChange(target),
+      debounceMs: 100,
     })
-
-    this.#watcher.on("change", this.#handleFileChange.bind(this))
   }
 
   /**
@@ -528,13 +496,8 @@ export default class Session {
   async #handleCloseSession() {
     this.showSummary()
 
-    if(this.#watcher) {
-      try {
-        await this.#watcher.close()
-      } catch(_) {
-        void _
-      }
-    }
+    if(this.#watcher)
+      this.#watcher.stopWatching()
   }
 
   #recordBuildStart(theme) {

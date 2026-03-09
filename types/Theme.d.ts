@@ -41,18 +41,12 @@ export default class Theme {
      */
     getOption(option: string): unknown;
     /**
-     * Sets the cache instance for theme compilation.
+     * Sets the cache instance, used for propagation to imported files.
      *
-     * @param {Cache} cache - The cache instance to use for file operations
+     * @param {Cache} cache - The cache instance
      * @returns {this} Returns this instance for method chaining
      */
     setCache(cache: Cache): this;
-    /**
-     * Gets the cache instance.
-     *
-     * @returns {Cache|null} The cache instance or null if not set
-     */
-    getCache(): Cache | null;
     /**
      * Gets the theme name.
      *
@@ -227,12 +221,6 @@ export default class Theme {
      * @returns {boolean} True if source data is available
      */
     hasSource(): boolean;
-    /**
-     * Checks if the theme has a cache instance.
-     *
-     * @returns {boolean} True if cache is available
-     */
-    hasCache(): boolean;
     /**
      * Checks if the theme has lookup data.
      *

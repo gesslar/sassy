@@ -25,7 +25,7 @@
  *  - load() - loads and parses the source file
  *  - build() - compiles the theme via Compiler
  *  - write() - outputs the compiled theme to file or stdout
- *  - Internal watch mode support with chokidar integration
+ *  - Internal watch mode support with toolkit Watcher integration
  *
  * NOTE: The --profile flag is currently parsed but not yet producing timing output.
  * Future enhancement could surface per-phase timings (load, compile, write, etc.).
