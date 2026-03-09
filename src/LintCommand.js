@@ -802,11 +802,16 @@ export default class LintCommand extends Command {
   async execute(inputArg, options = {}) {
     const cwd = this.getCwd()
     const fileObject = await this.resolveThemeFileName(inputArg, cwd)
+    const cache = this.getCache()
+
+    if(cache)
+      fileObject.withCache(cache)
+
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(fileObject)
       .withOptions(options)
-      .setCache(this.getCache())
+      .setCache(cache)
     await theme.load()
     await theme.build()
 

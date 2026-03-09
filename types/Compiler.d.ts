@@ -7,6 +7,15 @@
  */
 export default class Compiler {
     /**
+     * Creates a new Compiler instance.
+     *
+     * @param {object} [options] - Compiler options
+     * @param {import("@gesslar/toolkit").Cache} [options.cache] - Cache instance for imported files
+     */
+    constructor({ cache }?: {
+        cache?: import("@gesslar/toolkit").Cache;
+    });
+    /**
      * Compiles a theme source file into a VS Code colour theme.
      * Composes the theme via {@link #compose}, then evaluates all variables
      * and colour functions to produce the final output.
