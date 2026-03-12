@@ -5,7 +5,7 @@
     "name": "gesslar",
     "url": "https://gesslar.dev"
   },
-  "version": "5.11.0",
+  "version": "5.12.0",
   "license": "Unlicense",
   "homepage": "https://sassy.gesslar.io/",
   "repository": {
@@ -69,7 +69,7 @@
     "yaml-eslint-parser": "^2.0.0"
   },
   "devDependencies": {
-    "@gesslar/uglier": "^2.0.1",
+    "@gesslar/uglier": "^2.1.0",
     "eslint": "^10.0.3",
     "typescript": "^5.9.3"
   }
