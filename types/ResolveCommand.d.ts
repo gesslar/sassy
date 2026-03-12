@@ -1,41 +1,4 @@
-/**
- * Engine class for resolving theme tokens and variables.
- * Returns structured resolution data with trails.
- * No CLI awareness — takes a compiled Theme and returns data.
- */
-export class Resolve {
-    /**
-     * Resolves a colour token to its final value with trail.
-     *
-     * Automatically calls `theme.load()` if the theme is not ready.
-     *
-     * @param {Theme} theme - The compiled theme object with pool
-     * @param {string} colorName - The colour key to resolve
-     * @returns {Promise<object>} `{ found, name, resolution?, trail? }`
-     */
-    color(theme: Theme, colorName: string): Promise<object>;
-    /**
-     * Resolves a tokenColors scope to its final value with trail.
-     *
-     * Automatically calls `theme.load()` if the theme is not ready.
-     *
-     * @param {Theme} theme - The compiled theme object with output
-     * @param {string} scopeName - The scope to resolve
-     * @returns {Promise<object>} Resolution data object
-     */
-    tokenColor(theme: Theme, scopeName: string): Promise<object>;
-    /**
-     * Resolves a semanticTokenColors scope to its final value with trail.
-     *
-     * Automatically calls `theme.load()` if the theme is not ready.
-     *
-     * @param {Theme} theme - The compiled theme object with output
-     * @param {string} scopeName - The scope to resolve
-     * @returns {Promise<object>} Resolution data object
-     */
-    semanticTokenColor(theme: Theme, scopeName: string): Promise<object>;
-    #private;
-}
+export { default as Resolve } from "./Resolve.js";
 /**
  * Command handler for resolving theme tokens and variables to their final values.
  * CLI adapter that delegates data resolution to Resolve and handles terminal display.
@@ -98,6 +61,6 @@ export default class ResolveCommand extends Command {
     resolveSemanticTokenColor(theme: object, scopeName: string): void;
     #private;
 }
-import Theme from "./Theme.js";
 import Command from "./Command.js";
+import Theme from "./Theme.js";
 //# sourceMappingURL=ResolveCommand.d.ts.map

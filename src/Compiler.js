@@ -54,6 +54,9 @@ export default class Compiler {
       const {recompConfig, sourceConfig, merged, allPriors} =
         await this.#compose(theme)
 
+      // Cache the proof before evaluation mutates merged
+      this.#cacheProof(theme, recompConfig, merged, allPriors)
+
       const header = {
         $schema: recompConfig.$schema,
         name: recompConfig.name,
@@ -196,7 +199,7 @@ export default class Compiler {
         }
 
         if(result) {
-          const ys = await this.#buildYamlSource(file, theme)
+          const ys = await YamlSource.fromFile(file, theme.getCwd())
 
           loaded.set(file, {data: result, yamlSource: ys})
         }
@@ -439,45 +442,80 @@ export default class Compiler {
    * overrides applied, and séance operators inlined — but before any variable
    * substitution or colour function evaluation.
    *
+   * Returns the cached proof from the theme if one exists.
+   *
    * @param {Theme} theme - The theme object to proof
-   * @param {boolean} withImports - Do not strip imports from the proof
    * @returns {Promise<object>} The composed, unevaluated theme structure
    */
-  async proof(theme, withImports=false) {
+  async proof(theme) {
     Valid.type(theme, "Theme")
-    Valid.type(withImports, "Boolean")
+
+    if(theme.hasProof())
+      return theme.getProof(true)
 
     try {
       const {recompConfig, merged, allPriors} = await this.#compose(theme)
 
-      // Inline séance references: replace $(palette.__prior__.<key>) with
-      // the actual prior value so the proof reads naturally
-      if(allPriors.size > 0)
-        this.#inlinePriors(merged.palette, allPriors)
-
-      // Strip internal bookkeeping
-      delete merged.palette?.__prior__
-
-      // Prepare config for proof; strip imports unless explicitly requested
-      const config = {...recompConfig}
-      if(!withImports)
-        delete config.import
-
-      const result = {
-        config,
-        palette: merged.palette ?? {},
-        vars: merged.vars ?? {},
-        theme: {
-          colors: merged.colors ?? {},
-          tokenColors: merged.tokenColors ?? [],
-          semanticTokenColors: merged.semanticTokenColors ?? {},
-        }
-      }
-
-      return result
+      return this.#buildProof(theme, recompConfig, merged, allPriors)
     } catch(error) {
       throw Sass.new(`Proofing '${theme.getName()}'`, error)
     }
+  }
+
+  /**
+   * Builds the proof object from composed data, inlines séance references,
+   * strips internal bookkeeping, caches the result on the theme, and returns it.
+   *
+   * @param {Theme} theme - The theme to cache the proof on
+   * @param {object} recompConfig - The recomposed config object
+   * @param {object} merged - The merged theme sections (may be mutated)
+   * @param {Map} allPriors - Séance prior values
+   * @returns {object} The proof object
+   * @private
+   */
+  #buildProof(theme, recompConfig, merged, allPriors) {
+    // Inline séance references: replace $(palette.__prior__.<key>) with
+    // the actual prior value so the proof reads naturally
+    if(allPriors.size > 0)
+      this.#inlinePriors(merged.palette, allPriors)
+
+    // Strip internal bookkeeping
+    delete merged.palette?.__prior__
+
+    const config = {...recompConfig}
+    delete config.import
+
+    const result = {
+      config,
+      palette: merged.palette ?? {},
+      vars: merged.vars ?? {},
+      theme: {
+        colors: merged.colors ?? {},
+        tokenColors: merged.tokenColors ?? [],
+        semanticTokenColors: merged.semanticTokenColors ?? {},
+      }
+    }
+
+    theme.setProof(result)
+
+    return result
+  }
+
+  /**
+   * Snapshots the proof from composed data before evaluation mutates it.
+   * Called by {@link compile} right after {@link #compose}.
+   *
+   * @param {Theme} theme - The theme to cache the proof on
+   * @param {object} recompConfig - The recomposed config
+   * @param {object} merged - The merged sections (deep-cloned before mutation)
+   * @param {Map} allPriors - Séance prior values
+   * @private
+   */
+  #cacheProof(theme, recompConfig, merged, allPriors) {
+    // Deep clone merged before evaluation mutates it
+    const snapshot = structuredClone(merged)
+
+    this.#buildProof(theme, recompConfig, snapshot, allPriors)
   }
 
   /**
@@ -595,34 +633,6 @@ export default class Compiler {
     }
 
     walk(obj)
-  }
-
-  /**
-   * Builds a YamlSource from a file for source-location tracking.
-   * Returns null for non-YAML files or on parse failure.
-   *
-   * @param {import("@gesslar/toolkit").FileObject} file - The file to parse
-   * @param {Theme} theme - The theme (for cwd-relative labels)
-   * @returns {Promise<YamlSource|null>} The parsed YAML source or null
-   * @private
-   */
-  async #buildYamlSource(file, theme) {
-    const ext = file.extension
-
-    if(ext !== ".yaml" && ext !== ".yml")
-      return null
-
-    try {
-      const cwd = theme.getCwd()
-      const label = cwd
-        ? file.relativeTo(cwd)
-        : file.path
-      const text = await file.read()
-
-      return new YamlSource(text, label)
-    } catch {
-      return null
-    }
   }
 
   /**

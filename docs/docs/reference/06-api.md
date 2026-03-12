@@ -50,12 +50,12 @@ Cache is optional. Without one, `load()` reads the file directly via `FileObject
 :::
 
 :::tip
-Engine methods will automatically call `theme.load()` if the Theme is not ready. They do not automatically call `theme.build()`, so build first when you need compiled output (e.g. Resolve, full linting).
+Engine methods automatically call `theme.load()` and `theme.build()` if needed. You can pass a freshly constructed Theme directly to any engine — no manual preparation required.
 :::
 
 ## Exported Classes
 
-**Engine classes** are the preferred API surface for programmatic consumers. They have no CLI dependencies — give them a compiled Theme and they return structured data.
+**Engine classes** are the preferred API surface for programmatic consumers. They have no CLI dependencies — give them a Theme and they return structured data. Engines automatically load and build as needed.
 
 | Export | Description |
 |--------|-------------|
@@ -103,9 +103,15 @@ Theme uses a chainable builder. All setters return `this`.
 | `getSource()` | `object \| null` | Get the parsed source data |
 | `getDependencies()` | `Set` | Get tracked file dependencies |
 | `addDependency(file, source)` | `this` | Track an import dependency |
-| `hasOutput()` | `boolean` | Check if compilation produced output |
-| `isReady()` | `boolean` | Check if source data is available |
-| `isCompiled()` | `boolean` | Check if output, pool, and lookup are present |
+| `getSourceSection(path)` | `unknown` | Get a section of the parsed source by dot-path (e.g. `"theme.colors"`) |
+| `getProof(asObject?)` | `string \| object \| null` | Get the cached proof. Returns YAML string by default, object when `asObject` is true. |
+| `hasProof()` | `boolean` | True when a cached proof exists |
+| `hasOutput()` | `boolean` | True after `build()` — compiled output exists |
+| `hasSource()` | `boolean` | True after `load()` — parsed source exists |
+| `canBuild()` | `boolean` | True when source is loaded and build can proceed |
+| `canWrite()` | `boolean` | True when compiled output is ready for writing |
+| `isCompiled()` | `boolean` | True when output, pool, and lookup are all present |
+| `isValid()` | `boolean` | True when source file and name are set |
 | `findSourceLocation(path)` | `string \| null` | Look up the source file, line, and column for a dot-path in the compiled theme, formatted as `file:line:col` |
 
 ## Lint Engine
@@ -124,9 +130,8 @@ The `Lint` class analyses a compiled theme and returns structured issue data. No
       .setCwd(cwd)
       .setThemeFile(file)
       .setOptions({})
-    await theme.load()
-    await theme.build()
 
+    // No manual load()/build() needed — the engine handles it
     const results = await new Lint().run(theme)
     // results.tokenColors          - array of tokenColors issues
     // results.semanticTokenColors  - array of semanticTokenColors issues
@@ -164,8 +169,8 @@ The `Proof` class returns the fully composed theme document (post-import, pre-ev
       .setCwd(cwd)
       .setThemeFile(file)
       .setOptions({})
-    await theme.load()
 
+    // No manual load() needed — the engine handles it
     const composed = await new Proof().run(theme)
     // composed.config             - resolved config
     // composed.palette            - merged palette with séance inlined
@@ -174,11 +179,9 @@ The `Proof` class returns the fully composed theme document (post-import, pre-ev
     // composed.theme.tokenColors  - appended tokenColors
     // composed.theme.semanticTokenColors - merged semanticTokenColors
 
-    // Pass withImports=true to include the import list in the output.
-    // Useful for discovering imports and dependencies as recorded during
-    // composition/compile/proof, without requiring a full evaluation.
-    const withImports = await new Proof().run(theme, true)
-    // withImports.config.import   - imports derived from config.import after composition
+    // The proof is cached on the theme after build() or proof().
+    // Subsequent calls return the cached result without recomposing.
+    // Use getDependencies() to access the import chain.
 
 `}</CodeBlock>
 
@@ -198,9 +201,8 @@ The `Resolve` class traces token resolution through the variable dependency chai
       .setCwd(cwd)
       .setThemeFile(file)
       .setOptions({})
-    await theme.load()
-    await theme.build()
 
+    // No manual load()/build() needed — the engine handles it
     const resolver = new Resolve()
 
     // Resolve a colour variable
@@ -218,7 +220,7 @@ The `Resolve` class traces token resolution through the variable dependency chai
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `theme` | `Theme` | A compiled theme (must have been loaded and built) |
+| `theme` | `Theme` | A Theme instance (auto-loads and builds if needed) |
 | `options` | `object` | Exactly one of the keys below |
 
 | Option Key | Type | Description |

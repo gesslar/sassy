@@ -562,7 +562,8 @@ const data = await new Resolve().color(theme, 'editor.background')  // resolutio
 ```
 
 Cache is optional — `load()` falls back to direct file reads without one.
-Engine methods will automatically `load()` if needed, but they will not automatically `build()`.
+Engine methods automatically `load()` and `build()` the theme if needed, so
+you can pass a freshly constructed Theme directly to any engine.
 See the [full API reference](https://sassy.gesslar.io/docs/reference/api) for
 details on all engine classes and return shapes.
 

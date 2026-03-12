@@ -27,9 +27,9 @@
 export {default as Theme} from "./Theme.js"
 
 // Engine classes — CLI-free analysis and introspection
-export {Lint} from "./LintCommand.js"
-export {Proof} from "./ProofCommand.js"
-export {Resolve} from "./ResolveCommand.js"
+export {default as Lint} from "./Lint.js"
+export {default as Proof} from "./Proof.js"
+export {default as Resolve} from "./Resolve.js"
 
 // Colour utilities
 export {default as Colour} from "./Colour.js"

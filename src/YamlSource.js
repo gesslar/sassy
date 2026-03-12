@@ -24,7 +24,38 @@ import {parseForESLint} from "yaml-eslint-parser"
 /**
  * Wraps a parsed YAML AST and provides fast path-to-location lookups.
  */
+/**
+ * @import {FileObject} from "@gesslar/toolkit"
+ * @import {DirectoryObject} from "@gesslar/toolkit"
+ */
+
 export default class YamlSource {
+  /**
+   * Creates a YamlSource from a file, using the cwd for relative labelling.
+   * Returns null for non-YAML files or on parse failure.
+   *
+   * @param {FileObject} file - The file to parse
+   * @param {DirectoryObject} [cwd] - Optional cwd for relative path labels
+   * @returns {Promise<YamlSource?>} The parsed YAML source or null
+   */
+  static async fromFile(file, cwd) {
+    const ext = file.extension
+
+    if(ext !== ".yaml" && ext !== ".yml")
+      return null
+
+    try {
+      const label = cwd
+        ? file.relativeTo(cwd)
+        : file.path
+      const text = await file.read()
+
+      return new YamlSource(text, label)
+    } catch {
+      return null
+    }
+  }
+
   /** @type {Map<string, LocationEntry>} */
   #locationMap = new Map()
 
