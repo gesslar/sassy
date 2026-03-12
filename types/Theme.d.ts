@@ -59,10 +59,8 @@ export default class Theme {
      */
     setOutput(data: object): this;
     /**
-     * Sets the cache instance, used for propagation to imported files. If a
-     * cache is already set, it does not overwrite it.
-     *
-     * Maybe that's not a great idea. Do I even have a removeCache option?
+     * Sets the cache instance and propagates it to the source file and all
+     * existing dependencies. If a cache is already set, it does not overwrite it.
      *
      * @param {Cache} cache - The cache instance
      * @returns {Theme} Returns this instance for method chaining
@@ -126,59 +124,14 @@ export default class Theme {
      */
     getOutput(): unknown | null;
     /**
-     * Checks if the source has colors defined.
+     * Gets a section of the parsed source data by dotted path.
+     * Supports top-level keys and nested theme sections.
      *
-     * @returns {boolean} True if source has theme colors
+     * @param {string} section - Dot-separated path (e.g. "config",
+     *   "vars", "theme.colors", "theme.tokenColors")
+     * @returns {unknown} The section data or undefined if not present
      */
-    sourceHasColors(): boolean;
-    /**
-     * Checks if the source has token colors defined.
-     *
-     * @returns {boolean} True if source has theme token colors
-     */
-    sourceHasTokenColors(): boolean;
-    /**
-     * Checks if the source has semantic token colors defined.
-     *
-     * @returns {boolean} True if source has theme semantic token colors
-     */
-    sourceHasSemanticTokenColors(): boolean;
-    /**
-     * Checks if the source has theme configuration.
-     *
-     * @returns {boolean} True if source has theme data
-     */
-    sourceHasTheme(): boolean;
-    /**
-     * Checks if the source has variables.
-     *
-     * @returns {boolean} True if source has vars section
-     */
-    sourceHasVars(): boolean;
-    /**
-     * Checks if the source has config section.
-     *
-     * @returns {boolean} True if source has config
-     */
-    sourceHasConfig(): boolean;
-    /**
-     * Gets the source colors data.
-     *
-     * @returns {unknown?} The colors object or null if not defined
-     */
-    getSourceColors(): unknown | null;
-    /**
-     * Gets the source token colors data.
-     *
-     * @returns {Array<unknown>?} The token colors array or null if not defined
-     */
-    getSourceTokenColors(): Array<unknown> | null;
-    /**
-     * Gets the source semantic token colors data.
-     *
-     * @returns {unknown?} The semantic token colors object or null if not defined
-     */
-    getSourceSemanticTokenColors(): unknown | null;
+    getSourceSection(section: string): unknown;
     /**
      * Gets the set of file dependencies.
      *
@@ -237,62 +190,70 @@ export default class Theme {
      */
     setPool(pool: ThemePool): this;
     /**
-     * Method to return true or false if this theme has a pool.
+     * Stores the composed, unevaluated proof object on this theme.
+     * Set during compilation so that subsequent proof requests can
+     * return the cached result without recomposing.
      *
-     * @returns {boolean} True if a pool has been set, false otherwise.
+     * @param {object} proof - The composed proof object
+     * @returns {this} Returns this instance for method chaining
      */
-    hasPool(): boolean;
+    setProof(proof: object): this;
     /**
-     * Checks if the theme has compiled output.
+     * Gets the cached proof (composed, unevaluated theme document).
      *
-     * @returns {boolean} True if theme has been compiled
+     * @param {boolean} [asObject=false] - When true, returns the proof
+     *   as a plain object. When false (default), returns a YAML string.
+     * @returns {object|string|null} The proof, or null if not cached
+     */
+    getProof(asObject?: boolean): object | string | null;
+    /**
+     * Whether a cached proof exists on this theme.
+     *
+     * @returns {boolean} True if a proof has been stored
+     */
+    hasProof(): boolean;
+    /**
+     * Whether the theme has compiled output data available.
+     * True after a successful `build()`.
+     *
+     * @returns {boolean} True if `setOutput()` has been called
      */
     hasOutput(): boolean;
     /**
-     * Checks if the theme has loaded source data.
+     * Whether the theme has loaded and parsed its source file.
+     * True after a successful `load()`.
      *
      * @returns {boolean} True if source data is available
      */
     hasSource(): boolean;
     /**
-     * Checks if the theme has lookup data.
+     * Whether the full compilation pipeline has completed.
+     * Checks that output, variable pool, and lookup table are
+     * all present — all three are set together by `Compiler.compile()`.
      *
-     * @returns {boolean} True if lookup data exists
-     */
-    hasLookup(): boolean;
-    /**
-     * Checks if the theme is ready to be compiled.
-     * Requires source data to be available.
-     *
-     * @returns {boolean} True if theme can be compiled
-     */
-    isReady(): boolean;
-    /**
-     * Checks if the theme has been fully compiled.
-     * Requires output, pool, and lookup data to be present.
-     *
-     * @returns {boolean} True if theme is fully compiled
+     * @returns {boolean} True if output, pool, and lookup exist
      */
     isCompiled(): boolean;
     /**
-     * Checks if the theme can be built/compiled.
-     * Same as isReady() but with more semantic naming.
+     * Whether the theme has enough state to enter the build pipeline.
+     * Requires source data from `load()`.
      *
-     * @returns {boolean} True if build can proceed
+     * @returns {boolean} True if `load()` has succeeded
      */
     canBuild(): boolean;
     /**
-     * Checks if the theme can be written to output.
-     * Requires the theme to be compiled.
+     * Whether the theme has compiled output ready for writing.
+     * Requires at least a successful `build()`.
      *
-     * @returns {boolean} True if write can proceed
+     * @returns {boolean} True if output data exists
      */
     canWrite(): boolean;
     /**
-     * Checks if the theme is in a valid state for operation. Basic validation
-     * that core properties are set.
+     * Whether the theme has the minimum configuration to operate:
+     * a source file and a derived name. True after `setThemeFile()`
+     * has been called.
      *
-     * @returns {boolean} True if theme state is valid
+     * @returns {boolean} True if source file and name are set
      */
     isValid(): boolean;
     /**

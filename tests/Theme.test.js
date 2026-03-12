@@ -46,9 +46,9 @@ describe("Theme", () => {
       await theme.load()
 
       assert.ok(theme.hasSource())
-      assert.ok(theme.sourceHasConfig())
-      assert.ok(theme.sourceHasVars())
-      assert.ok(theme.sourceHasTheme())
+      assert.ok(theme.getSourceSection("config"))
+      assert.ok(theme.getSourceSection("vars"))
+      assert.ok(theme.getSourceSection("theme"))
     })
 
     it("throws when source lacks config", async() => {
@@ -234,12 +234,12 @@ describe("Theme", () => {
       theme.setCache(cache)
 
       assert.equal(theme.hasSource(), false)
-      assert.equal(theme.sourceHasColors(), false)
+      assert.equal(theme.getSourceSection("theme.colors"), undefined)
 
       await theme.load()
 
       assert.ok(theme.hasSource())
-      assert.ok(theme.sourceHasColors())
+      assert.ok(theme.getSourceSection("theme.colors"))
     })
 
     it("resets state correctly", async() => {

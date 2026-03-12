@@ -384,7 +384,46 @@ theme:
       assert.ok(result.theme.colors["editor.background"], "imported color 'editor.background' from base fixture should be present")
     })
 
-    it("preserves import key when withImports is true", async() => {
+    it("caches proof on theme during proof()", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/import-child.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      assert.equal(theme.hasProof(), false, "no proof before proof()")
+
+      const compiler = new Compiler()
+      const result = await compiler.proof(theme)
+
+      assert.ok(theme.hasProof(), "proof cached after proof()")
+      assert.strictEqual(theme.getProof(true), result, "cached proof matches returned proof")
+    })
+
+    it("caches proof on theme during compile()", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/import-child.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
+      theme.setCache(cache)
+
+      await theme.load()
+
+      const compiler = new Compiler({cache})
+      await compiler.compile(theme)
+
+      assert.ok(theme.hasProof(), "proof cached after compile()")
+
+      const proof = theme.getProof(true)
+      assert.ok(proof.config, "cached proof has config")
+      assert.ok(proof.vars, "cached proof has vars")
+      assert.ok(proof.theme, "cached proof has theme")
+      assert.equal(proof.config.import, undefined, "cached proof strips imports")
+    })
+
+    it("returns cached proof without recomposing", async() => {
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/import-child.yaml")
@@ -394,16 +433,10 @@ theme:
       await theme.load()
 
       const compiler = new Compiler()
-      const result = await compiler.proof(theme, true)
+      const first = await compiler.proof(theme)
+      const second = await compiler.proof(theme)
 
-      assert.ok(result.config.import, "config.import should be preserved when withImports is true")
-      assert.ok(Array.isArray(result.config.import), "config.import should be an array")
-      assert.ok(result.config.import.length > 0, "config.import should have at least one entry")
-      // Verify that imports were actually applied — values from import-base.yaml
-      // should appear in the merged vars/colors
-      assert.ok(result.vars.baseBg, "imported var 'baseBg' from base fixture should be present")
-      assert.ok(result.vars.baseFg, "imported var 'baseFg' from base fixture should be present")
-      assert.ok(result.theme.colors["editor.background"], "imported color 'editor.background' from base fixture should be present")
+      assert.strictEqual(first, second, "second call returns cached proof")
     })
   })
 })

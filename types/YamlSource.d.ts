@@ -11,7 +11,20 @@
 /**
  * Wraps a parsed YAML AST and provides fast path-to-location lookups.
  */
+/**
+ * @import {FileObject} from "@gesslar/toolkit"
+ * @import {DirectoryObject} from "@gesslar/toolkit"
+ */
 export default class YamlSource {
+    /**
+     * Creates a YamlSource from a file, using the cwd for relative labelling.
+     * Returns null for non-YAML files or on parse failure.
+     *
+     * @param {FileObject} file - The file to parse
+     * @param {DirectoryObject} [cwd] - Optional cwd for relative path labels
+     * @returns {Promise<YamlSource?>} The parsed YAML source or null
+     */
+    static fromFile(file: FileObject, cwd?: DirectoryObject): Promise<YamlSource | null>;
     /**
      * Parses YAML source text and builds the internal location map.
      *
@@ -81,4 +94,6 @@ export type LocationEntry = {
      */
     value: SourceLocation;
 };
+import type { FileObject } from "@gesslar/toolkit";
+import type { DirectoryObject } from "@gesslar/toolkit";
 //# sourceMappingURL=YamlSource.d.ts.map

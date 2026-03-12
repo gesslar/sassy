@@ -29,11 +29,12 @@ export default class Compiler {
      * overrides applied, and séance operators inlined — but before any variable
      * substitution or colour function evaluation.
      *
+     * Returns the cached proof from the theme if one exists.
+     *
      * @param {Theme} theme - The theme object to proof
-     * @param {boolean} withImports - Do not strip imports from the proof
      * @returns {Promise<object>} The composed, unevaluated theme structure
      */
-    proof(theme: Theme, withImports?: boolean): Promise<object>;
+    proof(theme: Theme): Promise<object>;
     #private;
 }
 //# sourceMappingURL=Compiler.d.ts.map

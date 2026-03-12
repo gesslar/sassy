@@ -81,16 +81,12 @@ export default class BuildCommand extends Command {
     const sessionResults = await Promised.settle(
       fileNames.map(async fileName => {
         const fileObject = await this.resolveThemeFileName(fileName, cwd)
-        const cache = this.getCache()
-
-        if(cache)
-          fileObject.withCache(cache)
 
         const theme = new Theme()
           .setCwd(cwd)
           .setThemeFile(fileObject)
           .setOptions(options)
-          .setCache(cache)
+          .setCache(this.getCache())
 
         return new Session(this, theme, options)
       })

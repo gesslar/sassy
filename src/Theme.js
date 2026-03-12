@@ -14,6 +14,7 @@
  * - Support watch mode for live theme development
  */
 import {Collection, DirectoryObject, FileSystem as FS, Sass, Term, Util} from "@gesslar/toolkit"
+import {stringify} from "yaml"
 import path from "node:path"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
@@ -68,6 +69,7 @@ export default class Theme {
   #name = null
   /** @type {YamlSource?} */
   #mainYamlSource = null
+  #proof = null
 
   // Write-related properties
   #output = null
@@ -88,6 +90,10 @@ export default class Theme {
    */
   setThemeFile(file) {
     this.#sourceFile = file
+
+    if(this.#cache && !file.cached)
+      file.withCache(this.#cache)
+
     const {name} = /^(?<name>.*?)(?:\.sassy)?$/.exec(file.module)?.groups ?? {}
     this.#name = name ?? file.module
     this.#computeOutputPath()
@@ -200,6 +206,7 @@ export default class Theme {
     this.#outputHash = null
     this.#lookup = null
     this.#pool = null
+    this.#proof = null
     this.#dependencies = new Set()
     this.#mainYamlSource = null
   }
@@ -219,10 +226,8 @@ export default class Theme {
   }
 
   /**
-   * Sets the cache instance, used for propagation to imported files. If a
-   * cache is already set, it does not overwrite it.
-   *
-   * Maybe that's not a great idea. Do I even have a removeCache option?
+   * Sets the cache instance and propagates it to the source file and all
+   * existing dependencies. If a cache is already set, it does not overwrite it.
    *
    * @param {Cache} cache - The cache instance
    * @returns {Theme} Returns this instance for method chaining
@@ -230,6 +235,16 @@ export default class Theme {
   setCache(cache) {
     if(!this.#cache)
       this.#cache = cache
+
+    if(this.#sourceFile && !this.#sourceFile.cached)
+      this.#sourceFile.withCache(cache)
+
+    for(const dep of this.#dependencies) {
+      const file = dep.getSourceFile()
+
+      if(file && !file.cached)
+        file.withCache(cache)
+    }
 
     return this
   }
@@ -321,93 +336,25 @@ export default class Theme {
   }
 
   /**
-   * Checks if the source has colors defined.
+   * Gets a section of the parsed source data by dotted path.
+   * Supports top-level keys and nested theme sections.
    *
-   * @returns {boolean} True if source has theme colors
+   * @param {string} section - Dot-separated path (e.g. "config",
+   *   "vars", "theme.colors", "theme.tokenColors")
+   * @returns {unknown} The section data or undefined if not present
    */
-  sourceHasColors() {
-    return !!this.#source?.theme?.colors
-  }
+  getSourceSection(section) {
+    const keys = section.split(".")
+    let current = this.#source
 
-  /**
-   * Checks if the source has token colors defined.
-   *
-   * @returns {boolean} True if source has theme token colors
-   */
-  sourceHasTokenColors() {
-    return !!this.#source?.theme?.tokenColors
-  }
+    for(const key of keys) {
+      if(current == null)
+        return undefined
 
-  /**
-   * Checks if the source has semantic token colors defined.
-   *
-   * @returns {boolean} True if source has theme semantic token colors
-   */
-  sourceHasSemanticTokenColors() {
-    return !!this.#source?.theme?.semanticTokenColors
-  }
+      current = current[key]
+    }
 
-  /**
-   * Checks if the source has theme configuration.
-   *
-   * @returns {boolean} True if source has theme data
-   */
-  sourceHasTheme() {
-    return !!this.#source?.theme
-  }
-
-  /**
-   * Checks if the source has variables.
-   *
-   * @returns {boolean} True if source has vars section
-   */
-  sourceHasVars() {
-    return !!this.#source?.vars
-  }
-
-  /**
-   * Checks if the source has config section.
-   *
-   * @returns {boolean} True if source has config
-   */
-  sourceHasConfig() {
-    return !!this.#source?.config
-  }
-
-  /**
-   * Gets the source colors data.
-   *
-   * @returns {unknown?} The colors object or null if not defined
-   */
-  getSourceColors() {
-    if(!this.sourceHasColors())
-      return null
-
-    return this.#source.theme.colors
-  }
-
-  /**
-   * Gets the source token colors data.
-   *
-   * @returns {Array<unknown>?} The token colors array or null if not defined
-   */
-  getSourceTokenColors() {
-    if(!this.sourceHasTokenColors())
-      return null
-
-    return this.#source.theme.tokenColors
-  }
-
-  /**
-   * Gets the source semantic token colors data.
-   *
-   * @returns {unknown?} The semantic token colors object or null if not defined
-   */
-  getSourceSemanticTokenColors() {
-    if(!this.sourceHasSemanticTokenColors())
-      return null
-
-    return this.#source.theme.semanticTokenColors
+    return current
   }
 
   /**
@@ -506,25 +453,58 @@ export default class Theme {
   }
 
   /**
-   * Method to return true or false if this theme has a pool.
+   * Stores the composed, unevaluated proof object on this theme.
+   * Set during compilation so that subsequent proof requests can
+   * return the cached result without recomposing.
    *
-   * @returns {boolean} True if a pool has been set, false otherwise.
+   * @param {object} proof - The composed proof object
+   * @returns {this} Returns this instance for method chaining
    */
-  hasPool() {
-    return this.#pool instanceof ThemePool
+  setProof(proof) {
+    this.#proof = proof
+
+    return this
   }
 
   /**
-   * Checks if the theme has compiled output.
+   * Gets the cached proof (composed, unevaluated theme document).
    *
-   * @returns {boolean} True if theme has been compiled
+   * @param {boolean} [asObject=false] - When true, returns the proof
+   *   as a plain object. When false (default), returns a YAML string.
+   * @returns {object|string|null} The proof, or null if not cached
+   */
+  getProof(asObject=false) {
+    if(this.#proof === null)
+      return null
+
+    if(asObject)
+      return this.#proof
+
+    return stringify(this.#proof, {lineWidth: 0})
+  }
+
+  /**
+   * Whether a cached proof exists on this theme.
+   *
+   * @returns {boolean} True if a proof has been stored
+   */
+  hasProof() {
+    return this.#proof !== null
+  }
+
+  /**
+   * Whether the theme has compiled output data available.
+   * True after a successful `build()`.
+   *
+   * @returns {boolean} True if `setOutput()` has been called
    */
   hasOutput() {
     return this.#output !== null
   }
 
   /**
-   * Checks if the theme has loaded source data.
+   * Whether the theme has loaded and parsed its source file.
+   * True after a successful `load()`.
    *
    * @returns {boolean} True if source data is available
    */
@@ -533,59 +513,44 @@ export default class Theme {
   }
 
   /**
-   * Checks if the theme has lookup data.
+   * Whether the full compilation pipeline has completed.
+   * Checks that output, variable pool, and lookup table are
+   * all present — all three are set together by `Compiler.compile()`.
    *
-   * @returns {boolean} True if lookup data exists
+   * @returns {boolean} True if output, pool, and lookup exist
    */
-  hasLookup() {
-    return this.#lookup !== null
+  isCompiled() {
+    return this.hasOutput()
+      && this.#pool instanceof ThemePool
+      && this.#lookup !== null
   }
 
   /**
-   * Checks if the theme is ready to be compiled.
-   * Requires source data to be available.
+   * Whether the theme has enough state to enter the build pipeline.
+   * Requires source data from `load()`.
    *
-   * @returns {boolean} True if theme can be compiled
+   * @returns {boolean} True if `load()` has succeeded
    */
-  isReady() {
+  canBuild() {
     return this.hasSource()
   }
 
   /**
-   * Checks if the theme has been fully compiled.
-   * Requires output, pool, and lookup data to be present.
+   * Whether the theme has compiled output ready for writing.
+   * Requires at least a successful `build()`.
    *
-   * @returns {boolean} True if theme is fully compiled
-   */
-  isCompiled() {
-    return this.hasOutput() && this.hasPool() && this.hasLookup()
-  }
-
-  /**
-   * Checks if the theme can be built/compiled.
-   * Same as isReady() but with more semantic naming.
-   *
-   * @returns {boolean} True if build can proceed
-   */
-  canBuild() {
-    return this.isReady()
-  }
-
-  /**
-   * Checks if the theme can be written to output.
-   * Requires the theme to be compiled.
-   *
-   * @returns {boolean} True if write can proceed
+   * @returns {boolean} True if output data exists
    */
   canWrite() {
     return this.hasOutput()
   }
 
   /**
-   * Checks if the theme is in a valid state for operation. Basic validation
-   * that core properties are set.
+   * Whether the theme has the minimum configuration to operate:
+   * a source file and a derived name. True after `setThemeFile()`
+   * has been called.
    *
-   * @returns {boolean} True if theme state is valid
+   * @returns {boolean} True if source file and name are set
    */
   isValid() {
     return this.#sourceFile !== null && this.#name !== null
@@ -600,9 +565,6 @@ export default class Theme {
    * @throws {Sass} If source file lacks required 'config' property
    */
   async load() {
-    if(this.#cache && !this.#sourceFile.cached)
-      this.#sourceFile.withCache(this.#cache)
-
     const source = await this.#sourceFile.loadData()
 
     if(!source?.[PropertyKey.CONFIG]) {
@@ -619,35 +581,10 @@ export default class Theme {
 
     // Build YAML AST for source-location tracking; deferred to after imports
     // are added by Compiler so dependency order matches composition order.
-    this.#mainYamlSource = await this.#buildYamlSource(this.#sourceFile)
+    this.#mainYamlSource =
+      await YamlSource.fromFile(this.#sourceFile, this.#cwd)
 
     return this
-  }
-
-  /**
-   * Builds a YamlSource from a file for source-location tracking.
-   * Returns null for non-YAML files or on parse failure.
-   *
-   * @param {FileObject} file - The file to parse
-   * @returns {Promise<YamlSource?>} The parsed YAML source or null
-   * @private
-   */
-  async #buildYamlSource(file) {
-    const ext = file.extension
-
-    if(ext !== ".yaml" && ext !== ".yml")
-      return null
-
-    try {
-      const label = this.#cwd
-        ? file.relativeTo(this.#cwd)
-        : file.path
-      const text = await file.read()
-
-      return new YamlSource(text, label)
-    } catch {
-      return null
-    }
   }
 
   /**

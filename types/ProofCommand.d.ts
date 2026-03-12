@@ -1,31 +1,4 @@
-/**
- * Engine class for proofing themes.
- * Produces the fully composed, unevaluated theme structure.
- * No CLI awareness — takes a loaded Theme and returns data.
- */
-export class Proof {
-    /**
-     * Creates a new Proof instance.
-     *
-     * @param {object} [options] - Proof options
-     * @param {import("@gesslar/toolkit").Cache} [options.cache] - Cache instance for imported files
-     */
-    constructor({ cache }?: {
-        cache?: import("@gesslar/toolkit").Cache;
-    });
-    /**
-     * Proofs a loaded theme, returning the composed document before
-     * variable substitution or colour function evaluation.
-     *
-     * Automatically calls `theme.load()` if the theme is not ready.
-     *
-     * @param {Theme} theme - A Theme instance
-     * @param {boolean} withImports - Do not strip imports from the proof
-     * @returns {Promise<object>} The composed, unevaluated theme structure
-     */
-    run(theme: Theme, withImports?: boolean): Promise<object>;
-    #private;
-}
+export { default as Proof } from "./Proof.js";
 /**
  * Command handler for proofing theme files.
  * Outputs the fully composed, unevaluated theme document as YAML.
@@ -48,6 +21,5 @@ export default class ProofCommand extends Command {
      */
     execute(inputArg: string, options?: object): Promise<void>;
 }
-import Theme from "./Theme.js";
 import Command from "./Command.js";
 //# sourceMappingURL=ProofCommand.d.ts.map

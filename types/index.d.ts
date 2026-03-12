@@ -1,7 +1,7 @@
 export { default as Theme } from "./Theme.js";
-export { Lint } from "./LintCommand.js";
-export { Proof } from "./ProofCommand.js";
-export { Resolve } from "./ResolveCommand.js";
+export { default as Lint } from "./Lint.js";
+export { default as Proof } from "./Proof.js";
+export { default as Resolve } from "./Resolve.js";
 export { default as Colour } from "./Colour.js";
 export { default as YamlSource } from "./YamlSource.js";
 export { default as SemanticSelectorRules } from "./lint/SemanticSelectorRules.js";
