@@ -115,11 +115,16 @@ export default class Theme {
    * @param {RuntimeConfigurationOptions} options - Options for processing this theme
    * @returns {Theme} This instance, for chaining
    */
-  setOptions(options={
-    outputDir = ".",
-    dryRun = false
-  } = {}) {
-    this.#options = Object.assign(this.#options ?? {}, options)
+  setOptions(options={}) {
+    this.#options = Object.assign(
+      this.#options ?? {},
+      {
+        dryRun: false,
+        outputDir: ".",
+      },
+      options
+    )
+
     this.#computeOutputPath()
 
     return this
