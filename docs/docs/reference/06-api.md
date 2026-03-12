@@ -35,7 +35,7 @@ Sassy exposes its core classes for programmatic use. As of v5, the API uses a **
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(file)
-      .withOptions({outputDir: './dist'})
+      .setOptions({outputDir: './dist'})
 
     await theme.load()
     await theme.build()
@@ -77,7 +77,7 @@ Theme uses a chainable builder. All setters return `this`.
     const theme = new Theme()
       .setCwd(cwd)                          // DirectoryObject
       .setThemeFile(file)                   // FileObject
-      .withOptions({outputDir: './dist'})   // compilation options
+      .setOptions({outputDir: './dist'})   // compilation options
       .setCache(cache)                      // optional Cache instance
 
 `}</CodeBlock>
@@ -86,7 +86,7 @@ Theme uses a chainable builder. All setters return `this`.
 |-----------|------|-------------|
 | `setCwd(dir)` | `DirectoryObject` | Working directory for relative path resolution |
 | `setThemeFile(file)` | `FileObject` | Source theme file (also derives theme name) |
-| `withOptions(opts)` | `object` | Compilation options (`outputDir`, `dryRun`, `silent`, `nerd`) |
+| `setOptions(opts)` | `object` | Compilation options (`outputDir`, `dryRun`, `silent`, `nerd`) |
 | `setCache(cache)` | `Cache` | File cache instance (optional — `load()` falls back to direct file read) |
 
 ### Methods
@@ -123,7 +123,7 @@ The `Lint` class analyses a compiled theme and returns structured issue data. No
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(file)
-      .withOptions({})
+      .setOptions({})
     await theme.load()
     await theme.build()
 
@@ -163,7 +163,7 @@ The `Proof` class returns the fully composed theme document (post-import, pre-ev
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(file)
-      .withOptions({})
+      .setOptions({})
     await theme.load()
 
     const composed = await new Proof().run(theme)
@@ -197,7 +197,7 @@ The `Resolve` class traces token resolution through the variable dependency chai
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(file)
-      .withOptions({})
+      .setOptions({})
     await theme.load()
     await theme.build()
 

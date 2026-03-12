@@ -80,7 +80,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -101,7 +101,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/palette-alias-tokencolors.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -121,7 +121,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -138,7 +138,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-duplicate-scope.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -162,7 +162,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-precedence.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -186,7 +186,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -210,7 +210,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -236,7 +236,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -264,7 +264,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/token-colors-string-scope.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -283,7 +283,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -314,7 +314,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -338,7 +338,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-duplicate-scope.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -364,7 +364,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/lint-precedence.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -391,7 +391,7 @@ describe("LintCommand", () => {
       const command = new LintCommand({cwd, packageJson})
       command.setCache(new Cache())
       const themeFile = cwd.getFile("./fixtures/palette-alias-tokencolors.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       await theme.load()
@@ -420,7 +420,7 @@ describe("LintCommand", () => {
       const theme = new Theme()
         .setCwd(cwd)
         .setThemeFile(themeFile)
-        .withOptions({outputDir: "."})
+        .setOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()
@@ -629,7 +629,7 @@ describe("LintCommand", () => {
       const theme = new Theme()
         .setCwd(cwd)
         .setThemeFile(themeFile)
-        .withOptions({outputDir: "."})
+        .setOptions({outputDir: "."})
       theme.setCache(cache)
 
       await theme.load()

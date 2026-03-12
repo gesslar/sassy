@@ -14,7 +14,7 @@
  * const theme = new Theme()
  *   .setCwd(cwd)
  *   .setThemeFile(fileObject)
- *   .withOptions({outputDir: './dist'})
+ *   .setOptions({outputDir: './dist'})
  * await theme.load()
  * await theme.build()
  *

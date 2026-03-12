@@ -1,4 +1,5 @@
 import {Promised, Sass, Term, Util, Watcher} from "@gesslar/toolkit"
+import {WriteStatus} from "./Theme.js"
 
 /**
  * @import {Command} from "./Command.js"
@@ -299,7 +300,6 @@ export default class Session {
        */
 
       const writeResult = await Util.time(() => this.#theme.write(forceWrite))
-
       writeCost = writeResult.cost
       const {
         status: writeStatus,
@@ -315,7 +315,7 @@ export default class Session {
         ],
       ]
 
-      if(writeStatus.description === "written") {
+      if(writeStatus === WriteStatus.WRITTEN) {
         status.push(
           `${outputFilename} written`,
           ["success", `${writeBytes.toLocaleString()} bytes`, ["[","]"]]
@@ -323,7 +323,7 @@ export default class Session {
       } else {
         status.push(
           `${outputFilename}`,
-          ["warn", writeStatus.description.toLocaleUpperCase(), ["[","]"]]
+          ["warn", writeStatus.toLocaleUpperCase(), ["[","]"]]
         )
       }
 

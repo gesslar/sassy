@@ -548,7 +548,7 @@ const file = cwd.getFile('my-theme.yaml')
 const theme = new Theme()
   .setCwd(cwd)
   .setThemeFile(file)
-  .withOptions({outputDir: './dist'})
+  .setOptions({outputDir: './dist'})
 await theme.load()
 await theme.build()
 

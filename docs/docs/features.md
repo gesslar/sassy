@@ -148,7 +148,7 @@ sidebar_position: 99
 ## Programmatic API
 
 - **ES Module Exports** — `import {Theme, Lint, Resolve, Proof, Colour} from '@gesslar/sassy'`
-- **Builder Pattern** — `new Theme().setCwd(cwd).setThemeFile(file).withOptions(opts)` — no CLI dependencies required
+- **Builder Pattern** — `new Theme().setCwd(cwd).setThemeFile(file).setOptions(opts)` — no CLI dependencies required
 - **Engine Classes** — `Lint`, `Resolve`, and `Proof` work standalone — give them a Theme, get structured data back
 - **Cache-Optional Loading** — `load()` falls back to `FileObject.loadData()` when no cache is set
 - **Embeddable Compilation** — Build themes programmatically without the CLI

@@ -202,7 +202,7 @@ describe("BuildCommand", () => {
       // Create a session that will fail during run
       // We'll use a real session but mock the theme to fail
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       // Mock theme.build to throw

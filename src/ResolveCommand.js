@@ -541,7 +541,7 @@ export default class ResolveCommand extends Command {
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(fileObject)
-      .withOptions(options)
+      .setOptions(options)
       .setCache(cache)
 
     await theme.load()

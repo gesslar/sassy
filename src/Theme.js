@@ -13,7 +13,7 @@
  * - Write output files, supporting dry-run and hash-based skip
  * - Support watch mode for live theme development
  */
-import {DirectoryObject, FileSystem as FS, Sass, Term, Util} from "@gesslar/toolkit"
+import {Collection, DirectoryObject, FileSystem as FS, Sass, Term, Util} from "@gesslar/toolkit"
 import path from "node:path"
 import Compiler from "./Compiler.js"
 import ThemePool from "./ThemePool.js"
@@ -28,16 +28,22 @@ import YamlSource from "./YamlSource.js"
 const outputFileExtension = "color-theme.json"
 const obviouslyASentinelYouCantMissSoShutUpAboutIt = "kakadoodoo"
 
-// Symbol enums for magic values
-const WriteStatus = {
-  DRY_RUN: Symbol("dry-run"),
-  SKIPPED: Symbol("skipped"),
-  WRITTEN: Symbol("written")
-}
+/**
+ * @typedef {object} RuntimeConfigurationOptions
+ * @property {string} [outputDir="."] - The directory to output this theme's result.
+ * @property {boolean} [dryRun=false] - Whether this is a dry-run (output to stdout)
+ */
 
-const PropertyKey = {
-  CONFIG: Symbol("config")
-}
+// Symbol enums for magic values
+export const WriteStatus = Object.freeze({
+  DRY_RUN: "dry-run",
+  SKIPPED: "skipped",
+  WRITTEN: "written",
+})
+
+const PropertyKey = Object.freeze({
+  CONFIG: "config"
+})
 
 /**
  * Theme class: manages the lifecycle of a theme compilation unit.
@@ -46,6 +52,7 @@ const PropertyKey = {
 export default class Theme {
   #sourceFile = null
   #source = null
+  /** Run time options for this theme. @type {RuntimeConfigurationOptions} */
   #options = null
 
   /**
@@ -59,7 +66,7 @@ export default class Theme {
   #pool = null
   #cache = null
   #name = null
-  /** @type {import("./YamlSource.js").default|null} */
+  /** @type {YamlSource?} */
   #mainYamlSource = null
 
   // Write-related properties
@@ -72,6 +79,13 @@ export default class Theme {
 
   #cwd = null
 
+  /**
+   * Sets the theme source file and derives the theme name from it.
+   * Recomputes the output path after updating.
+   *
+   * @param {FileObject} file - The theme source file
+   * @returns {Theme} Returns this instance for method chaining
+   */
   setThemeFile(file) {
     this.#sourceFile = file
     const {name} = /^(?<name>.*?)(?:\.sassy)?$/.exec(file.module)?.groups ?? {}
@@ -81,6 +95,13 @@ export default class Theme {
     return this
   }
 
+  /**
+   * Sets the current working directory for relative path resolution.
+   * Recomputes the output path after updating.
+   *
+   * @param {DirectoryObject} cwd - The current working directory
+   * @returns {Theme} Returns this instance for method chaining
+   */
   setCwd(cwd) {
     this.#cwd = cwd
     this.#computeOutputPath()
@@ -88,13 +109,17 @@ export default class Theme {
     return this
   }
 
-  withOptions(options) {
-    const {outputDir = "."} = options ?? {}
-
-    if(!outputDir)
-      throw Sass.new(`No outputDir in options.`)
-
-    this.#options = options
+  /**
+   * Attach options to the theme processing... err process.
+   *
+   * @param {RuntimeConfigurationOptions} options - Options for processing this theme
+   * @returns {Theme} This instance, for chaining
+   */
+  setOptions(options={
+    outputDir = ".",
+    dryRun = false
+  } = {}) {
+    this.#options = Object.assign(this.#options ?? {}, options)
     this.#computeOutputPath()
 
     return this
@@ -142,7 +167,7 @@ export default class Theme {
    *
    * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
    * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
-   * @returns {string|null} Formatted "file:line:col" string or null
+   * @returns {string?} Formatted "file:line:col" string or null
    */
   findSourceLocation(dottedPath, target = "key") {
     for(const dep of this.#dependencies) {
@@ -175,94 +200,6 @@ export default class Theme {
   }
 
   /**
-   * Gets the current working directory.
-   *
-   * @returns {DirectoryObject} The current working directory
-   */
-  getCwd() {
-    return this.#cwd
-  }
-
-  /**
-   * Gets the compilation options.
-   *
-   * @returns {object} The compilation options object
-   */
-  getOptions() {
-    return this.#options
-  }
-
-  /**
-   * Gets a specific compilation option.
-   *
-   * @param {string} option - The option name to retrieve
-   * @returns {unknown} The option value or undefined if not set
-   */
-  getOption(option) {
-    return this.#options?.[option] ?? undefined
-  }
-
-  /**
-   * Sets the cache instance, used for propagation to imported files.
-   *
-   * @param {Cache} cache - The cache instance
-   * @returns {this} Returns this instance for method chaining
-   */
-  setCache(cache) {
-    if(!this.#cache)
-      this.#cache = cache
-
-    return this
-  }
-
-  /**
-   * Gets the theme name.
-   *
-   * @returns {string} The theme name derived from the source file
-   */
-  getName() {
-    return this.#name
-  }
-
-  /**
-   * Gets the output file name for the compiled theme.
-   *
-   * @returns {string} The output file name with extension
-   */
-  getOutputFileName() {
-    return this.#outputFileName
-  }
-
-  /**
-   * Gets the output file object.
-   *
-   * @returns {FileObject|null} The output file object
-   */
-  getOutputFile() {
-    return this.#outputFile
-  }
-
-  /**
-   * Gets the source file object.
-   *
-   * @returns {FileObject} The source theme file
-   */
-  getSourceFile() {
-    return this.#sourceFile
-  }
-
-  /**
-   * Gets the YAML source built from the main theme file during load().
-   * Used by Compiler to add the main file as the last dependency after
-   * all imports have been registered.
-   *
-   * @returns {import("./YamlSource.js").default|null} The YAML source or null
-   */
-  getMainYamlSource() {
-    return this.#mainYamlSource
-  }
-
-  /**
    * Sets the compiled theme output object and updates derived JSON and hash.
    *
    * @param {object} data - The compiled theme output object
@@ -277,9 +214,102 @@ export default class Theme {
   }
 
   /**
+   * Sets the cache instance, used for propagation to imported files. If a
+   * cache is already set, it does not overwrite it.
+   *
+   * Maybe that's not a great idea. Do I even have a removeCache option?
+   *
+   * @param {Cache} cache - The cache instance
+   * @returns {Theme} Returns this instance for method chaining
+   */
+  setCache(cache) {
+    if(!this.#cache)
+      this.#cache = cache
+
+    return this
+  }
+
+  /**
+   * Gets the current working directory.
+   *
+   * @returns {DirectoryObject?} The current working directory
+   */
+  getCwd() {
+    return this.#cwd
+  }
+
+  /**
+   * Gets the compilation options.
+   *
+   * @returns {RuntimeConfigurationOptions?} The compilation options object
+   */
+  getOptions() {
+    return this.#options
+      ? Collection.deepFreezeObject(this.#options)
+      : this.#options
+  }
+
+  /**
+   * Gets a specific compilation option.
+   *
+   * @param {string} option - The option name to retrieve
+   * @returns {unknown} The option value or undefined if not set
+   */
+  getOption(option) {
+    return this.#options?.[option] ?? undefined
+  }
+
+  /**
+   * Gets the theme name.
+   *
+   * @returns {string?} The theme name derived from the source file
+   */
+  getName() {
+    return this.#name
+  }
+
+  /**
+   * Gets the output file name for the compiled theme.
+   *
+   * @returns {string?} The output file name with extension
+   */
+  getOutputFileName() {
+    return this.#outputFileName
+  }
+
+  /**
+   * Gets the output file object.
+   *
+   * @returns {FileObject?} The output file object
+   */
+  getOutputFile() {
+    return this.#outputFile
+  }
+
+  /**
+   * Gets the source file object.
+   *
+   * @returns {FileObject?} The source theme file
+   */
+  getSourceFile() {
+    return this.#sourceFile
+  }
+
+  /**
+   * Gets the YAML source built from the main theme file during load().
+   * Used by Compiler to add the main file as the last dependency after
+   * all imports have been registered.
+   *
+   * @returns {YamlSource?} The YAML source or null
+   */
+  getMainYamlSource() {
+    return this.#mainYamlSource
+  }
+
+  /**
    * Gets the compiled theme output object.
    *
-   * @returns {object|null} The compiled theme output
+   * @returns {unknown?} The compiled theme output
    */
   getOutput() {
     return this.#output
@@ -342,7 +372,7 @@ export default class Theme {
   /**
    * Gets the source colors data.
    *
-   * @returns {object|null} The colors object or null if not defined
+   * @returns {unknown?} The colors object or null if not defined
    */
   getSourceColors() {
     if(!this.sourceHasColors())
@@ -354,7 +384,7 @@ export default class Theme {
   /**
    * Gets the source token colors data.
    *
-   * @returns {Array|null} The token colors array or null if not defined
+   * @returns {Array<unknown>?} The token colors array or null if not defined
    */
   getSourceTokenColors() {
     if(!this.sourceHasTokenColors())
@@ -366,7 +396,7 @@ export default class Theme {
   /**
    * Gets the source semantic token colors data.
    *
-   * @returns {object|null} The semantic token colors object or null if not defined
+   * @returns {unknown?} The semantic token colors object or null if not defined
    */
   getSourceSemanticTokenColors() {
     if(!this.sourceHasSemanticTokenColors())
@@ -388,7 +418,7 @@ export default class Theme {
    * Adds a dependency to the theme with its source data.
    *
    * @param {FileObject} file - The dependency file object
-   * @param {object} source - The parsed source data from the file
+   * @param {unknown} source - The parsed source data from the file
    * @returns {this} Returns this instance for method chaining
    */
   addDependency(file, source, yamlSource = null) {
@@ -416,7 +446,7 @@ export default class Theme {
   /**
    * Gets the parsed source data from the theme file.
    *
-   * @returns {object|null} The parsed source data
+   * @returns {unknown?} The parsed source data
    */
   getSource() {
     return this.#source
@@ -425,7 +455,7 @@ export default class Theme {
   /**
    * Gets the variable lookup data for theme compilation.
    *
-   * @returns {object|null} The lookup data object
+   * @returns {unknown?} The lookup data object
    */
   getLookup() {
     return this.#lookup
@@ -434,7 +464,7 @@ export default class Theme {
   /**
    * Sets the variable lookup data for theme compilation.
    *
-   * @param {object} data - The lookup data object
+   * @param {unknown} data - The lookup data object
    * @returns {this} Returns this instance for method chaining
    */
   setLookup(data) {
@@ -447,7 +477,7 @@ export default class Theme {
    * Gets the pool data for variable resolution tracking or null if one has
    * not been set.
    *
-   * @returns {ThemePool|null} The pool for this theme.
+   * @returns {ThemePool?} The pool for this theme.
    */
   getPool() {
     return this.#pool
@@ -547,8 +577,8 @@ export default class Theme {
   }
 
   /**
-   * Checks if the theme is in a valid state for operation.
-   * Basic validation that core properties are set.
+   * Checks if the theme is in a valid state for operation. Basic validation
+   * that core properties are set.
    *
    * @returns {boolean} True if theme state is valid
    */
@@ -570,13 +600,13 @@ export default class Theme {
 
     const source = await this.#sourceFile.loadData()
 
-    if(!source?.[PropertyKey.CONFIG.description]) {
+    if(!source?.[PropertyKey.CONFIG]) {
       const label = this.#cwd
         ? this.#sourceFile.relativeTo(this.#cwd)
         : this.#sourceFile.path
 
       throw Sass.new(
-        `'${label}' does not contain '${PropertyKey.CONFIG.description}' property.`
+        `'${label}' does not contain '${PropertyKey.CONFIG}' property.`
       )
     }
 
@@ -594,7 +624,7 @@ export default class Theme {
    * Returns null for non-YAML files or on parse failure.
    *
    * @param {FileObject} file - The file to parse
-   * @returns {Promise<YamlSource|null>} The parsed YAML source or null
+   * @returns {Promise<YamlSource?>} The parsed YAML source or null
    * @private
    */
   async #buildYamlSource(file) {
@@ -632,15 +662,16 @@ export default class Theme {
    * Writes the compiled theme output to a file or stdout.
    * Handles dry-run mode, output directory creation, and duplicate write prevention.
    *
-   * @param {boolean} [force] - Force a write. Used by the rebuild CLI option.
-   * @returns {Promise<void>} Resolves when write operation is complete
+   * @param {boolean} [force=false] - Force a write. Used by the rebuild CLI option.
+   * @returns {Promise<undefined>} Resolves when write operation is complete
    */
   async write(force=false) {
-    const output = this.#outputJson
     const file = this.#outputFile
 
     if(!file)
-      throw Sass.new("No output file configured. Set themeFile and options before writing. cwd is optional when themeFile is set.")
+      throw Sass.new(`No output file configured.`)
+
+    const output = this.#outputJson
 
     if(this.#options?.dryRun) {
       Term.log(this.#outputJson)
@@ -676,7 +707,7 @@ export default class Theme {
 export class Dependency {
   #sourceFile = null
   #source = null
-  /** @type {import("./YamlSource.js").default|null} */
+  /** @type {YamlSource?} */
   #yamlSource = null
 
   /**
@@ -695,7 +726,7 @@ export class Dependency {
   /**
    * Get the file object for this depenency.
    *
-   * @returns {FileObject} The file object of this dependency.
+   * @returns {FileObject?} The file object of this dependency.
    */
   getSourceFile() {
     return this.#sourceFile
@@ -704,7 +735,7 @@ export class Dependency {
   /**
    * Sets the source object for this dependency.
    *
-   * @param {object} source - The parsed JSON from the file after loading.
+   * @param {unknown} source - The parsed JSON from the file after loading.
    * @returns {this} This.
    */
   setSource(source) {
@@ -717,7 +748,7 @@ export class Dependency {
   /**
    * Gets the parsed source data for this dependency.
    *
-   * @returns {object|null} The parsed source data
+   * @returns {object?} The parsed source data
    */
   getSource() {
     return this.#source
@@ -726,7 +757,7 @@ export class Dependency {
   /**
    * Sets the YAML AST source for location tracking.
    *
-   * @param {import("./YamlSource.js").default} yamlSource - The parsed YAML source
+   * @param {YamlSource} yamlSource - The parsed YAML source
    * @returns {this} This.
    */
   setYamlSource(yamlSource) {
@@ -739,7 +770,7 @@ export class Dependency {
   /**
    * Gets the YAML AST source for location tracking.
    *
-   * @returns {import("./YamlSource.js").default|null} The YAML source or null
+   * @returns {YamlSource?} The YAML source or null
    */
   getYamlSource() {
     return this.#yamlSource
@@ -777,7 +808,7 @@ export class Dependency {
    *
    * @returns {boolean} True if both file and source are set
    */
-  isComplete() {
+  isReady() {
     return this.hasSourceFile() && this.hasSource()
   }
 }

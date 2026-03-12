@@ -13,7 +13,7 @@ As of v5, Theme uses a chainable builder instead of a constructor with arguments
 const theme = new Theme()
   .setCwd(cwd)                          // DirectoryObject
   .setThemeFile(file)                   // FileObject (also derives theme name)
-  .withOptions({outputDir: './dist'})   // compilation options
+  .setOptions({outputDir: './dist'})   // compilation options
   .setCache(cache)                      // optional — load() falls back to direct file read
 ```
 
@@ -52,7 +52,7 @@ Writes the compiled output as `.color-theme.json`. Uses sha256 hashing to skip
 writes when the output has not changed. Supports dry-run mode via options.
 Guards against missing output configuration (no cwd or outputDir).
 
-Returns a `WriteStatus` symbol: `DRY_RUN`, `SKIPPED`, or `WRITTEN`.
+Returns an object with a `status` string (`WriteStatus.DRY_RUN`, `WriteStatus.SKIPPED`, or `WriteStatus.WRITTEN`), the output `file`, and (when written) `bytes`.
 
 ### `addDependency(file, themeData)`
 

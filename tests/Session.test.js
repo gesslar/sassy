@@ -5,7 +5,7 @@ import {describe, it, mock} from "node:test"
 import {DirectoryObject, FileObject, Cache, Sass} from "@gesslar/toolkit"
 import BuildCommand from "../src/BuildCommand.js"
 import Session from "../src/Session.js"
-import Theme from "../src/Theme.js"
+import Theme, {WriteStatus} from "../src/Theme.js"
 import path from "node:path"
 import {fileURLToPath} from "node:url"
 import {TestUtils} from "./helpers/test-utils.js"
@@ -20,7 +20,7 @@ describe("Session", () => {
       const packageJson = {}
       const command = new BuildCommand({cwd, packageJson})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const options = {watch: false}
       const session = new Session(command, theme, options)
 
@@ -33,7 +33,7 @@ describe("Session", () => {
       const packageJson = {}
       const command = new BuildCommand({cwd, packageJson})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.getCommand(), command)
@@ -44,7 +44,7 @@ describe("Session", () => {
       const packageJson = {}
       const command = new BuildCommand({cwd, packageJson})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const options = {watch: true, dryRun: false}
       const session = new Session(command, theme, options)
 
@@ -57,7 +57,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.isBuilding(), false)
@@ -67,7 +67,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.isWatching(), false)
@@ -77,7 +77,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {watch: true})
 
       assert.equal(session.isWatching(), true)
@@ -87,7 +87,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.equal(session.hasWatcher(), false)
@@ -97,7 +97,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {})
 
       assert.deepEqual(session.getHistory(), [])
@@ -107,7 +107,7 @@ describe("Session", () => {
       const cwd = new DirectoryObject(__dirname)
       const command = new BuildCommand({cwd, packageJson: {}})
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       const session = new Session(command, theme, {})
       const stats = session.getStats()
 
@@ -124,7 +124,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -132,7 +132,7 @@ describe("Session", () => {
       // Mock write to avoid file I/O
       const originalWrite = theme.write.bind(theme)
       theme.write = async function() {
-        return {status: {description: "skipped"}, file: themeFile, bytes: 0}
+        return {status: WriteStatus.SKIPPED, file: themeFile, bytes: 0}
       }
 
       try {
@@ -158,7 +158,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -166,7 +166,7 @@ describe("Session", () => {
       // Mock write to avoid file I/O
       const originalWrite = theme.write.bind(theme)
       theme.write = async function() {
-        return {status: {description: "skipped"}, file: themeFile, bytes: 0}
+        return {status: WriteStatus.SKIPPED, file: themeFile, bytes: 0}
       }
 
       try {
@@ -194,7 +194,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -215,7 +215,7 @@ describe("Session", () => {
       // Mock write to avoid file I/O
       const originalWrite = theme.write.bind(theme)
       theme.write = async function() {
-        return {status: {description: "skipped"}, file: themeFile, bytes: 0}
+        return {status: WriteStatus.SKIPPED, file: themeFile, bytes: 0}
       }
 
       try {
@@ -243,7 +243,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -263,7 +263,7 @@ describe("Session", () => {
       // Mock theme.write to avoid file operations
       const originalWrite = theme.write.bind(theme)
       theme.write = async function() {
-        return {status: {description: "skipped"}, file: cwd.getFile("test.json"), bytes: 0}
+        return {status: WriteStatus.SKIPPED, file: cwd.getFile("test.json"), bytes: 0}
       }
 
       // Mock theme.getSourceFile to return a file
@@ -303,7 +303,7 @@ describe("Session", () => {
       command.setCache(new Cache())
 
       const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
-      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).withOptions({outputDir: "."})
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
       theme.setCache(command.getCache())
 
       const session = new Session(command, theme, {})
@@ -330,7 +330,7 @@ describe("Session", () => {
       // Mock write to avoid file I/O
       const originalWrite = theme.write.bind(theme)
       theme.write = async function() {
-        return {status: {description: "skipped"}, file: themeFile, bytes: 0}
+        return {status: WriteStatus.SKIPPED, file: themeFile, bytes: 0}
       }
 
       try {
