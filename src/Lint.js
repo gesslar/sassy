@@ -624,7 +624,7 @@ export default class Lint {
               filename, yamlSource
             )
           } else {
-            const location = yamlSource?.formatLocation(`vars.${indexedName}`) ?? null
+            const location = yamlSource?.formatLocation(`vars.${varName}.${index}`) ?? null
 
             definedVars.set(indexedName, {filename, location})
           }

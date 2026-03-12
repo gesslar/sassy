@@ -333,6 +333,40 @@ describe("LintCommand", () => {
       }
     })
 
+    it("unused array element locations point to the correct line", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const packageJson = {}
+      const command = new LintCommand({cwd, packageJson})
+      command.setCache(new Cache())
+      const themeFile = cwd.getFile("./fixtures/lint-unused-var.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
+      theme.setCache(command.getCache())
+
+      await theme.load()
+      await theme.build()
+
+      const results = await new Lint().run(theme)
+      const unused = results.variables
+        .filter(i => i.type === Lint.ISSUE_TYPES.UNUSED_VARIABLE)
+
+      // levels is a 3-element array at lines 12-14 in lint-unused-var.yaml
+      const level1 = unused.find(i => i.variable === "$levels.1")
+      const level2 = unused.find(i => i.variable === "$levels.2")
+      const level3 = unused.find(i => i.variable === "$levels.3")
+
+      assert.ok(level1?.location, "$levels.1 should have a location")
+      assert.ok(level2?.location, "$levels.2 should have a location")
+      assert.ok(level3?.location, "$levels.3 should have a location")
+
+      // Each element should point to a distinct line
+      const line = loc => loc.match(/:(\d+):/)?.[1]
+      const lines = [level1, level2, level3].map(i => line(i.location))
+
+      assert.equal(lines.length, 3, "should have 3 distinct locations")
+      assert.ok(lines.every(Boolean), "all locations should have line numbers")
+      assert.equal(new Set(lines).size, 3, "each array element should be on a different line")
+    })
+
     it("duplicate scope issues have locations on each occurrence", async() => {
       const cwd = new DirectoryObject(__dirname)
       const packageJson = {}
