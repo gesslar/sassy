@@ -565,6 +565,7 @@ export default class Theme {
    * @throws {Sass} If source file lacks required 'config' property
    */
   async load() {
+    this.#proof = null
     const source = await this.#sourceFile.loadData()
 
     if(!source?.[PropertyKey.CONFIG]) {

@@ -28,7 +28,7 @@ describe("YamlSource.fromFile()", () => {
 
     assert.equal(
       source.filePath,
-      "fixtures/simple-theme.yaml"
+      path.join("fixtures", "simple-theme.yaml")
     )
   })
 
