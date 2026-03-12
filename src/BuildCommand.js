@@ -89,7 +89,7 @@ export default class BuildCommand extends Command {
         const theme = new Theme()
           .setCwd(cwd)
           .setThemeFile(fileObject)
-          .withOptions(options)
+          .setOptions(options)
           .setCache(cache)
 
         return new Session(this, theme, options)

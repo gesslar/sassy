@@ -1,11 +1,41 @@
 /**
+ * @typedef {object} RuntimeConfigurationOptions
+ * @property {string} [outputDir="."] - The directory to output this theme's result.
+ * @property {boolean} [dryRun=false] - Whether this is a dry-run (output to stdout)
+ */
+export const WriteStatus: Readonly<{
+    DRY_RUN: "dry-run";
+    SKIPPED: "skipped";
+    WRITTEN: "written";
+}>;
+/**
  * Theme class: manages the lifecycle of a theme compilation unit.
  * See file-level docstring for responsibilities.
  */
 export default class Theme {
-    setThemeFile(file: any): this;
-    setCwd(cwd: any): this;
-    withOptions(options: any): this;
+    /**
+     * Sets the theme source file and derives the theme name from it.
+     * Recomputes the output path after updating.
+     *
+     * @param {FileObject} file - The theme source file
+     * @returns {Theme} Returns this instance for method chaining
+     */
+    setThemeFile(file: FileObject): Theme;
+    /**
+     * Sets the current working directory for relative path resolution.
+     * Recomputes the output path after updating.
+     *
+     * @param {DirectoryObject} cwd - The current working directory
+     * @returns {Theme} Returns this instance for method chaining
+     */
+    setCwd(cwd: DirectoryObject): Theme;
+    /**
+     * Attach options to the theme processing... err process.
+     *
+     * @param {RuntimeConfigurationOptions} options - Options for processing this theme
+     * @returns {Theme} This instance, for chaining
+     */
+    setOptions(options?: RuntimeConfigurationOptions): Theme;
     /**
      * Looks up a source location for a dotted key path across all dependencies.
      * Returns the first match found (main theme file checked last since
@@ -13,7 +43,7 @@ export default class Theme {
      *
      * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
      * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
-     * @returns {string|null} Formatted "file:line:col" string or null
+     * @returns {string?} Formatted "file:line:col" string or null
      */
     findSourceLocation(dottedPath: string, target?: "key" | "value"): string | null;
     /**
@@ -22,17 +52,34 @@ export default class Theme {
      */
     reset(): void;
     /**
+     * Sets the compiled theme output object and updates derived JSON and hash.
+     *
+     * @param {object} data - The compiled theme output object
+     * @returns {this} Returns this instance for method chaining
+     */
+    setOutput(data: object): this;
+    /**
+     * Sets the cache instance, used for propagation to imported files. If a
+     * cache is already set, it does not overwrite it.
+     *
+     * Maybe that's not a great idea. Do I even have a removeCache option?
+     *
+     * @param {Cache} cache - The cache instance
+     * @returns {Theme} Returns this instance for method chaining
+     */
+    setCache(cache: Cache): Theme;
+    /**
      * Gets the current working directory.
      *
-     * @returns {DirectoryObject} The current working directory
+     * @returns {DirectoryObject?} The current working directory
      */
-    getCwd(): DirectoryObject;
+    getCwd(): DirectoryObject | null;
     /**
      * Gets the compilation options.
      *
-     * @returns {object} The compilation options object
+     * @returns {RuntimeConfigurationOptions?} The compilation options object
      */
-    getOptions(): object;
+    getOptions(): RuntimeConfigurationOptions | null;
     /**
      * Gets a specific compilation option.
      *
@@ -41,57 +88,43 @@ export default class Theme {
      */
     getOption(option: string): unknown;
     /**
-     * Sets the cache instance, used for propagation to imported files.
-     *
-     * @param {Cache} cache - The cache instance
-     * @returns {this} Returns this instance for method chaining
-     */
-    setCache(cache: Cache): this;
-    /**
      * Gets the theme name.
      *
-     * @returns {string} The theme name derived from the source file
+     * @returns {string?} The theme name derived from the source file
      */
-    getName(): string;
+    getName(): string | null;
     /**
      * Gets the output file name for the compiled theme.
      *
-     * @returns {string} The output file name with extension
+     * @returns {string?} The output file name with extension
      */
-    getOutputFileName(): string;
+    getOutputFileName(): string | null;
     /**
      * Gets the output file object.
      *
-     * @returns {FileObject|null} The output file object
+     * @returns {FileObject?} The output file object
      */
     getOutputFile(): FileObject | null;
     /**
      * Gets the source file object.
      *
-     * @returns {FileObject} The source theme file
+     * @returns {FileObject?} The source theme file
      */
-    getSourceFile(): FileObject;
+    getSourceFile(): FileObject | null;
     /**
      * Gets the YAML source built from the main theme file during load().
      * Used by Compiler to add the main file as the last dependency after
      * all imports have been registered.
      *
-     * @returns {import("./YamlSource.js").default|null} The YAML source or null
+     * @returns {YamlSource?} The YAML source or null
      */
-    getMainYamlSource(): import("./YamlSource.js").default | null;
-    /**
-     * Sets the compiled theme output object and updates derived JSON and hash.
-     *
-     * @param {object} data - The compiled theme output object
-     * @returns {this} Returns this instance for method chaining
-     */
-    setOutput(data: object): this;
+    getMainYamlSource(): YamlSource | null;
     /**
      * Gets the compiled theme output object.
      *
-     * @returns {object|null} The compiled theme output
+     * @returns {unknown?} The compiled theme output
      */
-    getOutput(): object | null;
+    getOutput(): unknown | null;
     /**
      * Checks if the source has colors defined.
      *
@@ -131,21 +164,21 @@ export default class Theme {
     /**
      * Gets the source colors data.
      *
-     * @returns {object|null} The colors object or null if not defined
+     * @returns {unknown?} The colors object or null if not defined
      */
-    getSourceColors(): object | null;
+    getSourceColors(): unknown | null;
     /**
      * Gets the source token colors data.
      *
-     * @returns {Array|null} The token colors array or null if not defined
+     * @returns {Array<unknown>?} The token colors array or null if not defined
      */
-    getSourceTokenColors(): any[] | null;
+    getSourceTokenColors(): Array<unknown> | null;
     /**
      * Gets the source semantic token colors data.
      *
-     * @returns {object|null} The semantic token colors object or null if not defined
+     * @returns {unknown?} The semantic token colors object or null if not defined
      */
-    getSourceSemanticTokenColors(): object | null;
+    getSourceSemanticTokenColors(): unknown | null;
     /**
      * Gets the set of file dependencies.
      *
@@ -156,10 +189,10 @@ export default class Theme {
      * Adds a dependency to the theme with its source data.
      *
      * @param {FileObject} file - The dependency file object
-     * @param {object} source - The parsed source data from the file
+     * @param {unknown} source - The parsed source data from the file
      * @returns {this} Returns this instance for method chaining
      */
-    addDependency(file: FileObject, source: object, yamlSource?: any): this;
+    addDependency(file: FileObject, source: unknown, yamlSource?: any): this;
     /**
      * Checks if the theme has any dependencies.
      *
@@ -169,27 +202,27 @@ export default class Theme {
     /**
      * Gets the parsed source data from the theme file.
      *
-     * @returns {object|null} The parsed source data
+     * @returns {unknown?} The parsed source data
      */
-    getSource(): object | null;
+    getSource(): unknown | null;
     /**
      * Gets the variable lookup data for theme compilation.
      *
-     * @returns {object|null} The lookup data object
+     * @returns {unknown?} The lookup data object
      */
-    getLookup(): object | null;
+    getLookup(): unknown | null;
     /**
      * Sets the variable lookup data for theme compilation.
      *
-     * @param {object} data - The lookup data object
+     * @param {unknown} data - The lookup data object
      * @returns {this} Returns this instance for method chaining
      */
-    setLookup(data: object): this;
+    setLookup(data: unknown): this;
     /**
      * Gets the pool data for variable resolution tracking or null if one has
      * not been set.
      *
-     * @returns {ThemePool|null} The pool for this theme.
+     * @returns {ThemePool?} The pool for this theme.
      */
     getPool(): ThemePool | null;
     /**
@@ -256,8 +289,8 @@ export default class Theme {
      */
     canWrite(): boolean;
     /**
-     * Checks if the theme is in a valid state for operation.
-     * Basic validation that core properties are set.
+     * Checks if the theme is in a valid state for operation. Basic validation
+     * that core properties are set.
      *
      * @returns {boolean} True if theme state is valid
      */
@@ -282,10 +315,10 @@ export default class Theme {
      * Writes the compiled theme output to a file or stdout.
      * Handles dry-run mode, output directory creation, and duplicate write prevention.
      *
-     * @param {boolean} [force] - Force a write. Used by the rebuild CLI option.
-     * @returns {Promise<void>} Resolves when write operation is complete
+     * @param {boolean} [force=false] - Force a write. Used by the rebuild CLI option.
+     * @returns {Promise<undefined>} Resolves when write operation is complete
      */
-    write(force?: boolean): Promise<void>;
+    write(force?: boolean): Promise<undefined>;
     #private;
 }
 /**
@@ -303,35 +336,35 @@ export class Dependency {
     /**
      * Get the file object for this depenency.
      *
-     * @returns {FileObject} The file object of this dependency.
+     * @returns {FileObject?} The file object of this dependency.
      */
-    getSourceFile(): FileObject;
+    getSourceFile(): FileObject | null;
     /**
      * Sets the source object for this dependency.
      *
-     * @param {object} source - The parsed JSON from the file after loading.
+     * @param {unknown} source - The parsed JSON from the file after loading.
      * @returns {this} This.
      */
-    setSource(source: object): this;
+    setSource(source: unknown): this;
     /**
      * Gets the parsed source data for this dependency.
      *
-     * @returns {object|null} The parsed source data
+     * @returns {object?} The parsed source data
      */
     getSource(): object | null;
     /**
      * Sets the YAML AST source for location tracking.
      *
-     * @param {import("./YamlSource.js").default} yamlSource - The parsed YAML source
+     * @param {YamlSource} yamlSource - The parsed YAML source
      * @returns {this} This.
      */
-    setYamlSource(yamlSource: import("./YamlSource.js").default): this;
+    setYamlSource(yamlSource: YamlSource): this;
     /**
      * Gets the YAML AST source for location tracking.
      *
-     * @returns {import("./YamlSource.js").default|null} The YAML source or null
+     * @returns {YamlSource?} The YAML source or null
      */
-    getYamlSource(): import("./YamlSource.js").default | null;
+    getYamlSource(): YamlSource | null;
     /**
      * Checks if the dependency has a YAML source.
      *
@@ -355,11 +388,22 @@ export class Dependency {
      *
      * @returns {boolean} True if both file and source are set
      */
-    isComplete(): boolean;
+    isReady(): boolean;
     #private;
 }
+export type RuntimeConfigurationOptions = {
+    /**
+     * - The directory to output this theme's result.
+     */
+    outputDir?: string;
+    /**
+     * - Whether this is a dry-run (output to stdout)
+     */
+    dryRun?: boolean;
+};
+import type { FileObject } from "@gesslar/toolkit";
 import { DirectoryObject } from "@gesslar/toolkit";
 import type { Cache } from "@gesslar/toolkit";
-import type { FileObject } from "@gesslar/toolkit";
+import YamlSource from "./YamlSource.js";
 import ThemePool from "./ThemePool.js";
 //# sourceMappingURL=Theme.d.ts.map

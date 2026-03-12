@@ -810,7 +810,7 @@ export default class LintCommand extends Command {
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(fileObject)
-      .withOptions(options)
+      .setOptions(options)
       .setCache(cache)
     await theme.load()
     await theme.build()

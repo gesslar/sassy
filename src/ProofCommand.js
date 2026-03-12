@@ -50,8 +50,9 @@ export class Proof {
       await theme.load()
 
     const compiler = new Compiler({cache: this.#cache})
+    const proof = await compiler.proof(theme, withImports)
 
-    return await compiler.proof(theme, withImports)
+    return proof
   }
 }
 
@@ -92,7 +93,7 @@ export default class ProofCommand extends Command {
     const theme = new Theme()
       .setCwd(cwd)
       .setThemeFile(fileObject)
-      .withOptions(options)
+      .setOptions(options)
       .setCache(cache)
     await theme.load()
 
