@@ -24,7 +24,7 @@
  */
 
 // Core theme functionality
-export {default as Theme} from "./Theme.js"
+export {default as Theme, WriteStatus} from "./Theme.js"
 
 // Engine classes — CLI-free analysis and introspection
 export {default as Lint} from "./Lint.js"

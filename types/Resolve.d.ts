@@ -1,16 +1,30 @@
 /**
+ * @file Resolve.js
+ *
+ * Engine class for theme token resolution and introspection.
+ * Returns structured data about variable dependencies and resolution trails.
+ * No CLI awareness — takes a compiled Theme and returns data.
+ */
+/**
+ * @import {Theme} from "./Theme.js"
+ */
+/**
  * Engine class for resolving theme tokens and variables.
  * Returns structured resolution data with trails.
  * No CLI awareness — takes a compiled Theme and returns data.
  */
 export default class Resolve {
+    /** @type {RegExp} Matches a function call at the outer level */
+    static "__#private@#funcCall": RegExp;
+    /** @type {RegExp} Matches a variable reference */
+    static "__#private@#varRef": RegExp;
     /**
-     * Classify a raw value string as "expression" (function call) or "variable".
+     * Classify a raw value string by its outermost form.
      *
      * @param {string} value - Raw token value
-     * @returns {"expression"|"variable"} The classification
+     * @returns {"expression"|"variable"|"literal"} The classification
      */
-    static "__#private@#classifyValue"(value: string): "expression" | "variable";
+    static "__#private@#classifyValue"(value: string): "expression" | "variable" | "literal";
     /**
      * Resolves a colour token to its final value with trail.
      *

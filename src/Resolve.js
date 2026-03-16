@@ -10,22 +10,32 @@
  * @import {Theme} from "./Theme.js"
  */
 
-import Evaluator from "./Evaluator.js"
-
 /**
  * Engine class for resolving theme tokens and variables.
  * Returns structured resolution data with trails.
  * No CLI awareness — takes a compiled Theme and returns data.
  */
 export default class Resolve {
+  /** @type {RegExp} Matches a function call at the outer level */
+  static #funcCall = /^\w+\(.*\)$/
+
+  /** @type {RegExp} Matches a variable reference */
+  static #varRef = /^\$/
+
   /**
-   * Classify a raw value string as "expression" (function call) or "variable".
+   * Classify a raw value string by its outermost form.
    *
    * @param {string} value - Raw token value
-   * @returns {"expression"|"variable"} The classification
+   * @returns {"expression"|"variable"|"literal"} The classification
    */
   static #classifyValue(value) {
-    return Evaluator.func.test(value) ? "expression" : "variable"
+    if(Resolve.#funcCall.test(value))
+      return "expression"
+
+    if(Resolve.#varRef.test(value))
+      return "variable"
+
+    return "literal"
   }
 
   /**
@@ -418,7 +428,7 @@ export default class Resolve {
         if(depRaw !== depFinal && !steps.some(s => s.value === depFinal)) {
           steps.push({
             value: depFinal,
-            type: "result",
+            type: "resolved",
             level: level + 1
           })
         }
@@ -430,7 +440,7 @@ export default class Resolve {
       if(funcResult && !steps.some(s => s.value === funcResult)) {
         steps.push({
           value: funcResult,
-          type: "result",
+          type: "resolved",
           level: funcLevel
         })
       }
@@ -440,7 +450,7 @@ export default class Resolve {
       if(rawValue !== finalValue && !steps.some(s => s.value === finalValue)) {
         steps.push({
           value: finalValue,
-          type: "result",
+          type: "resolved",
           level
         })
       }
