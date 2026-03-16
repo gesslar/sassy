@@ -10,12 +10,24 @@
  * @import {Theme} from "./Theme.js"
  */
 
+import Evaluator from "./Evaluator.js"
+
 /**
  * Engine class for resolving theme tokens and variables.
  * Returns structured resolution data with trails.
  * No CLI awareness — takes a compiled Theme and returns data.
  */
 export default class Resolve {
+  /**
+   * Classify a raw value string as "expression" (function call) or "variable".
+   *
+   * @param {string} value - Raw token value
+   * @returns {"expression"|"variable"} The classification
+   */
+  static #classifyValue(value) {
+    return Evaluator.func.test(value) ? "expression" : "variable"
+  }
+
   /**
    * Resolves a colour token to its final value with trail.
    *
@@ -341,7 +353,7 @@ export default class Resolve {
     if(rootRaw !== rootToken.getName()) {
       steps.push({
         value: rootRaw,
-        type: "expression",
+        type: Resolve.#classifyValue(rootRaw),
         level: 0
       })
     }
@@ -385,12 +397,12 @@ export default class Resolve {
         const depRaw = dependency.getRawValue()
         const depFinal = dependency.getValue()
 
-        // Add dependency's expression if it's a function call
+        // Add dependency's expression if it differs from its name
         if(depRaw !== dependency.getName() &&
            !steps.some(s => s.value === depRaw)) {
           steps.push({
             value: depRaw,
-            type: "expression",
+            type: Resolve.#classifyValue(depRaw),
             level: level + 1
           })
         }

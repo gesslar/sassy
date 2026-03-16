@@ -6,24 +6,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Simple (JSON5) (watch)",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "exec",
-        "--",
-        "build",
-        "--watch",
-        "--output-dir",
-        "./examples/output",
-        "./examples/simple/midnight-ocean-json5.json5"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
-    },
-    {
       "name": "Simple (YAML)",
       "type": "node",
       "request": "launch",
