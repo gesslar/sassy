@@ -280,6 +280,13 @@ export default class Theme {
      * @returns {Promise<undefined>} Resolves when write operation is complete
      */
     write(force?: boolean): Promise<undefined>;
+    /**
+     * Checks whether the compiled output differs from the existing file on disk.
+     * Compares the sha256 hash of the current output against the file contents.
+     *
+     * @returns {Promise<boolean>} True when the output would produce a new write
+     */
+    wouldWrite(): Promise<boolean>;
     #private;
 }
 /**

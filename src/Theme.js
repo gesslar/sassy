@@ -643,6 +643,13 @@ export default class Theme {
    */
   async wouldWrite() {
     const file = this.#outputFile
+
+    if(!file)
+      throw Sass.new(`No output file configured.`)
+
+    if(!this.canWrite())
+      throw Sass.new(`No compiled output available. Call build() first.`)
+
     const nextHash = this.#outputHash
     const lastHash = await file.exists
       ? Util.hashOf(await file.read())
