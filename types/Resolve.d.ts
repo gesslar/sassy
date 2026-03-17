@@ -26,6 +26,15 @@ export default class Resolve {
      */
     static "__#private@#classifyValue"(value: string): "expression" | "variable" | "literal";
     /**
+     * Classify a computed/intermediate result value.
+     * Like #classifyValue but returns "resolved" instead of "literal"
+     * for values that were derived (e.g. hex outputs from expressions).
+     *
+     * @param {string} value - Computed value
+     * @returns {"expression"|"variable"|"resolved"} The classification
+     */
+    static "__#private@#classifyResult"(value: string): "expression" | "variable" | "resolved";
+    /**
      * Resolves a colour token to its final value with trail.
      *
      * Automatically loads and builds the theme if not already compiled.

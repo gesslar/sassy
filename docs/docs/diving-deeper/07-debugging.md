@@ -123,11 +123,16 @@ Works identically to `--tokenColor`, but looks in the `semanticTokenColors` sect
 
 ## Reading the Output
 
-The tree structure shows the dependency chain:
+The tree structure shows the dependency chain. Each line is labelled by type:
 
-- **Top level** -- the expression as written in your source
-- **Indented lines** -- variables being resolved, each level deeper
-- **Resolved values** -- hex values at that point in the chain, shown with a colour swatch (`■`) in supported terminals or an arrow (`→`) otherwise
+| Label | Meaning | Example |
+|-------|---------|---------|
+| **variable** | A reference to another token | `$(std.fg)`, `$(palette.white)` |
+| **expression** | A colour function call | `lighten($(primary), 20)`, `oklch(0.14 0 0)` |
+| **literal** | A hex value authored directly in the source | `#4b8ebd` |
+| **resolved** | A hex value computed from a non-hex expression | `#72b5e6` |
+
+Indentation shows depth in the dependency chain. Resolved hex values are shown with a colour swatch (`■`) in supported terminals or an arrow (`→`) otherwise.
 
 When something looks wrong, the tree tells you exactly where the unexpected value entered the chain.
 
