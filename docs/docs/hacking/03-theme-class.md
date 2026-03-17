@@ -54,6 +54,14 @@ Guards against missing output configuration (no cwd or outputDir).
 
 Returns an object with a `status` string (`WriteStatus.DRY_RUN`, `WriteStatus.SKIPPED`, or `WriteStatus.WRITTEN`), the output `file`, and (when written) `bytes`.
 
+### `wouldWrite()`
+
+Compares the sha256 hash of the current compiled output against the contents of
+the existing output file on disk. Returns `true` when the file does not exist or
+differs from the current output, `false` when they match. Used internally by
+`write()` to skip redundant writes, and available publicly for callers that need
+to check without triggering a write.
+
 ### `addDependency(file, themeData)`
 
 Registers an imported file as a dependency. Used by the compiler during import
