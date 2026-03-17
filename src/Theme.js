@@ -623,15 +623,8 @@ export default class Theme {
     }
 
     // Skip identical bytes
-    if(!force) {
-      const nextHash = this.#outputHash
-      const lastHash = await file.exists
-        ? Util.hashOf(await file.read())
-        : obviouslyASentinelYouCantMissSoShutUpAboutIt
-
-      if(lastHash === nextHash)
-        return {status: WriteStatus.SKIPPED, file}
-    }
+    if(!force && !await this.wouldWrite())
+      return {status: WriteStatus.SKIPPED, file}
 
     // Real write (timed)
     if(this.#outputDir && !await this.#outputDir.exists)
@@ -640,6 +633,22 @@ export default class Theme {
     await file.write(output)
 
     return {status: WriteStatus.WRITTEN, bytes: output.length, file}
+  }
+
+  /**
+   * Checks whether the compiled output differs from the existing file on disk.
+   * Compares the sha256 hash of the current output against the file contents.
+   *
+   * @returns {Promise<boolean>} True when the output would produce a new write
+   */
+  async wouldWrite() {
+    const file = this.#outputFile
+    const nextHash = this.#outputHash
+    const lastHash = await file.exists
+      ? Util.hashOf(await file.read())
+      : obviouslyASentinelYouCantMissSoShutUpAboutIt
+
+    return lastHash !== nextHash
   }
 }
 

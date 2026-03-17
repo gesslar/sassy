@@ -96,6 +96,7 @@ Theme uses a chainable builder. All setters return `this`.
 | `load()` | `Promise<this>` | Parse and validate the source file |
 | `build()` | `Promise<this>` | Run the full compilation pipeline |
 | `write(force?)` | `Promise<{status, file}>` | Write output to disk. Skips if hash unchanged unless `force` is true. |
+| `wouldWrite()` | `Promise<boolean>` | Check whether the compiled output differs from the existing file on disk. |
 | `reset()` | `void` | Clear compiled state for rebuild |
 | `getOutput()` | `object \| null` | Get the compiled theme object |
 | `getPool()` | `ThemePool \| null` | Get the variable resolution pool |

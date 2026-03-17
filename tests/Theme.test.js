@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict"
+import fs from "node:fs/promises"
 import {describe, it} from "node:test"
 import {FileObject, DirectoryObject, Cache} from "@gesslar/toolkit"
 import Theme, {WriteStatus} from "../src/Theme.js"
@@ -221,6 +222,64 @@ describe("Theme", () => {
       const result = await theme.write()
 
       assert.ok(result.status === WriteStatus.DRY_RUN)
+    })
+  })
+
+  describe("wouldWrite()", () => {
+    it("returns true when no output file exists yet", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {outputDir: "./fixtures/output"}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      // Remove output file if it exists so we test the "no file" path
+      const outputFile = theme.getOutputFile()
+      await fs.unlink(outputFile.path).catch(() => {})
+
+      const result = await theme.wouldWrite()
+      assert.strictEqual(result, true)
+    })
+
+    it("returns false when output file matches current output", async() => {
+      await TestUtils.createTestDir("output")
+      const cwd = new DirectoryObject(__dirname)
+      const options = {outputDir: "./fixtures/output"}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+      await theme.write(true) // force write to establish baseline
+
+      const result = await theme.wouldWrite()
+      assert.strictEqual(result, false)
+    })
+
+    it("returns true when output file differs from current output", async() => {
+      await TestUtils.createTestDir("output")
+      const cwd = new DirectoryObject(__dirname)
+      const options = {outputDir: "./fixtures/output"}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      // Write stale content to the output file
+      const outputFile = theme.getOutputFile()
+      await outputFile.write("{}")
+
+      const result = await theme.wouldWrite()
+      assert.strictEqual(result, true)
     })
   })
 
