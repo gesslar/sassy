@@ -16,12 +16,13 @@ const __dirname = path.dirname(__filename)
 /**
  * Creates a fresh, unprepared theme (not loaded, not compiled).
  *
+ * @param {string} fixture - Fixture filename (default: simple-theme.yaml)
  * @returns {Theme}
  */
-function freshTheme() {
+function freshTheme(fixture = "simple-theme.yaml") {
   const cwd = new DirectoryObject(__dirname)
   const cache = new Cache()
-  const file = cwd.getFile("./fixtures/simple-theme.yaml")
+  const file = cwd.getFile(`./fixtures/${fixture}`)
 
   return new Theme()
     .setCwd(cwd)
@@ -92,6 +93,138 @@ describe("Engine auto-prepare", () => {
         assert.equal(data.found, false)
         assert.equal(theme.isCompiled(), true)
       })
+  })
+
+  describe("Resolve trail classification", () => {
+    it("trail items have { value, type, depth } shape", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+
+      assert.equal(data.found, true)
+      assert.ok(data.trail.length > 0)
+
+      for(const step of data.trail) {
+        assert.ok("value" in step, "trail step missing value")
+        assert.ok("type" in step, "trail step missing type")
+        assert.ok("depth" in step, "trail step missing depth")
+      }
+    })
+
+    it("trail step types are valid classifications", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const validTypes = new Set(["variable", "expression", "literal", "resolved"])
+
+      for(const step of data.trail) {
+        assert.ok(
+          validTypes.has(step.type),
+          `unexpected trail type "${step.type}" for value "${step.value}"`
+        )
+      }
+    })
+
+    it("classifies variable references as 'variable'", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const varSteps = data.trail.filter(s => s.type === "variable")
+
+      assert.ok(varSteps.length > 0, "should have at least one variable step")
+
+      for(const step of varSteps) {
+        assert.ok(
+          step.value.startsWith("$"),
+          `variable step "${step.value}" should start with $`
+        )
+      }
+    })
+
+    it("classifies function calls as 'expression'", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const exprSteps = data.trail.filter(s => s.type === "expression")
+
+      assert.ok(exprSteps.length > 0, "should have at least one expression step")
+
+      for(const step of exprSteps) {
+        assert.match(
+          step.value, /\w+\(/,
+          `expression step "${step.value}" should be a function call`
+        )
+      }
+    })
+
+    it("classifies computed hex values as 'resolved'", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const resolvedSteps = data.trail.filter(s => s.type === "resolved")
+
+      assert.ok(resolvedSteps.length > 0, "should have at least one resolved step")
+
+      for(const step of resolvedSteps) {
+        assert.match(
+          step.value, /^#[0-9a-fA-F]+$/,
+          `resolved step "${step.value}" should be a hex colour`
+        )
+      }
+    })
+
+    it("classifies authored hex values as 'literal'", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const literalSteps = data.trail.filter(s => s.type === "literal")
+
+      assert.ok(literalSteps.length > 0, "should have at least one literal step")
+
+      for(const step of literalSteps) {
+        assert.match(
+          step.value, /^#[0-9a-fA-F]+$/,
+          `literal step "${step.value}" should be a hex colour`
+        )
+      }
+    })
+
+    it("does not classify expressions or variables as 'resolved'", async() => {
+      const theme = freshTheme("function-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const resolvedSteps = data.trail.filter(s => s.type === "resolved")
+
+      for(const step of resolvedSteps) {
+        assert.ok(
+          !step.value.startsWith("$"),
+          `resolved step "${step.value}" should not be a variable`
+        )
+        assert.doesNotMatch(
+          step.value, /^\w+\(/,
+          `resolved step "${step.value}" should not be a function call`
+        )
+      }
+    })
+
+    it("simple variable-to-hex trail has no resolved steps", async() => {
+      const theme = freshTheme("simple-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+      const resolvedSteps = data.trail.filter(s => s.type === "resolved")
+
+      // $(background) -> #1a1a1a is a direct reference to an authored hex
+      // so there should be no "resolved" steps — only variable + literal
+      assert.equal(
+        resolvedSteps.length, 0,
+        "direct hex reference should not produce resolved steps"
+      )
+
+      const types = data.trail.map(s => s.type)
+
+      assert.ok(types.includes("variable"), "should have a variable step")
+      assert.ok(types.includes("literal"), "should have a literal step")
+    })
   })
 
   describe("Proof", () => {

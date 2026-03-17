@@ -134,23 +134,96 @@ The `Lint` class analyses a compiled theme and returns structured issue data. No
 
     // No manual load()/build() needed — the engine handles it
     const results = await new Lint().run(theme)
-    // results.tokenColors          - array of tokenColors issues
-    // results.semanticTokenColors  - array of semanticTokenColors issues
-    // results.colors               - array of colors issues
-    // results.variables            - array of variable issues
-    //
-    // Each issue object includes a location property (string):
-    // "path/to/file.yaml:42:5"
 
 `}</CodeBlock>
 
-Constants for issue types, severity levels, and section names are static properties on `Lint`:
+### Return Value
+
+`Lint.run()` returns an object with four arrays, one per section:
+
+| Key | Contents |
+|-----|----------|
+| `tokenColors` | Issues from tokenColors rules |
+| `semanticTokenColors` | Issues from semanticTokenColors rules |
+| `colors` | Issues from colours rules |
+| `variables` | Unused variable issues |
+
+### Issue Shape
+
+Every issue object has these common fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `string` | Issue type identifier (e.g. `"duplicate-scope"`, `"invalid-selector"`) |
+| `severity` | `string` | One of `"high"`, `"medium"`, or `"low"` |
+| `message` | `string` | Human-readable description of the problem |
+| `location` | `string \| undefined` | Source location as `file:line:col` (present when YAML source tracking is available) |
+
+Beyond these, each issue type adds fields specific to the problem it describes. For example, `duplicate-scope` includes an `occurrences` array, `precedence-issue` includes `specificScope` and `broadScope`, and `unused-variable` includes the `variable` name. The `type` field is the discriminator — use it to determine which additional fields are present.
+
+### Issue Types
+
+**Core rules** (from `Lint.ISSUE_TYPES`):
+
+| Type | Severity | Section | Description |
+|------|----------|---------|-------------|
+| `duplicate-scope` | medium | tokenColors | Same scope in multiple entries |
+| `undefined-variable` | high | any | Reference to a variable that does not exist |
+| `unused-variable` | low | variables | Defined variable never referenced |
+| `precedence-issue` | high/low | tokenColors | Broad scope masks a more specific scope |
+
+**tokenColors value/structure rules:**
+
+| Type | Severity | Description |
+|------|----------|-------------|
+| `tc-missing-settings` | high | Entry has no `settings` object |
+| `tc-empty-settings` | low | Settings object is empty |
+| `tc-invalid-hex-colour` | high | Foreground/background is not a valid hex colour |
+| `tc-invalid-fontstyle` | medium | Unknown fontStyle keyword |
+| `tc-invalid-value` | high | Property value has wrong type |
+| `tc-deprecated-background` | medium | `background` property has limited support |
+| `tc-unknown-settings-property` | low | Unrecognised property in settings |
+| `tc-multiple-global-defaults` | medium | Multiple scopeless entries (only last applies) |
+
+**semanticTokenColors rules:**
+
+| Type | Severity | Description |
+|------|----------|-------------|
+| `invalid-selector` | high | Selector doesn't match VS Code's pattern |
+| `unrecognised-token-type` | low | Token type not in the standard set |
+| `unrecognised-modifier` | low | Modifier not in the standard set |
+| `deprecated-token-type` | medium | Token type has a recommended replacement |
+| `duplicate-selector` | medium | Equivalent selector already defined |
+| `invalid-hex-colour` | high | Colour value is not valid hex |
+| `invalid-fontstyle` | medium | Unknown fontStyle keyword |
+| `invalid-value` | high | Value has wrong type |
+| `fontstyle-conflict` | medium | `fontStyle` and boolean style properties both set |
+| `deprecated-property` | medium | Property is deprecated and non-functional |
+| `empty-rule` | low | Style object is empty |
+| `missing-semantic-highlighting` | high | Rules defined but `semanticHighlighting` not enabled |
+| `shadowed-rule` | low | More specific selector fully shadows this one |
+
+See [Lint Rules](./07-lint-rules.md) for detailed explanations and fix suggestions for each rule.
+
+### Constants
+
+Issue types, severity levels, and section names are available as static properties:
 
 <CodeBlock lang="javascript">{`
 
     Lint.SECTIONS.TOKEN_COLORS        // "tokenColors"
+    Lint.SECTIONS.SEMANTIC_TOKEN_COLORS // "semanticTokenColors"
+    Lint.SECTIONS.COLORS              // "colors"
+    Lint.SECTIONS.VARS                // "vars"
+
     Lint.SEVERITY.HIGH                // "high"
+    Lint.SEVERITY.MEDIUM              // "medium"
+    Lint.SEVERITY.LOW                 // "low"
+
     Lint.ISSUE_TYPES.DUPLICATE_SCOPE  // "duplicate-scope"
+    Lint.ISSUE_TYPES.UNDEFINED_VARIABLE // "undefined-variable"
+    Lint.ISSUE_TYPES.UNUSED_VARIABLE  // "unused-variable"
+    Lint.ISSUE_TYPES.PRECEDENCE_ISSUE // "precedence-issue"
 
 `}</CodeBlock>
 
@@ -259,3 +332,24 @@ The method returns an object whose shape depends on the resolution type and outc
 | `noForeground` | `boolean` | `true` when the matched entry has no foreground property |
 | `static` | `boolean` | `true` when the value is a static literal (no variable resolution) |
 | `trail` | `array` | Resolution steps, each with `value`, `type`, and `depth` |
+
+### Trail Steps
+
+Both return shapes include a `trail` array. Each element is an object with three fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `value` | `string` | The token value at this point in the chain |
+| `type` | `string` | Classification of the value (see below) |
+| `depth` | `number` | Nesting level in the dependency tree (0 = top) |
+
+#### Step Types
+
+| Type | Meaning | Example |
+|------|---------|---------|
+| `variable` | A variable reference | `$(std.fg)`, `$(palette.white)` |
+| `expression` | A colour function call | `lighten($(primary), 20)`, `oklch(0.14 0 0)` |
+| `literal` | A hex value that was authored directly in the source | `#4b8ebd` |
+| `resolved` | A hex value that was computed from a non-hex expression | `#72b5e6` |
+
+The distinction between `literal` and `resolved` tells you whether a hex value was written by hand or derived through evaluation. Both are hex strings, but `literal` means the source file contained that exact hex value, while `resolved` means it was the output of a function or variable chain.

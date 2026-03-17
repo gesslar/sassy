@@ -39,6 +39,20 @@ export default class Resolve {
   }
 
   /**
+   * Classify a computed/intermediate result value.
+   * Like #classifyValue but returns "resolved" instead of "literal"
+   * for values that were derived (e.g. hex outputs from expressions).
+   *
+   * @param {string} value - Computed value
+   * @returns {"expression"|"variable"|"resolved"} The classification
+   */
+  static #classifyResult(value) {
+    const base = Resolve.#classifyValue(value)
+
+    return base === "literal" ? "resolved" : base
+  }
+
+  /**
    * Resolves a colour token to its final value with trail.
    *
    * Automatically loads and builds the theme if not already compiled.
@@ -397,7 +411,7 @@ export default class Resolve {
       if(!steps.some(s => s.value === rawValue)) {
         steps.push({
           value: rawValue,
-          type: kind === "function" ? "function" : "variable",
+          type: kind === "function" ? "expression" : "variable",
           level: funcLevel
         })
       }
@@ -428,7 +442,7 @@ export default class Resolve {
         if(depRaw !== depFinal && !steps.some(s => s.value === depFinal)) {
           steps.push({
             value: depFinal,
-            type: "resolved",
+            type: Resolve.#classifyResult(depFinal),
             level: level + 1
           })
         }
@@ -440,7 +454,7 @@ export default class Resolve {
       if(funcResult && !steps.some(s => s.value === funcResult)) {
         steps.push({
           value: funcResult,
-          type: "resolved",
+          type: Resolve.#classifyResult(funcResult),
           level: funcLevel
         })
       }
@@ -450,7 +464,7 @@ export default class Resolve {
       if(rawValue !== finalValue && !steps.some(s => s.value === finalValue)) {
         steps.push({
           value: finalValue,
-          type: "resolved",
+          type: Resolve.#classifyResult(finalValue),
           level
         })
       }
