@@ -411,7 +411,7 @@ export default class Resolve {
       if(!steps.some(s => s.value === rawValue)) {
         steps.push({
           value: rawValue,
-          type: kind === "function" ? "expression" : "variable",
+          type: Resolve.#classifyValue(rawValue),
           level: funcLevel
         })
       }
@@ -438,11 +438,15 @@ export default class Resolve {
           depTrail.forEach(depToken => processToken(depToken, level + 1))
         }
 
-        // Add resolved color if different
+        // Add resolved color if different — hex normalisation (e.g.
+        // #f00 → #ff0000) is surfaced as "normalised" so the CLI trail
+        // shows both the authored shorthand and the expanded form.
         if(depRaw !== depFinal && !steps.some(s => s.value === depFinal)) {
+          const depKind = dependency.getKind()
+
           steps.push({
             value: depFinal,
-            type: Resolve.#classifyResult(depFinal),
+            type: depKind === "hex" ? "normalised" : Resolve.#classifyResult(depFinal),
             level: level + 1
           })
         }
@@ -460,11 +464,13 @@ export default class Resolve {
       }
 
       // Add final result for this token; always at the outer (caller's) level
-      // so the expression with the inner resolved returns to the same depth
+      // so the expression with the inner resolved returns to the same depth.
+      // Hex normalisation (e.g. #f00 → #ff0000) is surfaced as "normalised"
+      // so the trail connects authored shorthand to the expanded form.
       if(rawValue !== finalValue && !steps.some(s => s.value === finalValue)) {
         steps.push({
           value: finalValue,
-          type: Resolve.#classifyResult(finalValue),
+          type: kind === "hex" ? "normalised" : Resolve.#classifyResult(finalValue),
           level
         })
       }
