@@ -115,7 +115,7 @@ describe("Engine auto-prepare", () => {
       const theme = freshTheme("function-theme.yaml")
       const resolver = new Resolve()
       const data = await resolver.color(theme, "editor.background")
-      const validTypes = new Set(["variable", "expression", "literal", "resolved"])
+      const validTypes = new Set(["variable", "expression", "literal", "resolved", "normalised"])
 
       for(const step of data.trail) {
         assert.ok(
@@ -205,6 +205,31 @@ describe("Engine auto-prepare", () => {
           `resolved step "${step.value}" should not be a function call`
         )
       }
+    })
+
+    it("classifies normalised short hex as 'normalised'", async() => {
+      const theme = freshTheme("short-hex-theme.yaml")
+      const resolver = new Resolve()
+      const data = await resolver.color(theme, "editor.background")
+
+      // $(bg) -> #abc, normalised to #aabbcc
+      // The original should be "literal", the expanded form "normalised"
+      const literalSteps = data.trail.filter(s => s.type === "literal")
+      const normalisedSteps = data.trail.filter(s => s.type === "normalised")
+      const resolvedSteps = data.trail.filter(s => s.type === "resolved")
+
+      assert.ok(
+        literalSteps.some(s => s.value === "#abc"),
+        "authored short hex should be literal"
+      )
+      assert.ok(
+        normalisedSteps.some(s => s.value === "#aabbcc"),
+        "expanded hex should be normalised"
+      )
+      assert.equal(
+        resolvedSteps.length, 0,
+        "hex normalisation should not produce resolved steps"
+      )
     })
 
     it("simple variable-to-hex trail has no resolved steps", async() => {

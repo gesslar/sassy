@@ -269,8 +269,8 @@ export default class ResolveCommand extends Command {
       const {value, depth, type} = step
       const [line, kind] = this.#formatLeaf(value)
 
-      // Simple logic: only hex results get extra indentation with arrow/swatch, everything else is clean
-      if(type === "resolved" && kind === "hex") {
+      // Hex results (resolved or normalised) get extra indentation with swatch or arrow
+      if((type === "resolved" || type === "normalised") && kind === "hex") {
         // Hex results are indented one extra level with swatch or arrow
         const prefix = "   ".repeat(depth + 1)
         const indicator = this.#makeIndicator(value, this.#bg)

@@ -129,10 +129,11 @@ The tree structure shows the dependency chain. Each line is labelled by type:
 |-------|---------|---------|
 | **variable** | A reference to another token | `$(std.fg)`, `$(palette.white)` |
 | **expression** | A colour function call | `lighten($(primary), 20)`, `oklch(0.14 0 0)` |
-| **literal** | A hex value authored directly in the source | `#4b8ebd` |
+| **literal** | A hex value authored directly in the source | `#4b8ebd`, `#f0e` |
+| **normalised** | A hex value expanded from shorthand to long form | `#ff00ee` (from authored `#f0e`) |
 | **resolved** | A hex value computed from a non-hex expression | `#72b5e6` |
 
-Indentation shows depth in the dependency chain. Resolved hex values are shown with a colour swatch (`■`) in supported terminals or an arrow (`→`) otherwise.
+Indentation shows depth in the dependency chain. Hex values (normalised and resolved) are shown with a colour swatch (`■`) in supported terminals or an arrow (`→`) otherwise. When you see a `literal` followed by a `normalised` step, the value was authored as shorthand hex and expanded — search your source for the `literal` form.
 
 When something looks wrong, the tree tells you exactly where the unexpected value entered the chain.
 

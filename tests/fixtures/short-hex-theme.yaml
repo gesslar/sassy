@@ -1,0 +1,11 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Short Hex Theme
+  type: dark
+vars:
+  primary: "#f00"
+  bg: "#abc"
+theme:
+  colors:
+    "editor.background": $(bg)
+    "editor.foreground": $(primary)

@@ -148,6 +148,10 @@ The `Lint` class analyses a compiled theme and returns structured issue data. No
 | `colors` | Issues from colours rules |
 | `variables` | Unused variable issues |
 
+:::caution
+The return key is `variables`, not `vars`. `Lint.SECTIONS.VARS` (`"vars"`) refers to the source section name used internally — it does not match the return key.
+:::
+
 ### Issue Shape
 
 Every issue object has these common fields:
@@ -349,7 +353,8 @@ Both return shapes include a `trail` array. Each element is an object with three
 |------|---------|---------|
 | `variable` | A variable reference | `$(std.fg)`, `$(palette.white)` |
 | `expression` | A colour function call | `lighten($(primary), 20)`, `oklch(0.14 0 0)` |
-| `literal` | A hex value that was authored directly in the source | `#4b8ebd` |
+| `literal` | A hex value that was authored directly in the source | `#4b8ebd`, `#f0e` |
+| `normalised` | A hex value expanded from shorthand to long form | `#ff00ee` (from authored `#f0e`) |
 | `resolved` | A hex value that was computed from a non-hex expression | `#72b5e6` |
 
-The distinction between `literal` and `resolved` tells you whether a hex value was written by hand or derived through evaluation. Both are hex strings, but `literal` means the source file contained that exact hex value, while `resolved` means it was the output of a function or variable chain.
+The three hex types tell you exactly where a value came from: `literal` is the authored shorthand, `normalised` is its long-form expansion, and `resolved` is a value computed through function evaluation or variable chains. This means you can search your source for `literal` values and render swatches on `normalised` and `resolved` values without regex guesswork.
