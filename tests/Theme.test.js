@@ -226,6 +226,22 @@ describe("Theme", () => {
   })
 
   describe("wouldWrite()", () => {
+    it("throws when called before build()", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {outputDir: "./fixtures/output"}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+
+      await assert.rejects(
+        () => theme.wouldWrite(),
+        /build\(\)/i
+      )
+    })
+
     it("returns true when no output file exists yet", async() => {
       const cwd = new DirectoryObject(__dirname)
       const options = {outputDir: "./fixtures/output"}
@@ -239,7 +255,9 @@ describe("Theme", () => {
 
       // Remove output file if it exists so we test the "no file" path
       const outputFile = theme.getOutputFile()
-      await fs.unlink(outputFile.path).catch(() => {})
+      await fs.unlink(outputFile.path).catch(e => {
+        if(e.code !== "ENOENT") throw e
+      })
 
       const result = await theme.wouldWrite()
       assert.strictEqual(result, true)
