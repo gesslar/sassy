@@ -117,6 +117,12 @@ theme:
         foreground: $($blue)
         fontStyle: bold
 
+    - name: Classes (dupe)
+      scope: entity.name.class, entity.name.type
+      settings:
+        foreground: $($blue)
+        fontStyle: bold
+
   semanticTokenColors:
     variable.declaration:
       foreground: $(std.fg)

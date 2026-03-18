@@ -98,7 +98,7 @@ export default class Resolve {
       await this.#prepare(theme)
 
     const tokenColors = theme.getOutput()?.tokenColors || []
-    const disambiguatedMatch = scopeName.match(/^(.+)\.(\d+)$/)
+    const disambiguatedMatch = scopeName.match(/^(.+):(\d+)$/)
 
     if(disambiguatedMatch) {
       const [, baseScope, indexStr] = disambiguatedMatch
@@ -106,12 +106,12 @@ export default class Resolve {
       const matches = this.#findScopeMatches(tokenColors, baseScope)
 
       if(index >= 0 && index < matches.length)
-        return this.#resolveScopeMatchData(theme, matches[index], `${baseScope}.${indexStr}`)
+        return this.#resolveScopeMatchData(theme, matches[index], `${baseScope}:${indexStr}`)
 
       return {
         found: false,
         name: scopeName,
-        message: `Available: ${baseScope}.1 through ${baseScope}.${matches.length}`
+        message: `Available: ${baseScope}:1 through ${baseScope}:${matches.length}`
       }
     }
 
@@ -148,7 +148,7 @@ export default class Resolve {
       ambiguous: true,
       name: scopeName,
       matches: matches.map((match, index) => ({
-        qualifier: `${scopeName}.${index + 1}`,
+        qualifier: `${scopeName}:${index + 1}`,
         entryName: match.name || `Entry ${index + 1}`
       }))
     }

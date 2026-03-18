@@ -70,8 +70,8 @@ If multiple `tokenColors` entries match the same scope, Sassy shows a disambigua
 
   Multiple entries found for 'keyword', please try again with the specific query:
 
-  Keywords: keyword.1
-  Control Flow: keyword.2
+  Keywords: keyword:1
+  Control Flow: keyword:2
 
 `}</CodeBlock>
 
@@ -79,7 +79,7 @@ Then resolve the specific one:
 
 <CodeBlock lang="bash">{`
 
-  npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword.1
+  npx @gesslar/sassy resolve ocean.yaml --tokenColor keyword:1
 
 `}</CodeBlock>
 

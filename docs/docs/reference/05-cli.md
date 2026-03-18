@@ -122,7 +122,7 @@ Pass the hex value without `#` to avoid shell comment interpretation, or wrap it
 
     # When multiple tokenColors entries match the same scope,
     # Sassy prompts for disambiguation:
-    sassy resolve --tokenColor entity.name.class.2 my-theme.yaml
+    sassy resolve --tokenColor entity.name.class:2 my-theme.yaml
 
     # Resolve a scope that isn't explicitly defined — Sassy finds
     # the best matching broader scope via TextMate precedence:
