@@ -368,7 +368,7 @@ export default class ResolveCommand extends Command {
 
       const {func, args} = match.groups
       const cleanArgs = args.replace(
-        /\$\(palette\.__prior__(?:\.__\d+__)?\.\([^)]+\)\)/g,
+        /\$\(palette\.__prior__(?:\.__\d+__)?\.([^)]+)\)/g,
         (_, key) => `^(${key})`
       )
 
@@ -380,7 +380,7 @@ export default class ResolveCommand extends Command {
 
     if(this.#sub.test(value)) {
       const varValue = Evaluator.extractVariableName(value) || value
-      const priorMatch = varValue.match(/^palette\.__prior__(?:\.__\d+__)?\.\(.+\)$/)
+      const priorMatch = varValue.match(/^palette\.__prior__(?:\.__\d+__)?\.(.+)$/)
 
       if(priorMatch) {
         return [

@@ -18,6 +18,8 @@ export default class Resolve {
     static "__#private@#funcCall": RegExp;
     /** @type {RegExp} Matches a variable reference */
     static "__#private@#varRef": RegExp;
+    /** @type {RegExp} Matches a séance prior reference inside a variable or function */
+    static "__#private@#priorRef": RegExp;
     /**
      * Classify a raw value string by its outermost form.
      *
@@ -34,6 +36,15 @@ export default class Resolve {
      * @returns {"expression"|"variable"|"resolved"} The classification
      */
     static "__#private@#classifyResult"(value: string): "expression" | "variable" | "resolved";
+    /**
+     * Converts internal `palette.__prior__` references in trail steps to
+     * user-facing séance (`^`) notation.
+     *
+     * @param {Array<{value: string, type: string, depth: number}>} steps - Trail steps
+     * @returns {Array<{value: string, type: string, depth: number}>} Cleaned steps
+     * @private
+     */
+    private static "__#private@#cleanPriorRefs";
     /**
      * Resolves a colour token to its final value with trail.
      *

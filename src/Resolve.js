@@ -22,6 +22,9 @@ export default class Resolve {
   /** @type {RegExp} Matches a variable reference */
   static #varRef = /^\$/
 
+  /** @type {RegExp} Matches a séance prior reference inside a variable or function */
+  static #priorRef = /\$\(palette\.__prior__(?:\.__\d+__)?\.([^)]+)\)/g
+
   /**
    * Classify a raw value string by its outermost form.
    *
@@ -80,7 +83,7 @@ export default class Resolve {
       found: true,
       name: colorName,
       resolution: finalValue,
-      trail: fullTrail.map(({value, type, depth}) => ({value, type, depth}))
+      trail: Resolve.#cleanPriorRefs(fullTrail)
     }
   }
 
@@ -366,7 +369,7 @@ export default class Resolve {
       ...base,
       resolution: finalValue,
       static: false,
-      trail: fullTrail.map(({value, type, depth}) => ({value, type, depth}))
+      trail: Resolve.#cleanPriorRefs(fullTrail)
     }
   }
 
@@ -494,5 +497,25 @@ export default class Resolve {
     })
 
     return steps
+  }
+
+  /**
+   * Converts internal `palette.__prior__` references in trail steps to
+   * user-facing séance (`^`) notation.
+   *
+   * @param {Array<{value: string, type: string, depth: number}>} steps - Trail steps
+   * @returns {Array<{value: string, type: string, depth: number}>} Cleaned steps
+   * @private
+   */
+  static #cleanPriorRefs(steps) {
+    return steps.map(({value, type, depth}) => {
+      // Replace all $(palette.__prior__.<key>) with ^(<key>)
+      const cleaned = value.replace(Resolve.#priorRef, (_, key) => `^(${key})`)
+
+      if(cleaned !== value && type === "variable")
+        return {value: cleaned, type: "séance", depth}
+
+      return {value: cleaned, type, depth}
+    })
   }
 }
