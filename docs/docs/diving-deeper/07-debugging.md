@@ -123,7 +123,7 @@ Works identically to `--tokenColor`, but looks in the `semanticTokenColors` sect
 
 ## Reading the Output
 
-The tree structure shows the dependency chain. Each line is labelled by type:
+The tree structure shows the dependency chain. Each trail step is classified by type:
 
 | Label | Meaning | Example |
 |-------|---------|---------|
