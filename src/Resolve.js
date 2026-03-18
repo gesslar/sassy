@@ -438,9 +438,9 @@ export default class Resolve {
           depTrail.forEach(depToken => processToken(depToken, level + 1))
         }
 
-        // Add resolved color if different — hex normalisation (e.g.
-        // #f00 → #ff0000) is surfaced as "normalised" so the CLI trail
-        // shows both the authored shorthand and the expanded form.
+        // Add dependency's final value if different — for hex values,
+        // normalisation (e.g. #f00 → #ff0000) is surfaced as "normalised"
+        // so the CLI trail shows both the authored shorthand and the expanded form.
         if(depRaw !== depFinal && !steps.some(s => s.value === depFinal)) {
           const depKind = dependency.getKind()
 
