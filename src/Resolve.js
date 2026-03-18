@@ -98,37 +98,7 @@ export default class Resolve {
       await this.#prepare(theme)
 
     const tokenColors = theme.getOutput()?.tokenColors || []
-    const disambiguatedMatch = scopeName.match(/^(.+):(\d+)$/)
-
-    if(disambiguatedMatch) {
-      const [, baseScope, indexStr] = disambiguatedMatch
-      const index = parseInt(indexStr) - 1
-      const matches = this.#findScopeMatches(tokenColors, baseScope)
-
-      if(index >= 0 && index < matches.length)
-        return this.#resolveScopeMatchData(theme, matches[index], `${baseScope}:${indexStr}`)
-
-      return {
-        found: false,
-        name: scopeName,
-        message: `Available: ${baseScope}:1 through ${baseScope}:${matches.length}`
-      }
-    }
-
     const matches = this.#findScopeMatches(tokenColors, scopeName)
-
-    if(matches.length === 0) {
-      const precedenceMatch =
-        this.#findBestPrecedenceMatch(tokenColors, scopeName)
-
-      if(precedenceMatch)
-        return this.#resolveScopeMatchData(
-          theme, precedenceMatch.entry, scopeName,
-          {scope: precedenceMatch.matchedScope, relation: "via"}
-        )
-
-      return {found: false, name: scopeName}
-    }
 
     if(matches.length === 1) {
       const maskingScope =
@@ -143,15 +113,48 @@ export default class Resolve {
       return this.#resolveScopeMatchData(theme, matches[0], scopeName)
     }
 
-    return {
-      found: true,
-      ambiguous: true,
-      name: scopeName,
-      matches: matches.map((match, index) => ({
-        qualifier: `${scopeName}:${index + 1}`,
-        entryName: match.name || `Entry ${index + 1}`
-      }))
+    if(matches.length > 1) {
+      return {
+        found: true,
+        ambiguous: true,
+        name: scopeName,
+        matches: matches.map((match, index) => ({
+          qualifier: `${scopeName}:${index + 1}`,
+          entryName: match.name || `Entry ${index + 1}`
+        }))
+      }
     }
+
+    // No exact match — try :N disambiguation fallback
+    const disambiguatedMatch = scopeName.match(/^(.+):(\d+)$/)
+
+    if(disambiguatedMatch) {
+      const [, baseScope, indexStr] = disambiguatedMatch
+      const index = parseInt(indexStr) - 1
+      const baseMatches = this.#findScopeMatches(tokenColors, baseScope)
+
+      if(baseMatches.length > 0) {
+        if(index >= 0 && index < baseMatches.length)
+          return this.#resolveScopeMatchData(theme, baseMatches[index], `${baseScope}:${indexStr}`)
+
+        return {
+          found: false,
+          name: scopeName,
+          message: `Available: ${baseScope}:1 through ${baseScope}:${baseMatches.length}`
+        }
+      }
+    }
+
+    const precedenceMatch =
+      this.#findBestPrecedenceMatch(tokenColors, scopeName)
+
+    if(precedenceMatch)
+      return this.#resolveScopeMatchData(
+        theme, precedenceMatch.entry, scopeName,
+        {scope: precedenceMatch.matchedScope, relation: "via"}
+      )
+
+    return {found: false, name: scopeName}
   }
 
   /**
