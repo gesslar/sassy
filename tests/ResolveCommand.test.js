@@ -291,6 +291,69 @@ describe("ResolveCommand", () => {
         assert.ok(Array.isArray(data.trail))
       })
 
+      it("returns ambiguous result for duplicate scopes", async() => {
+        const cwd = new DirectoryObject(__dirname)
+        const packageJson = {}
+        const command = new ResolveCommand({cwd, packageJson})
+        command.setCache(new Cache())
+        const themeFile = cwd.getFile("./fixtures/lint-duplicate-scope.yaml")
+        const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
+        theme.setCache(command.getCache())
+        await theme.load()
+        await theme.build()
+
+        const data = await command.resolve(theme, {tokenColor: "keyword"})
+        assert.equal(data.found, true)
+        assert.equal(data.ambiguous, true)
+        assert.equal(data.name, "keyword")
+        assert.ok(Array.isArray(data.matches))
+        assert.equal(data.matches.length, 2)
+        assert.equal(data.matches[0].qualifier, "keyword:1")
+        assert.equal(data.matches[1].qualifier, "keyword:2")
+        assert.equal(data.matches[0].entryName, "Keywords A")
+        assert.equal(data.matches[1].entryName, "Keywords B")
+      })
+
+      it("resolves disambiguated scope with :N suffix", async() => {
+        const cwd = new DirectoryObject(__dirname)
+        const packageJson = {}
+        const command = new ResolveCommand({cwd, packageJson})
+        command.setCache(new Cache())
+        const themeFile = cwd.getFile("./fixtures/lint-duplicate-scope.yaml")
+        const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
+        theme.setCache(command.getCache())
+        await theme.load()
+        await theme.build()
+
+        const data1 = await command.resolve(theme, {tokenColor: "keyword:1"})
+        assert.equal(data1.found, true)
+        assert.equal(data1.ambiguous, undefined)
+        assert.equal(data1.resolution, "#ff0000")
+        assert.equal(data1.entryName, "Keywords A")
+
+        const data2 = await command.resolve(theme, {tokenColor: "keyword:2"})
+        assert.equal(data2.found, true)
+        assert.equal(data2.resolution, "#00ff00")
+        assert.equal(data2.entryName, "Keywords B")
+      })
+
+      it("returns not-found for out-of-range disambiguation index", async() => {
+        const cwd = new DirectoryObject(__dirname)
+        const packageJson = {}
+        const command = new ResolveCommand({cwd, packageJson})
+        command.setCache(new Cache())
+        const themeFile = cwd.getFile("./fixtures/lint-duplicate-scope.yaml")
+        const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions({outputDir: "."})
+        theme.setCache(command.getCache())
+        await theme.load()
+        await theme.build()
+
+        const data = await command.resolve(theme, {tokenColor: "keyword:99"})
+        assert.equal(data.found, false)
+        assert.ok(data.message.includes("keyword:1"))
+        assert.ok(data.message.includes("keyword:2"))
+      })
+
       it("resolves via precedence for sub-scope", async() => {
         const cwd = new DirectoryObject(__dirname)
         const packageJson = {}
