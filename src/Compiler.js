@@ -554,8 +554,9 @@ export default class Compiler {
         theme.addDependency(file, source, yamlSource)
     )
 
-    // Add main theme file last so findSourceLocation() checks imports first,
-    // matching the import-first composition order of tokenColors and other sections.
+    // Add main theme file last so findSourceLocation() (which iterates in
+    // reverse) finds the effective definition first — overrides in the main
+    // file take precedence over imports, and later imports over earlier ones.
     const mainDepSource = new Map()
 
     if(source?.vars) {

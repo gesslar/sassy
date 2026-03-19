@@ -1,0 +1,15 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: Override Theme
+  type: dark
+  import:
+    - ./import-base.yaml
+
+vars:
+  baseBg: "#2b2b2b"
+  accent: "#ff6600"
+
+theme:
+  colors:
+    "editor.background": $(baseBg)
+    "statusBar.background": $(accent)

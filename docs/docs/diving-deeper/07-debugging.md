@@ -40,6 +40,8 @@ You can read it top to bottom: `std.fg.inactive` is defined as `fade($(std.fg), 
 
 Note that `$$` aliases are expanded before resolution, so the trail always shows the canonical `palette.*` form — even if the source file used `$$white`.
 
+When a key is defined in multiple files (e.g. an import and the main file), the resolve trail points to the **effective** definition — the last file in the merge chain that defines it. If the main file overrides an imported value, the trail links to the main file, not the import.
+
 ### Trace a tokenColors scope
 
 <CodeBlock lang="bash">{`

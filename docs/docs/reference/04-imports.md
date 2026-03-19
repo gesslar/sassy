@@ -44,6 +44,8 @@ Paths are relative to the importing file.
 import[0] → import[1] → ... → import[n] → main file
 `}</CodeBlock>
 
+This same order determines **source location resolution**: when a key is defined in multiple files, tools like `resolve` report the location from the last file in the chain that defines it — the effective definition. For example, if an import defines `palette.pink` and the main file overrides it, the reported location points to the main file.
+
 ## tokenColors Ordering
 
 VS Code evaluates `tokenColors` rules using **first-match** semantics. The order of rules matters:
