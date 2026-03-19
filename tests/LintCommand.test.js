@@ -152,6 +152,7 @@ describe("LintCommand", () => {
       assert.ok(duplicates.length > 0, "should detect duplicate scopes")
       assert.equal(duplicates[0].scope, "keyword")
       assert.equal(duplicates[0].severity, Lint.SEVERITY.MEDIUM)
+      assert.equal(duplicates[0].message, "Scope 'keyword' is duplicated in 'Keywords A', 'Keywords B'")
       assert.equal(duplicates[0].occurrences.length, 2)
       assert.equal(duplicates[0].occurrences[0].name, "Keywords A")
       assert.equal(duplicates[0].occurrences[1].name, "Keywords B")
@@ -177,6 +178,7 @@ describe("LintCommand", () => {
       assert.equal(precedence[0].broadScope, "keyword")
       assert.equal(precedence[0].specificScope, "keyword.control")
       assert.equal(precedence[0].severity, Lint.SEVERITY.HIGH)
+      assert.equal(precedence[0].message, "Scope 'keyword' in 'General Keywords' masks more specific 'keyword.control' in 'Control Keywords'")
       assert.equal(precedence[0].broadRule, "General Keywords")
       assert.equal(precedence[0].specificRule, "Control Keywords")
     })
@@ -203,6 +205,8 @@ describe("LintCommand", () => {
       const orphanIssue = unused.find(i => i.variable === "$orphan")
       assert.ok(orphanIssue, "should flag $orphan as unused")
       assert.equal(orphanIssue.severity, Lint.SEVERITY.LOW)
+      assert.ok(orphanIssue.message.includes("$orphan"), "message should mention the variable name")
+      assert.ok(orphanIssue.message.includes("never used"), "message should indicate the variable is unused")
     })
 
     it("does not flag object containers as unused variables", async() => {

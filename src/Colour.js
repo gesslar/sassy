@@ -35,10 +35,10 @@ const asColour = s => {
   // This is a comment explaining that 'x == null' will be true if the function
   // receives 'undefined' or 'null'. Some robot says that I need to document
   // the behaviour, despite it being IMMEDIATELY followed by the throw
-  // detailing "received null/undefined", like it's a completely different
-  // book. Also, who doesn't know that 'x == null' is true for null/undefined?
-  // Maybe they need Udemy, or a refund from Udemy. Something. I'm not a
-  // coding BABYSITTER. - gesslar @ 2025-08-13
+  // detailing "received null/undefined", like it's in a completely different,
+  // unrelated book. Also, who doesn't know that 'x == null' is true for null/
+  // undefined? Maybe they need Udemy, or a refund from Udemy. Something. I'm
+  // not a coding BABYSITTER. - gesslar @ 2025-08-13
   //
   // Addendum consequent to a recent robot's review. I will not be removing
   // the above. That you take issue with this is exactly why this comment

@@ -415,9 +415,14 @@ export default class Lint {
     // Report duplicate scopes
     for(const [scope, occurrences] of scopeOccurrences) {
       if(occurrences.length > 1) {
+        const rules = occurrences
+          .map(occ => `'${occ.name}'`)
+          .join(", ")
+
         issues.push({
           type: LC.ISSUE_TYPES.DUPLICATE_SCOPE,
           severity: LC.SEVERITY.MEDIUM,
+          message: `Scope '${scope}' is duplicated in ${rules}`,
           scope,
           occurrences
         })
@@ -454,11 +459,14 @@ export default class Lint {
               continue
 
             if(!definedVars.has(varName)) {
+              const rule = entry.name || LC.TEMPLATES.ENTRY_NAME(index)
+
               issues.push({
                 type: LC.ISSUE_TYPES.UNDEFINED_VARIABLE,
                 severity: LC.SEVERITY.HIGH,
+                message: `Variable '${value}' is used but not defined in '${rule}' (${key} property)`,
                 variable: value,
-                rule: entry.name || LC.TEMPLATES.ENTRY_NAME(index),
+                rule,
                 property: key,
                 section
               })
@@ -507,6 +515,7 @@ export default class Lint {
           issues.push({
             type: LC.ISSUE_TYPES.UNDEFINED_VARIABLE,
             severity: LC.SEVERITY.HIGH,
+            message: `Variable '${value}' is used but not defined in '${ruleName}' (${currentPath} property)`,
             variable: value,
             rule: ruleName,
             property: currentPath,
@@ -585,10 +594,13 @@ export default class Lint {
     // Find vars-defined variables that are never used in content sections
     for(const [varName, {filename, location}] of definedVars) {
       if(!usedVars.has(varName)) {
+        const variable = `${LC.TEMPLATES.VARIABLE_PREFIX}${varName}`
+
         issues.push({
           type: LC.ISSUE_TYPES.UNUSED_VARIABLE,
           severity: LC.SEVERITY.LOW,
-          variable: `${LC.TEMPLATES.VARIABLE_PREFIX}${varName}`,
+          message: `Variable '${variable}' is defined in '${filename}' but is never used`,
+          variable,
           occurrence: filename,
           location,
         })
@@ -717,9 +729,15 @@ export default class Lint {
         // Check if the current (earlier) scope is broader than the later one
         // This means the broad scope will mask the specific scope
         if(this.#isBroaderScope(current.scope, later.scope)) {
+          const sameRule = current.index === later.index
+          const message = sameRule
+            ? `Scope '${current.scope}' makes more specific '${later.scope}' redundant in '${current.name}'`
+            : `Scope '${current.scope}' in '${current.name}' masks more specific '${later.scope}' in '${later.name}'`
+
           issues.push({
             type: LC.ISSUE_TYPES.PRECEDENCE_ISSUE,
-            severity: current.index === later.index ? LOW : HIGH,
+            severity: sameRule ? LOW : HIGH,
+            message,
             specificScope: later.scope,
             broadScope: current.scope,
             specificRule: later.name,
