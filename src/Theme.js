@@ -173,16 +173,19 @@ export default class Theme {
 
   /**
    * Looks up a source location for a dotted key path across all dependencies.
-   * Returns the first match found (main theme file checked last since
-   * dependencies are added before it in composition order).
+   * Searches in reverse dependency order so the effective definition is found
+   * first — the main theme file overrides imports, and later imports override
+   * earlier ones.
    *
    * @param {string} dottedPath - Dot-separated key path (e.g. "vars.bg")
    * @param {"key"|"value"} [target="key"] - Whether to locate the key or value
    * @returns {string?} Formatted "file:line:col" string or null
    */
   findSourceLocation(dottedPath, target = "key") {
-    for(const dep of this.#dependencies) {
-      const yamlSource = dep.getYamlSource()
+    const deps = [...this.#dependencies]
+
+    for(let i = deps.length - 1; i >= 0; i--) {
+      const yamlSource = deps[i].getYamlSource()
 
       if(!yamlSource)
         continue
@@ -208,7 +211,6 @@ export default class Theme {
     this.#pool = null
     this.#proof = null
     this.#dependencies = new Set()
-    this.#mainYamlSource = null
   }
 
   /**

@@ -494,5 +494,69 @@ describe("Theme", () => {
       const location = theme.findSourceLocation("nonexistent.path.that.does.not.exist")
       assert.equal(location, null)
     })
+
+    it("returns the main file location when a key overrides an import", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/override-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      // vars.baseBg is defined in both import-base.yaml and override-theme.yaml
+      // — the effective definition (main file) should win
+      const location = theme.findSourceLocation("vars.baseBg")
+      assert.ok(location, "should find a location for overridden key")
+      assert.ok(
+        location.includes("override-theme.yaml"),
+        `expected location in main file, got: ${location}`
+      )
+    })
+
+    it("returns the import location for a key only defined in an import", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/override-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      // vars.baseFg is only defined in import-base.yaml
+      const location = theme.findSourceLocation("vars.baseFg")
+      assert.ok(location, "should find a location for import-only key")
+      assert.ok(
+        location.includes("import-base.yaml"),
+        `expected location in import file, got: ${location}`
+      )
+    })
+
+    it("preserves mainYamlSource across reset() + build() without load()", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/simple-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      const locationBefore = theme.findSourceLocation("vars.primary")
+      assert.ok(locationBefore, "should find location before reset")
+
+      // Simulate a rebuild without load() (as GUI extensions do)
+      theme.reset()
+      await theme.build()
+
+      const locationAfter = theme.findSourceLocation("vars.primary")
+      assert.ok(locationAfter, "should still find location after reset() + build()")
+      assert.equal(locationAfter, locationBefore)
+    })
   })
 })
