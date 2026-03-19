@@ -122,21 +122,6 @@ theme:
     })
 
     it("handles colour functions", async() => {
-      const testThemeContent = `config:
-  $schema: vscode://schemas/color-theme
-  name: Test Theme
-  type: dark
-vars:
-  primary: "#4b8ebd"
-  bg: lighten($(primary), 20)
-theme:
-  colors:
-    "editor.background": $(bg)
-`
-
-      const testPath = TestUtils.getFixturePath("function-theme.yaml")
-      await TestUtils.createTestFile(testPath, testThemeContent)
-
       const cwd = new DirectoryObject(__dirname)
       const cache = new Cache()
       const themeFile = cwd.getFile("./fixtures/function-theme.yaml")

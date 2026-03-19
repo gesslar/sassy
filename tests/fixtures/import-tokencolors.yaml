@@ -1,0 +1,8 @@
+theme:
+  tokenColors:
+    - scope: keyword
+      settings:
+        foreground: "#ff6600"
+    - scope: comment
+      settings:
+        foreground: "#666666"

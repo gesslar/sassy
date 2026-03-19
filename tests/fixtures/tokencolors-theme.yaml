@@ -1,0 +1,17 @@
+config:
+  $schema: vscode://schemas/color-theme
+  name: TokenColors Test Theme
+  type: dark
+  import:
+    - ./import-tokencolors.yaml
+
+vars:
+  strColor: "#ce9178"
+
+theme:
+  colors:
+    "editor.background": "#1a1a1a"
+  tokenColors:
+    - scope: string
+      settings:
+        foreground: $(strColor)

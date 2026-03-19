@@ -69,6 +69,8 @@ export default class Theme {
   #name = null
   /** @type {YamlSource?} */
   #mainYamlSource = null
+  /** @type {Array<{file: FileObject, localIndex: number}>?} */
+  #tokenColorOrigins = null
   #proof = null
 
   // Write-related properties
@@ -182,6 +184,38 @@ export default class Theme {
    * @returns {string?} Formatted "file:line:col" string or null
    */
   findSourceLocation(dottedPath, target = "key") {
+    // tokenColors are append-only (imports first, then main), so compiled
+    // output indices don't match any single file's local indices.  Use the
+    // origin map built during composition to find the right file + local index.
+    const tcMatch = dottedPath.match(/^theme\.tokenColors\.(\d+)(\..*)?$/)
+
+    if(tcMatch && this.#tokenColorOrigins) {
+      const idx = Number(tcMatch[0 + 1])
+      const rest = tcMatch[1 + 1] ?? ""
+      const origin = this.#tokenColorOrigins[idx]
+
+      if(origin) {
+        const localPath = `theme.tokenColors.${origin.localIndex}${rest}`
+
+        for(const dep of this.#dependencies) {
+          if(dep.getSourceFile() !== origin.file)
+            continue
+
+          const yamlSource = dep.getYamlSource()
+
+          if(!yamlSource)
+            continue
+
+          const formatted = yamlSource.formatLocation(localPath, target)
+
+          if(formatted)
+            return formatted
+        }
+      }
+
+      return null
+    }
+
     const deps = [...this.#dependencies]
 
     for(let i = deps.length - 1; i >= 0; i--) {
@@ -211,6 +245,7 @@ export default class Theme {
     this.#pool = null
     this.#proof = null
     this.#dependencies = new Set()
+    this.#tokenColorOrigins = null
   }
 
   /**
@@ -395,6 +430,19 @@ export default class Theme {
    */
   hasDependencies() {
     return this.#dependencies.size > 0
+  }
+
+  /**
+   * Sets the tokenColors origin map for compiled-index → source-file lookups.
+   * Built by the Compiler during composition.
+   *
+   * @param {Array<{file: FileObject, localIndex: number}>} origins
+   * @returns {this} Returns this instance for method chaining
+   */
+  setTokenColorOrigins(origins) {
+    this.#tokenColorOrigins = origins
+
+    return this
   }
 
   /**
