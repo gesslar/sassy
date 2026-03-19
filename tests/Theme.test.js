@@ -558,5 +558,44 @@ describe("Theme", () => {
       assert.ok(locationAfter, "should still find location after reset() + build()")
       assert.equal(locationAfter, locationBefore)
     })
+
+    it("locates imported tokenColors by compiled output index", async() => {
+      const cwd = new DirectoryObject(__dirname)
+      const options = {}
+      const cache = new Cache()
+      const themeFile = cwd.getFile("./fixtures/tokencolors-theme.yaml")
+      const theme = new Theme().setCwd(cwd).setThemeFile(themeFile).setOptions(options)
+      theme.setCache(cache)
+
+      await theme.load()
+      await theme.build()
+
+      // Output order is: imports first (keyword=0, comment=1), then main (string=2)
+      // Lint uses "theme.tokenColors.<index>" as the lookup path
+
+      // Index 0 (keyword) — from import
+      const loc0 = theme.findSourceLocation("theme.tokenColors.0")
+      assert.ok(loc0, "should find imported tokenColor at index 0")
+      assert.ok(
+        loc0.includes("import-tokencolors.yaml"),
+        `expected import file, got: ${loc0}`
+      )
+
+      // Index 1 (comment) — from import
+      const loc1 = theme.findSourceLocation("theme.tokenColors.1")
+      assert.ok(loc1, "should find imported tokenColor at index 1")
+      assert.ok(
+        loc1.includes("import-tokencolors.yaml"),
+        `expected import file, got: ${loc1}`
+      )
+
+      // Index 2 (string) — from main file
+      const loc2 = theme.findSourceLocation("theme.tokenColors.2")
+      assert.ok(loc2, "should find main file tokenColor at index 2")
+      assert.ok(
+        loc2.includes("tokencolors-theme.yaml"),
+        `expected main file, got: ${loc2}`
+      )
+    })
   })
 })

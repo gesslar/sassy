@@ -588,6 +588,22 @@ export default class Compiler {
       ...(sourceTheme?.tokenColors ?? [])
     ]
 
+    // Build origin map so findSourceLocation() can map compiled tokenColors
+    // indices back to the correct source file and local index.
+    const tcOrigins = []
+
+    importByFile.forEach(({source}, file) => {
+      const tc = source.get("tokenColors") ?? []
+      tc.forEach((_, i) => tcOrigins.push({file, localIndex: i}))
+    })
+
+    const mainTc = sourceTheme?.tokenColors ?? []
+    mainTc.forEach((_, i) =>
+      tcOrigins.push({file: theme.getSourceFile(), localIndex: i})
+    )
+
+    theme.setTokenColorOrigins(tcOrigins)
+
     // Apply séance to source palette against the accumulated imported palette
     const {transformed: transformedPalette, priors: sourcePriors} =
       this.#séance(imported.palette, sourcePalette ?? {}, allPriors)
