@@ -127,6 +127,11 @@ const config = {
           },
           {
             type: "html",
+            value: `<a href="/docs/hex" title="Hex"><img class="header-svg header-png" src="/img/hexagon.png" /></a>`,
+            position: "right",
+          },
+          {
+            type: "html",
             value: `<a href="https://github.com/gesslar/sassy" target="_blank"><img class="header-svg" src="/img/line-md--github-loop.svg" /></a>`,
             position: "right",
           },
