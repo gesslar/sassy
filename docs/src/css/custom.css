@@ -245,6 +245,12 @@ body {
     .header-svg {
       filter: invert(75%);
     }
+
+    .header-png {
+      width: 2rem;
+      height: 2rem;
+      filter: none;
+    }
   }
 
   aside {

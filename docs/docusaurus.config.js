@@ -47,8 +47,7 @@ const config = {
       /** @type {Options} */
       ({
         docs: {
-          sidebarPath: "./sidebars.js",
-          editUrl: "https://github.com/gesslar/sassy/tree/main/docs/",
+          sidebarPath: "./sidebars.js"
         },
         blog: false,
         theme: {
@@ -120,6 +119,11 @@ const config = {
             docId: "features",
             position: "left",
             label: "Features",
+          },
+          {
+            type: "html",
+            value: `<a href="/docs/sassy-but-gui" title="Sassy, but GUI"><img class="header-svg header-png" src="/img/double-s-blue.png" /></a>`,
+            position: "right",
           },
           {
             type: "html",
