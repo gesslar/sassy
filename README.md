@@ -664,8 +664,7 @@ know where you can know the new know.
 
 ## License
 
-sassy is released into the public domain under the
-[Unlicense](UNLICENSE.txt).
+`@gesslar/sassy` is released into the public domain under the [Unlicense](UNLICENSE.txt).
 
 This package includes or depends on third-party components under their own
 licenses:
@@ -674,7 +673,6 @@ licenses:
 | --- | --- |
 | [@gesslar/colours](https://github.com/gesslar/colours) | Unlicense |
 | [@gesslar/toolkit](https://github.com/gesslar/toolkit) | Unlicense |
-| [chokidar](https://github.com/paulmillr/chokidar) | MIT |
 | [color-support](https://github.com/isaacs/color-support) | ISC |
 | [commander](https://github.com/tj/commander.js) | MIT |
 | [culori](https://github.com/Evercoder/culori) | MIT |
