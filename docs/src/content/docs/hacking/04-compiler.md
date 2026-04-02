@@ -1,0 +1,62 @@
+---
+sidebar:
+  order: 4
+title: "Compiler"
+---
+
+`Compiler.js` runs the compilation pipeline. It receives a `Theme` instance and
+processes it through all phases.
+
+## Pipeline
+
+1. **Process `config`** — decompose and evaluate the config section (schema,
+   name, type, imports).
+2. **Load imports** — resolve `config.import` entries. Each import file is
+   loaded (with cache support) and its contents merged into the working data.
+3. **Merge** — deep-merge imported data with the main source. Objects (palette,
+   vars, colours, semanticTokenColors) are merged; arrays (tokenColors) are
+   appended. The main file always applies last.
+4. **Decompose & evaluate palette** — flatten the merged `palette` object
+   (wrapped as `{palette: ...}` so flatPaths are `palette.*`) and evaluate in
+   isolation. Palette entries can only reference each other.
+5. **Decompose & evaluate vars** — flatten `vars` and resolve against the union
+   of palette and variables.
+6. **Evaluate theme scopes** — colours, tokenColors, and semanticTokenColors
+   each decomposed and evaluated against the union of palette, resolved vars,
+   plus their own entries.
+7. **Assemble output** — reduce flat paths back into nested VS Code JSON
+   structure. Combine header, custom config, colours, tokenColors, and
+   semanticTokenColors.
+
+## Import Processing
+
+```javascript
+const imports = recompConfig.import ?? []
+```
+
+Each import filename is resolved relative to the entry file's directory. Files are loaded through the theme's cache (`Cache.loadCachedData`) for mtime-based invalidation. For YAML imports, a `YamlSource` is created from the raw file content and stored on the `Dependency` via `setYamlSource()`. This enables downstream error messages to include the originating file, line, and column.
+
+Merge behaviour:
+
+- **Objects** (palette, vars, colours, semanticTokenColors): deep-merged via `Data.mergeObject`
+- **Arrays** (tokenColors): appended — imports first, then main source entries
+- **Main file last**: the entry file's values always override imported values
+
+## Decomposition
+
+Nested objects are flattened to dot-notation paths:
+
+```javascript
+{std: {bg: "#1a1a2e", bg.panel: "#242440"}}
+```
+
+becomes:
+
+```javascript
+[
+  {flatPath: "std.bg", value: "#1a1a2e"},
+  {flatPath: "std.bg.panel", value: "#242440"}
+]
+```
+
+This flat representation enables uniform token evaluation across all scopes. After evaluation, the flat entries are reduced back into the nested structure expected by VS Code.
