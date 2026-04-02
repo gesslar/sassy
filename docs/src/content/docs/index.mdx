@@ -1,0 +1,124 @@
+---
+title: sassy
+description: Make gorgeous themes that speak as boldly as you do.
+template: splash
+hero:
+  tagline: Make gorgeous themes that speak as boldly as you do.
+  image:
+    file: ../../assets/double-s-bg.svg
+  actions:
+    - text: Get Started
+      link: /quick-start/01-intro/
+      icon: right-arrow
+      variant: primary
+    - text: Reference
+      link: /reference/01-theme-file/
+      variant: minimal
+---
+
+import {Card, CardGrid} from "@astrojs/starlight/components"
+
+## Write themes like a human
+
+<div class="code-comparison">
+<div>
+
+**Without Sassy** -- raw VS Code JSON
+
+```json
+{
+  "editor.background": "#1e1e1e",
+  "editor.foreground": "#e6e6e6",
+  "statusBar.background": "#002e63",
+  "panel.background": "#1a1a1a",
+  "sideBar.background": "#252526",
+  "activityBar.background": "#333333",
+  "tab.activeBackground": "#1e1e1e",
+  "tab.inactiveBackground": "#2d2d2d",
+  "focusBorder": "#007fd4",
+  "errorForeground": "#f44747"
+}
+```
+
+</div>
+<div>
+
+**With Sassy** -- structured, reusable, just like you
+
+```yaml
+palette:
+  white: "#e6e6e6"
+  black: rgb(5, 5, 5)
+  blue: oklch(0.6929 0.1647 253.96 / 95%)
+  red: css(tomato)
+
+vars:
+  accent: $$blue
+  std:
+    fg:
+      base: $$white
+    bg:
+      base: $$black
+      panel: lighten($(std.bg), 15)
+      panelLighter: lighten($std.bg.panel, 15)
+      accent: darken($(accent), 70)
+    outline: fade($(accent), 30)
+
+theme:
+  colors:
+    editor:
+      background: $(std.bg.panel)
+      foreground: $(std.fg.base)
+    panel:
+      background: $(std.bg.panelLighter)
+    statusBar:
+      background: $(std.bg.accent)
+    focusBorder: $(std.outline)
+```
+
+</div>
+</div>
+
+## Express yourself
+
+<CardGrid>
+  <Card title="Semantic Variables" icon="pencil">
+    Name your colours by what they mean, not what they look like. Change one value and watch it cascade through your entire theme.
+  </Card>
+  <Card title="Colour Functions" icon="seti:css">
+    Derive shades with lighten(), darken(), fade(), mix(), and more. Powered by Culori for perceptually accurate results.
+  </Card>
+  <Card title="Resolve & Debug" icon="magnifier">
+    Trace any colour from expression to final hex. See exactly how variables chain, where functions apply, and why a value resolved the way it did.
+  </Card>
+  <Card title="Any Colour Space" icon="sun">
+    Hex, RGB, HSL, OKLCH, CSS named colours -- use whatever makes sense. Sassy converts everything to hex for VS Code.
+  </Card>
+  <Card title="Built-in Linting" icon="approve-check-circle">
+    Catch duplicate scopes, undefined variables, unused definitions, and precedence issues before they become visual bugs.
+  </Card>
+  <Card title="Watch Mode" icon="rocket">
+    Live rebuilds on save. Smart hash-based output skipping. Point --output-dir at your extensions folder and iterate instantly.
+  </Card>
+</CardGrid>
+
+## Pick your path
+
+<CardGrid>
+  <Card title="Quick Start" icon="right-arrow">
+    Build your first theme from scratch in seven short pages. No experience required.
+    [Start here](/quick-start/01-intro/)
+  </Card>
+  <Card title="Diving Deeper" icon="open-book">
+    Imports, design systems, multiple themes, advanced colour functions, linting, and debugging.
+    [Explore](/diving-deeper/01-imports/)
+  </Card>
+  <Card title="Reference" icon="document">
+    Complete specifications for every feature, function, CLI command, and API class.
+    [Browse](/reference/01-theme-file/)
+  </Card>
+  <Card title="Hacking" icon="setting">
+    Architecture internals, compilation pipeline, extending Sassy with new functions and output formats.
+    [Dig in](/hacking/01-dev-setup/)
+  </Card>
+</CardGrid>

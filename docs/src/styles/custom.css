@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Quicksand:wght@300..700&family=Victor+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+:root {
+  --sl-font: "Quicksand", sans-serif;
+  --sl-font-mono: "Victor Mono", monospace;
+
+  --sl-color-accent-low: #3d103b;
+  --sl-color-accent: #b03f9f;
+  --sl-color-accent-high: #ef9ce9;
+
+  --sl-color-text-accent: var(--sl-color-accent-high);
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #f4b4f3;
+  --sl-color-accent: #b03f9f;
+  --sl-color-accent-high: #3d103b;
+
+  --sl-color-text-accent: var(--sl-color-accent);
+}
+
+/* Heading style */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+}
+
+/* Landing page code comparison */
+.code-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  .code-comparison {
+    grid-template-columns: 1fr;
+  }
+}

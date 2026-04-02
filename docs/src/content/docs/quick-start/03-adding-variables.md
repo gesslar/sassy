@@ -1,0 +1,130 @@
+---
+sidebar:
+  order: 3
+title: "Building a Palette"
+---
+
+Two colours won't get us far. Let's build a proper palette and introduce
+variable nesting.
+
+## The Palette
+
+Sassy has a dedicated `palette` section for raw colour definitions. Add it between `config` and `vars`:
+
+```yaml
+palette:
+  blue: "#2d5a87"
+  cyan: "#4a9eff"
+  gray: "#3c3c3c"
+  white: "#e6e6e6"
+  red: "#ff6b6b"
+  green: "#51cf66"
+  yellow: "#ffd93d"
+```
+
+Palette is a first-class, declarative section — it's evaluated before everything else and can only reference its own entries. This keeps your colour definitions clean and separate from the logic in `vars`.
+
+## Referencing Palette Values
+
+Use the `$$` prefix to reference palette entries from `vars` or `theme`:
+
+```yaml
+vars:
+  accent: $$cyan
+
+  std:
+    fg: $$white
+    bg: "#1a1a2e"
+    bg.panel: "#242440"
+```
+
+The `$$cyan` syntax is shorthand for `$palette.cyan`. It works with all three reference forms: `$$cyan`, `$($cyan)`, `${$cyan}`.
+
+## Semantic Naming
+
+There are two ideas at work here.
+
+**Palette isolation** — `palette` holds raw colour values with no opinion about
+usage. It's purely declarative. The palette cannot reference `vars` or `theme`
+values — only its own entries.
+
+**Semantic naming** — `accent` and `std.fg` describe *purpose*, not appearance.
+Your theme properties should reference these semantic names. Later, changing
+`accent` from cyan to purple updates every property that uses it.
+
+## Variable Reference Syntax
+
+Sassy supports three ways to reference variables:
+
+| Syntax | Example |
+| -------- | --------- |
+| `$(var)` | `$(std.bg)` |
+| `$var` | `$std.bg` |
+| `${var}` | `${std.bg}` |
+
+And three ways to reference palette values:
+
+| Syntax | Example | Expands to |
+| -------- | --------- | ---------- |
+| `$$name` | `$$cyan` | `$palette.cyan` |
+| `$($name)` | `$($cyan)` | `$(palette.cyan)` |
+| `${$name}` | `${$cyan}` | `${palette.cyan}` |
+
+This guide uses `$(var)` and `$$name` throughout — they're the most
+readable and least ambiguous, especially inside colour functions.
+
+## Update Your Theme Colours
+
+Update `theme.colors` to use the semantic layer:
+
+```yaml
+theme:
+  colors:
+    editor.background: $(std.bg)
+    editor.foreground: $(std.fg)
+    editorGroupHeader.tabsBackground: $(std.bg.panel)
+    tab.activeBackground: $(std.bg)
+    tab.activeForeground: $(std.fg)
+    tab.inactiveBackground: $(std.bg.panel)
+    tab.inactiveForeground: $$gray
+```
+
+## Build It
+
+```bash
+npx @gesslar/sassy build ocean.yaml
+```
+
+### Nesting `theme.colors`
+
+Sassy allows you to nest your theme colors definition. This can provide
+clarity, as to the relationship of different groupings. In Microsoft's most
+excellent design decisioning, not every expected nesting is supported, and it
+is somewhat of a grab bag of conventions. However, most are nestable and here
+is an example of the above theme conveyed in such a manner.
+
+```yaml
+theme:
+  colors:
+    editor:
+      background: $(std.bg)
+      foreground: $(std.fg)
+
+    editorGroupHeader:
+      tabsBackground: $(std.bg.panel)
+
+    tab:
+      activeBackground: $(std.bg)
+      activeForeground: $(std.fg)
+      inactiveBackground: $(std.bg.panel)
+      inactiveForeground: $$gray
+```
+
+For demonstration purposes, the continued examples will be in the first,
+flattened pattern, but know that just like in your variables, Sassy doesn't
+really care, as long as they collapse correctly, everything's good!
+
+Check the output — every reference resolves to a concrete hex value. The theme
+now has tabs and panels styled consistently from a single palette. But we're
+still hand-picking every shade. Next, we'll let colour functions do that work
+for us.

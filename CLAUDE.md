@@ -47,6 +47,9 @@ npm run docs:dev
 
 # Production build
 npm run docs:build
+
+# Preview production build
+npm run docs:preview
 ```
 
 ### Publishing & Updates
@@ -91,14 +94,14 @@ npm run pr
 
 ### Documentation Site (`docs/`)
 
-Docusaurus 3 site deployed to `sassy.gesslar.io` via rsync. Workflow at `.github/workflows/deploy-docs.yml`.
+Starlight (Astro) site deployed to `sassy.gesslar.io` via the `ReleaseStarlight` reusable workflow.
 
 ### Keeping Docs Current
 
 When making changes that affect features, behaviour, or the CLI:
 
-- Update the relevant pages in `docs/docs/` (reference, diving-deeper, etc.)
-- Update `features.md` (root) and `docs/docs/features.md` with any new or changed features
+- Update the relevant pages in `docs/src/content/docs/` (reference, diving-deeper, etc.)
+- Update `features.md` (root) and `docs/src/content/docs/features.md` with any new or changed features
 - Run `npm run docs:build` to verify the site builds cleanly
 
 ## Code Standards
