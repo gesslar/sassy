@@ -2,8 +2,6 @@
 title: "Hex"
 ---
 
-# Hex
-
 Hex isn't really part of the Sassy family — think of it more as a neighbour who happens to be handy with a colour wheel. Where Sassy is all about *authoring* themes, Hex is about *validating* them.
 
 **Hex** is a VS Code extension that validates your `.color-theme.json` files against the official VS Code workbench colour schema. It loads the schema directly from your running VS Code instance, so it's always up to date.
@@ -29,5 +27,5 @@ That said, Hex works with any `.color-theme.json` — you don't need Sassy at al
 
 Install **Hex** from
 
-* [Open VSX Registry](https://open-vsx.org/extension/gesslar/hex-theme-validator)
-* [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gesslar.hex-theme-validator)
+- [Open VSX Registry](https://open-vsx.org/extension/gesslar/hex-theme-validator)
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gesslar.hex-theme-validator)
