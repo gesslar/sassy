@@ -2,8 +2,6 @@
 title: "Sassy, but GUI"
 ---
 
-# Sassy, but GUI
-
 **Sassy, but GUI** is a VS Code extension that brings Sassy directly into your editor as an interactive panel.
 
 Open a `.sassy.yaml` file, click the colour-mode icon in the editor title bar (or run **Show Sassy Panel** from the command palette), and a live panel appears beside your editor.
@@ -60,5 +58,5 @@ Both use the same underlying theme compilation engine (`@gesslar/sassy`), so a t
 
 Install **Sassy, but GUI** from
 
-* [Open VSX Registry](https://open-vsx.org/extension/gesslar/sassy-but-gui)
-* [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gesslar.sassy-but-gui)
+- [Open VSX Registry](https://open-vsx.org/extension/gesslar/sassy-but-gui)
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gesslar.sassy-but-gui)
