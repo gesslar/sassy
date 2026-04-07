@@ -11,7 +11,7 @@ export default class SemanticValueRules {
         EMPTY_RULE: "empty-rule";
     }>;
     /** @type {Set<string>} Known valid properties in a style object. */
-    static "__#private@#VALID_PROPERTIES": Set<string>;
+    static #VALID_PROPERTIES: Set<string>;
     /**
      * Runs all value rules against the semanticTokenColors object.
      *
@@ -27,7 +27,7 @@ export default class SemanticValueRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkValue";
+    private static #checkValue;
     /**
      * Validates a hex colour string.
      *
@@ -37,7 +37,7 @@ export default class SemanticValueRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkHexColour";
+    private static #checkHexColour;
     /**
      * Validates a style object value.
      *
@@ -46,6 +46,6 @@ export default class SemanticValueRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkStyleObject";
+    private static #checkStyleObject;
 }
 //# sourceMappingURL=SemanticValueRules.d.ts.map

@@ -23,7 +23,7 @@ export default class SemanticSelectorRules {
      * @returns {Array<object>} Issues for malformed selectors
      * @private
      */
-    private static "__#private@#checkSyntax";
+    private static #checkSyntax;
     /**
      * Checks token types against the standard registry and deprecated list.
      *
@@ -31,7 +31,7 @@ export default class SemanticSelectorRules {
      * @returns {Array<object>} Issues for unrecognised or deprecated types
      * @private
      */
-    private static "__#private@#checkTokenTypes";
+    private static #checkTokenTypes;
     /**
      * Checks modifiers against the standard registry.
      *
@@ -39,7 +39,7 @@ export default class SemanticSelectorRules {
      * @returns {Array<object>} Issues for unrecognised modifiers
      * @private
      */
-    private static "__#private@#checkModifiers";
+    private static #checkModifiers;
     /**
      * Detects duplicate selectors after normalising modifier order.
      *
@@ -51,6 +51,6 @@ export default class SemanticSelectorRules {
      * @returns {Array<object>} Issues for duplicate selectors
      * @private
      */
-    private static "__#private@#checkDuplicates";
+    private static #checkDuplicates;
 }
 //# sourceMappingURL=SemanticSelectorRules.d.ts.map
