@@ -12,7 +12,7 @@ export default class TokenColorValueRules {
         UNKNOWN_SETTINGS_PROPERTY: "tc-unknown-settings-property";
     }>;
     /** @type {Set<string>} Valid properties in a tokenColors settings object. */
-    static "__#private@#VALID_PROPERTIES": Set<string>;
+    static #VALID_PROPERTIES: Set<string>;
     /**
      * Runs all value rules against the tokenColors array.
      *
@@ -28,7 +28,7 @@ export default class TokenColorValueRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkEntry";
+    private static #checkEntry;
     /**
      * Validates a hex colour string.
      *
@@ -38,6 +38,6 @@ export default class TokenColorValueRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkHexColour";
+    private static #checkHexColour;
 }
 //# sourceMappingURL=TokenColorValueRules.d.ts.map
