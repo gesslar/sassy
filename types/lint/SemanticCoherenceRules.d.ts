@@ -21,7 +21,7 @@ export default class SemanticCoherenceRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkSemanticHighlighting";
+    private static #checkSemanticHighlighting;
     /**
      * Detects rules that are completely shadowed by higher-specificity rules
      * defining the same style properties.
@@ -34,7 +34,7 @@ export default class SemanticCoherenceRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkShadowedRules";
+    private static #checkShadowedRules;
     /**
      * Extracts the list of style properties defined by a value.
      *
@@ -42,7 +42,7 @@ export default class SemanticCoherenceRules {
      * @returns {string[]} Property names
      * @private
      */
-    private static "__#private@#extractProperties";
+    private static #extractProperties;
     /**
      * Determines whether `higher` could shadow `lower` — i.e., whether
      * tokens matching `lower` would also match `higher`.
@@ -56,7 +56,7 @@ export default class SemanticCoherenceRules {
      * @returns {boolean} True if higher could shadow lower
      * @private
      */
-    private static "__#private@#couldShadow";
+    private static #couldShadow;
     /**
      * Checks if `type` is a subtype of `superType` using VS Code's
      * built-in type hierarchy.
@@ -66,6 +66,6 @@ export default class SemanticCoherenceRules {
      * @returns {boolean} True if type is a subtype of superType
      * @private
      */
-    private static "__#private@#isSubtype";
+    private static #isSubtype;
 }
 //# sourceMappingURL=SemanticCoherenceRules.d.ts.map

@@ -27,6 +27,6 @@ export default class TokenColorStructureRules {
      * @returns {Array<object>} Issues found
      * @private
      */
-    private static "__#private@#checkMultipleGlobalDefaults";
+    private static #checkMultipleGlobalDefaults;
 }
 //# sourceMappingURL=TokenColorStructureRules.d.ts.map
