@@ -167,4 +167,3 @@ sidebar:
 - **TypeScript Definitions** — Auto-generated `.d.ts` files from JSDoc for editor support
 - **Docusaurus Documentation Site** — Full docs at sassy.gesslar.io
 - **Example Themes** — Simple and advanced examples included in the repository
-- **Unlicense** — Use however you want — no restrictions

@@ -67,7 +67,7 @@
     "yaml-eslint-parser": "^2.0.0"
   },
   "devDependencies": {
-    "@gesslar/uglier": "^2.4.0",
+    "@gesslar/uglier": "^2.4.1",
     "eslint": "^10.2.0",
     "typescript": "^6.0.2"
   }
