@@ -7,10 +7,8 @@ on:
 
 jobs:
   Release:
-    if: github.event.pull_request.merged == true
+    if: ${{ github.event.pull_request.merged == true }}
     uses: gesslar/Maint/.github/workflows/Release.yaml@main
     secrets: inherit
-    with:
-      package_manager: "auto"
     permissions:
       contents: write
