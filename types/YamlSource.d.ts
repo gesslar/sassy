@@ -1,4 +1,34 @@
 /**
+ * @file YamlSource.js
+ *
+ * Parses YAML text with yaml-eslint-parser to produce an AST with full
+ * source-location information. Builds a path → location map so that
+ * any dotted key path (e.g. "theme.colors.editor.background") can be
+ * resolved to a {line, column} in the original file.
+ */
+export type SourceLocation = {
+    /**
+     * - 1-based line number
+     */
+    line: number;
+    /**
+     * - 0-based column offset
+     */
+    column: number;
+};
+export type LocationEntry = {
+    /**
+     * - Location of the key
+     */
+    key: SourceLocation;
+    /**
+     * - Location of the value (falls back to key)
+     */
+    value: SourceLocation;
+};
+import type { FileObject } from "@gesslar/toolkit";
+import type { DirectoryObject } from "@gesslar/toolkit";
+/**
  * @typedef {object} SourceLocation
  * @property {number} line - 1-based line number
  * @property {number} column - 0-based column offset
@@ -16,6 +46,7 @@
  * @import {DirectoryObject} from "@gesslar/toolkit"
  */
 export default class YamlSource {
+    #private;
     /**
      * Creates a YamlSource from a file, using the cwd for relative labelling.
      * Returns null for non-YAML files or on parse failure.
@@ -72,28 +103,27 @@ export default class YamlSource {
      * @returns {Map<string, SourceLocation>} The complete path→location map
      */
     get locationMap(): Map<string, SourceLocation>;
-    #private;
+    /**
+     * Walks the AST and populates the location map.
+     *
+     * @private
+     */
+    private #buildLocationMap;
+    /**
+     * Walks a YAMLMapping node, recording locations for each key.
+     *
+     * @param {object} mapping - YAMLMapping AST node
+     * @param {Array<string>} path - Current path segments
+     * @private
+     */
+    private #walkMapping;
+    /**
+     * Walks a YAMLSequence node, recording locations for each entry.
+     *
+     * @param {object} seq - YAMLSequence AST node
+     * @param {Array<string>} path - Current path segments
+     * @private
+     */
+    private #walkSequence;
 }
-export type SourceLocation = {
-    /**
-     * - 1-based line number
-     */
-    line: number;
-    /**
-     * - 0-based column offset
-     */
-    column: number;
-};
-export type LocationEntry = {
-    /**
-     * - Location of the key
-     */
-    key: SourceLocation;
-    /**
-     * - Location of the value (falls back to key)
-     */
-    value: SourceLocation;
-};
-import type { FileObject } from "@gesslar/toolkit";
-import type { DirectoryObject } from "@gesslar/toolkit";
 //# sourceMappingURL=YamlSource.d.ts.map

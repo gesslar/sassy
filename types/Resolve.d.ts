@@ -5,6 +5,7 @@
  * Returns structured data about variable dependencies and resolution trails.
  * No CLI awareness — takes a compiled Theme and returns data.
  */
+import type { Theme } from "./Theme.js";
 /**
  * @import {Theme} from "./Theme.js"
  */
@@ -14,37 +15,7 @@
  * No CLI awareness — takes a compiled Theme and returns data.
  */
 export default class Resolve {
-    /** @type {RegExp} Matches a function call at the outer level */
-    static #funcCall: RegExp;
-    /** @type {RegExp} Matches a variable reference */
-    static #varRef: RegExp;
-    /** @type {RegExp} Matches a séance prior reference inside a variable or function */
-    static #priorRef: RegExp;
-    /**
-     * Classify a raw value string by its outermost form.
-     *
-     * @param {string} value - Raw token value
-     * @returns {"expression"|"variable"|"literal"} The classification
-     */
-    static #classifyValue(value: string): "expression" | "variable" | "literal";
-    /**
-     * Classify a computed/intermediate result value.
-     * Like #classifyValue but returns "resolved" instead of "literal"
-     * for values that were derived (e.g. hex outputs from expressions).
-     *
-     * @param {string} value - Computed value
-     * @returns {"expression"|"variable"|"resolved"} The classification
-     */
-    static #classifyResult(value: string): "expression" | "variable" | "resolved";
-    /**
-     * Converts internal `palette.__prior__` references in trail steps to
-     * user-facing séance (`^`) notation.
-     *
-     * @param {Array<{value: string, type: string, depth: number}>} steps - Trail steps
-     * @returns {Array<{value: string, type: string, depth: number}>} Cleaned steps
-     * @private
-     */
-    private static #cleanPriorRefs;
+    #private;
     /**
      * Resolves a colour token to its final value with trail.
      *
@@ -75,6 +46,56 @@ export default class Resolve {
      * @returns {Promise<object>} Resolution data object
      */
     semanticTokenColor(theme: Theme, scopeName: string): Promise<object>;
-    #private;
+    /**
+     * Loads and builds the theme if not already prepared.
+     *
+     * @param {Theme} theme - The theme to prepare
+     * @returns {Promise<void>}
+     * @private
+     */
+    private #prepare;
+    /**
+     * Finds the best precedence match for a target scope that has no exact match.
+     * Uses TextMate scope hierarchy rules: a broader scope (fewer segments) that
+     * is a prefix of the target scope will match. Returns the most specific
+     * (longest) broader scope.
+     *
+     * @param {Array} tokenColors - Array of tokenColors entries
+     * @param {string} targetScope - The scope to find a precedence match for
+     * @returns {{entry: object, matchedScope: string}|null} The best match or null
+     * @private
+     */
+    private #findBestPrecedenceMatch;
+    /**
+     * Finds a broader scope that appears earlier in the tokenColors array
+     * and would mask the given exact match entry.
+     *
+     * @param {Array} tokenColors - Array of tokenColors entries
+     * @param {object} exactMatch - The exact match entry
+     * @param {string} targetScope - The scope being resolved
+     * @returns {{entry: object, matchedScope: string}|null} The masking entry or null
+     * @private
+     */
+    private #findMaskingScope;
+    /**
+     * Returns structured resolution data for a scope match.
+     *
+     * @param {object} theme - The compiled theme object with pool
+     * @param {object} match - The matching tokenColor entry
+     * @param {string} displayName - The scope name for display
+     * @param {{scope: string, relation: string}|null} resolvedVia - Resolution indirection
+     * @returns {object} Resolution data
+     * @private
+     */
+    private #resolveScopeMatchData;
+    /**
+     * Converts internal `palette.__prior__` references in trail steps to
+     * user-facing séance (`^`) notation.
+     *
+     * @param {Array<{value: string, type: string, depth: number}>} steps - Trail steps
+     * @returns {Array<{value: string, type: string, depth: number}>} Cleaned steps
+     * @private
+     */
+    private static #cleanPriorRefs;
 }
 //# sourceMappingURL=Resolve.d.ts.map

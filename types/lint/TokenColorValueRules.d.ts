@@ -1,7 +1,15 @@
 /**
+ * @file TokenColorValueRules.js
+ *
+ * Validates tokenColors `settings` objects. Checks for missing or empty
+ * settings, hex colour formats, fontStyle keyword validity, deprecated
+ * `background` usage, and unknown settings properties.
+ */
+/**
  * Lint rules for tokenColors settings values.
  */
 export default class TokenColorValueRules {
+    #private;
     static ISSUE_TYPES: Readonly<{
         MISSING_SETTINGS: "tc-missing-settings";
         EMPTY_SETTINGS: "tc-empty-settings";
@@ -11,8 +19,6 @@ export default class TokenColorValueRules {
         DEPRECATED_BACKGROUND: "tc-deprecated-background";
         UNKNOWN_SETTINGS_PROPERTY: "tc-unknown-settings-property";
     }>;
-    /** @type {Set<string>} Valid properties in a tokenColors settings object. */
-    static #VALID_PROPERTIES: Set<string>;
     /**
      * Runs all value rules against the tokenColors array.
      *

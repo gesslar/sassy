@@ -1,7 +1,15 @@
 /**
+ * @file SemanticCoherenceRules.js
+ *
+ * Theme-level coherence checks for semantic token colours.
+ * Validates that `semanticHighlighting` is enabled when rules exist,
+ * and detects shadowed rules via specificity scoring.
+ */
+/**
  * Lint rules for semantic token colour theme coherence.
  */
 export default class SemanticCoherenceRules {
+    #private;
     static ISSUE_TYPES: Readonly<{
         MISSING_SEMANTIC_HIGHLIGHTING: "missing-semantic-highlighting";
         SHADOWED_RULE: "shadowed-rule";

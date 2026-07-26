@@ -1,7 +1,15 @@
 /**
+ * @file SemanticValueRules.js
+ *
+ * Validates semanticTokenColors values. Checks hex colour formats, style
+ * object properties, fontStyle keyword validity, the fontStyle-vs-boolean
+ * conflict, deprecated `background` usage, and empty rules.
+ */
+/**
  * Lint rules for semanticTokenColors values.
  */
 export default class SemanticValueRules {
+    #private;
     static ISSUE_TYPES: Readonly<{
         INVALID_VALUE: "invalid-value";
         INVALID_HEX_COLOUR: "invalid-hex-colour";
@@ -10,8 +18,6 @@ export default class SemanticValueRules {
         DEPRECATED_PROPERTY: "deprecated-property";
         EMPTY_RULE: "empty-rule";
     }>;
-    /** @type {Set<string>} Known valid properties in a style object. */
-    static #VALID_PROPERTIES: Set<string>;
     /**
      * Runs all value rules against the semanticTokenColors object.
      *

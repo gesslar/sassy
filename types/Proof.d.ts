@@ -1,4 +1,13 @@
 /**
+ * @file Proof.js
+ *
+ * Engine class for proofing themes.
+ * Produces the fully composed, unevaluated theme structure.
+ * No CLI awareness — takes a loaded Theme and returns data.
+ */
+import type { Theme } from "./Theme.js";
+import type { Cache } from "@gesslar/toolkit";
+/**
  * @import {Theme} from "./Theme.js"
  * @import {Cache} from "@gesslar/toolkit"
  */
@@ -8,6 +17,7 @@
  * No CLI awareness — takes a loaded Theme and returns data.
  */
 export default class Proof {
+    #private;
     /**
      * Creates a new Proof instance.
      *
@@ -30,7 +40,5 @@ export default class Proof {
      * @returns {Promise<object>} The composed, unevaluated theme structure
      */
     run(theme: Theme): Promise<object>;
-    #private;
 }
-import type { Cache } from "@gesslar/toolkit";
 //# sourceMappingURL=Proof.d.ts.map

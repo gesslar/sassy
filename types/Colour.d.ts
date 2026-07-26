@@ -1,4 +1,10 @@
 /**
+ * @file Colour manipulation utilities for theme processing.
+ * Provides comprehensive colour operations including lightening, darkening,
+ * mixing, alpha manipulation, and format conversions.
+ */
+import type { ThemeToken } from "./ThemeToken.js";
+/**
  * Colour manipulation utility class providing static methods for colour operations.
  * Handles hex colour parsing, alpha manipulation, mixing, and format conversions.
  */
@@ -34,7 +40,7 @@ export default class Colour {
      * @param {number} amount - The amount to lighten (+) or darken (-) as a percentage
      * @returns {string} The modified hex colour
      */
-    static lightenOrDarkenWithToken(tokenOrColor: converter | object | string, amount?: number): string;
+    static lightenOrDarkenWithToken(tokenOrColor: ThemeToken | object | string, amount?: number): string;
     /**
      * Inverts a hex colour by flipping its lightness value.
      * Preserves hue and saturation while inverting the lightness component.
