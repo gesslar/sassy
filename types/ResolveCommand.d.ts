@@ -1,9 +1,19 @@
+/**
+ * @file ResolveCommand.js
+ *
+ * CLI adapter for the Resolve engine. Handles file resolution, option
+ * validation, terminal formatting with colour swatches, and delegates
+ * all data work to Resolve.
+ */
+import Command from "./Command.js";
+import Theme from "./Theme.js";
 export { default as Resolve } from "./Resolve.js";
 /**
  * Command handler for resolving theme tokens and variables to their final values.
  * CLI adapter that delegates data resolution to Resolve and handles terminal display.
  */
 export default class ResolveCommand extends Command {
+    #private;
     /**
      * Creates a new ResolveCommand instance.
      *
@@ -59,8 +69,29 @@ export default class ResolveCommand extends Command {
      * @returns {void}
      */
     resolveSemanticTokenColor(theme: object, scopeName: string): void;
-    #private;
+    /**
+     * Displays structured scope resolution data in the terminal.
+     *
+     * @param {object} data - Resolution data from a Resolve method
+     * @private
+     */
+    private #displayResolvedScope;
+    /**
+     * Creates a truecolor swatch glyph from a hex value.
+     *
+     * @private
+     * @param {string} hex - A 6- or 8-digit hex colour.
+     * @returns {string} A truecolor `■` character.
+     */
+    private #swatch;
+    /**
+     * Creates a colour swatch or fallback arrow indicator for a hex value.
+     *
+     * @private
+     * @param {string} hex - The hex colour value.
+     * @param {string|null} bg - Optional background hex for alpha compositing.
+     * @returns {string} Swatch indicator(s) or styled arrow.
+     */
+    private #makeIndicator;
 }
-import Command from "./Command.js";
-import Theme from "./Theme.js";
 //# sourceMappingURL=ResolveCommand.d.ts.map

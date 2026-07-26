@@ -1,3 +1,6 @@
+import type { DirectoryObject } from "@gesslar/toolkit";
+import type { FileObject } from "@gesslar/toolkit";
+import type { Cache } from "@gesslar/toolkit";
 /**
  * @import {DirectoryObject} from "@gesslar/toolkit"
  * @import {FileObject} from "@gesslar/toolkit"
@@ -8,6 +11,7 @@
  * Provides common functionality for CLI option handling and file resolution.
  */
 export default class Command {
+    #private;
     /**
      * Creates a new Command instance.
      *
@@ -131,9 +135,5 @@ export default class Command {
      * @throws {Sass} If the file does not exist
      */
     resolveThemeFileName(fileName: string, cwd: DirectoryObject): Promise<FileObject>;
-    #private;
 }
-import type { DirectoryObject } from "@gesslar/toolkit";
-import type { Cache } from "@gesslar/toolkit";
-import type { FileObject } from "@gesslar/toolkit";
 //# sourceMappingURL=Command.d.ts.map

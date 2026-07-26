@@ -1,3 +1,10 @@
+/**
+ * @file ProofCommand.js
+ *
+ * CLI adapter for the Proof engine. Outputs the fully composed,
+ * unevaluated theme document as YAML.
+ */
+import Command from "./Command.js";
 export { default as Proof } from "./Proof.js";
 /**
  * Command handler for proofing theme files.
@@ -21,5 +28,4 @@ export default class ProofCommand extends Command {
      */
     execute(inputArg: string, options?: object): Promise<void>;
 }
-import Command from "./Command.js";
 //# sourceMappingURL=ProofCommand.d.ts.map

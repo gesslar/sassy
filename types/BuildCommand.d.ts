@@ -1,8 +1,31 @@
+import { EventEmitter } from "node:events";
+import Command from "./Command.js";
+export type BuildCommandOptions = {
+    /**
+     * - Enable watch mode for file changes
+     */
+    watch?: boolean;
+    /**
+     * - Custom output directory path
+     */
+    outputDir?: string;
+    /**
+     * - Print JSON to stdout without writing files
+     */
+    dryRun?: boolean;
+    /**
+     * - Silent mode, only show errors or dry-run output
+     */
+    silent?: boolean;
+};
 /**
  * Command handler for building VS Code themes from source files.
  * Handles compilation, watching for changes, and output generation.
  */
 export default class BuildCommand extends Command {
+    #private;
+    /** @type {EventEmitter} Internal event emitter for watch mode coordination */
+    emitter: EventEmitter;
     /**
      * Creates a new BuildCommand instance.
      *
@@ -14,8 +37,6 @@ export default class BuildCommand extends Command {
         cwd: string;
         packageJson: object;
     });
-    /** @type {EventEmitter} Internal event emitter for watch mode coordination */
-    emitter: EventEmitter;
     /**
      * Emits an event asynchronously using the internal emitter.
      * This method wraps Util.asyncEmit for convenience.
@@ -41,25 +62,6 @@ export default class BuildCommand extends Command {
      * @returns {Promise<void>} Resolves when all files are processed
      * @throws {Error} When theme compilation fails
      */
-    execute(fileNames: Array<string>, options: {
-        /**
-         * - Enable watch mode for file changes
-         */
-        watch?: boolean;
-        /**
-         * - Custom output directory path
-         */
-        outputDir?: string;
-        /**
-         * - Print JSON to stdout without writing files
-         */
-        dryRun?: boolean;
-        /**
-         * - Silent mode, only show errors or dry-run output
-         */
-        silent?: boolean;
-    }): Promise<void>;
-    #private;
+    execute(fileNames: Array<string>, options: BuildCommandOptions): Promise<void>;
 }
-import Command from "./Command.js";
 //# sourceMappingURL=BuildCommand.d.ts.map

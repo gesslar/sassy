@@ -1,7 +1,15 @@
 /**
+ * @file SemanticSelectorRules.js
+ *
+ * Validates semanticTokenColors selector keys against VS Code's parser
+ * rules. Detects invalid syntax, unrecognised token types and modifiers,
+ * deprecated types, and duplicate selectors (after modifier normalisation).
+ */
+/**
  * Lint rules for semanticTokenColors selector keys.
  */
 export default class SemanticSelectorRules {
+    #private;
     static ISSUE_TYPES: Readonly<{
         INVALID_SELECTOR: "invalid-selector";
         UNRECOGNISED_TOKEN_TYPE: "unrecognised-token-type";

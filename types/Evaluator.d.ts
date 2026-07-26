@@ -1,9 +1,23 @@
 /**
+ * @file Evaluator.js
+ *
+ * Defines the Evaluator class, responsible for variable and token resolution
+ * during theme compilation.
+ *
+ * Handles recursive substitution of variable references and colour function
+ * calls within theme configuration objects.
+ *
+ * Ensures deterministic scoping and supports extension for new colour
+ * functions.
+ */
+import ThemePool from "./ThemePool.js";
+/**
  * Evaluator class for resolving variables and colour tokens in theme objects.
  * Handles recursive substitution of token references in arrays of objects
  * with support for colour manipulation functions.
  */
 export default class Evaluator {
+    #private;
     /**
      * Regular expression used to locate variable substitution tokens. Supports:
      *  - POSIX-ish:    $(variable.path)
@@ -43,6 +57,14 @@ export default class Evaluator {
         func: string;
         args: string;
     } | null;
+    get pool(): ThemePool;
+    /**
+     * Sets the theme reference for source-location lookups in error messages.
+     *
+     * @param {import("./Theme.js").default|null} theme - The theme being evaluated, or null to clear the reference
+     * @returns {this} This instance for chaining
+     */
+    setTheme(theme: import("./Theme.js").default | null): this;
     /**
      * Regular expression for expanding palette alias syntax. The `$` prefix
      * inside variable references is shorthand for `palette.`:
@@ -62,14 +84,6 @@ export default class Evaluator {
      * @returns {string} The string with palette aliases expanded
      */
     static expandPaletteAliases(value: string): string;
-    get pool(): ThemePool;
-    /**
-     * Sets the theme reference for source-location lookups in error messages.
-     *
-     * @param {import("./Theme.js").default|null} theme - The theme being evaluated, or null to clear the reference
-     * @returns {this} This instance for chaining
-     */
-    setTheme(theme: import("./Theme.js").default | null): this;
     /**
      * Resolve variables and theme token entries in two distinct passes to ensure
      * deterministic scoping and to prevent partially-resolved values from
@@ -107,7 +121,87 @@ export default class Evaluator {
         flatPath: string;
         value: unknown;
     }>): void;
-    #private;
+    /**
+     * Resolve a variable or function token inside a string value; else return
+     * the passed value.
+     *
+     * @private
+     * @param {Array<ThemeToken>} trail - Array to track resolution chain.
+     * @param {string} parentTokenKeyString - Key string for parent token.
+     * @param {string} value - Raw tokenised string to resolve.
+     * @returns {string?} Fully resolved string.
+     * @throws {Sass} If we've reached maximum iterations.
+     */
+    private #evaluateValue;
+    /**
+     * Resolve a literal value to a ThemeToken.
+     *
+     * @private
+     * @param {string} value - The literal value.
+     * @returns {ThemeToken} The resolved token.
+     */
+    private #resolveLiteral;
+    /**
+     * Resolve a hex colour value to a ThemeToken.
+     *
+     * @private
+     * @param {string} value - The hex colour value.
+     * @returns {ThemeToken} The resolved token.
+     */
+    private #resolveHex;
+    /**
+     * Resolve a variable token to its value.
+     *
+     * @private
+     * @param {string} value - The variable token string.
+     * @returns {ThemeToken|null} The resolved token or null.
+     */
+    private #resolveVariable;
+    /**
+     * Resolve a function token to its value.
+     *
+     * @private
+     * @param {string} value - The function token string.
+     * @param {string} [parentKey] - Parent token key for location lookups.
+     * @returns {ThemeToken|null} The resolved token or null.
+     */
+    private #resolveFunction;
+    /**
+     * Execute a supported colour transformation helper.
+     *
+     * @private
+     * @param {string} func - Function name (lighten|darken|fade|alpha|mix|...)
+     * @param {Array<string>} args - Raw argument strings (numbers still as text).
+     * @param {string} raw - The raw input from the source file.
+     * @param {Array<ThemeToken>} sourceTokens - The tokens to apply to.
+     * @param {string} [captured] - The matched function call string (may be a nested inner call).
+     * @returns {object} Object with result and colorSpace info.
+     */
+    private #colourFunction;
+    /**
+     * Determine whether further resolution passes are required for a scope.
+     *
+     * @private
+     * @param {Array<object>} arr - Scope entries to inspect.
+     * @returns {boolean} True if any unresolved tokens remain.
+     */
+    private #hasUnresolvedTokens;
+    /**
+     * Enriches an error message with source-location information when available.
+     *
+     * @private
+     * @param {string} message - The base error message
+     * @param {string} [flatPath] - The dotted path to look up in source
+     * @returns {string} Message with location appended, or the original message
+     */
+    private #enrichMessage;
+    /**
+     * Predicate: does this item's value still contain variable or function tokens?
+     *
+     * @private
+     * @param {{value:unknown}} item - Entry to test.
+     * @returns {boolean} True if token patterns present.
+     */
+    private #tokenCheck;
 }
-import ThemePool from "./ThemePool.js";
 //# sourceMappingURL=Evaluator.d.ts.map

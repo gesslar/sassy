@@ -1,10 +1,21 @@
 /**
+ * @file ThemePool.js
+ *
+ * Defines the ThemePool class, a collection of ThemeTokens for lookup and
+ * dependency tracking.
+ *
+ * Manages resolved values, raw resolutions, and token relationships during
+ * theme compilation.
+ */
+import ThemeToken from "./ThemeToken.js";
+/**
  * ThemePool represents a collection of ThemeTokens serving both as a
  * lookup of string>ThemeToken and dependencies.
  *
  * @class ThemePool
  */
 export default class ThemePool {
+    #private;
     /**
      * Returns the map of encoded theme token ids to their token object.
      *
@@ -76,7 +87,5 @@ export default class ThemePool {
      * @returns {boolean} True if candidate is an ancestor of token.
      */
     isAncestorOf(candidate: ThemeToken, token: ThemeToken): boolean;
-    #private;
 }
-import ThemeToken from "./ThemeToken.js";
 //# sourceMappingURL=ThemePool.d.ts.map

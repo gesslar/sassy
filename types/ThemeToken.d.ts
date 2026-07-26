@@ -1,4 +1,12 @@
 /**
+ * @file ThemeToken.js
+ *
+ * Defines the ThemeToken class, representing a single token in a theme tree.
+ * Encapsulates token data, relationships, and provides methods for property
+ * management, pool integration, and serialization during theme compilation.
+ */
+import ThemePool from "./ThemePool.js";
+/**
  * ThemeToken represents a single token in a theme tree, encapsulating theme
  * token data and relationships.
  *
@@ -8,6 +16,7 @@
  * @class ThemeToken
  */
 export default class ThemeToken {
+    #private;
     /**
      * Constructs a ThemeToken with a given token name.
      *
@@ -159,7 +168,5 @@ export default class ThemeToken {
      * @returns {object} JSON representation of the ThemeToken
      */
     toJSON(): object;
-    #private;
 }
-import ThemePool from "./ThemePool.js";
 //# sourceMappingURL=ThemeToken.d.ts.map

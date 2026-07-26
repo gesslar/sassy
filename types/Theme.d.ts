@@ -1,9 +1,39 @@
 /**
+ * @file Theme.js
+ *
+ * Defines the Theme class, representing a single theme compilation unit.
+ * Handles the complete lifecycle: loading source files, managing dependencies,
+ * compiling via Compiler, writing output, and supporting watch mode for live development.
+ * Maintains state for output, variable lookup, and resolution tracking.
+ *
+ * Responsibilities:
+ * - Load and validate theme source files
+ * - Track dependencies and variable resolution
+ * - Compile theme data into VS Code-compatible output
+ * - Write output files, supporting dry-run and hash-based skip
+ * - Support watch mode for live theme development
+ */
+import { DirectoryObject } from "@gesslar/toolkit";
+import ThemePool from "./ThemePool.js";
+import YamlSource from "./YamlSource.js";
+import type { Cache } from "@gesslar/toolkit";
+import type { FileObject } from "@gesslar/toolkit";
+export type RuntimeConfigurationOptions = {
+    /**
+     * - The directory to output this theme's result.
+     */
+    outputDir?: string;
+    /**
+     * - Whether this is a dry-run (output to stdout)
+     */
+    dryRun?: boolean;
+};
+/**
  * @typedef {object} RuntimeConfigurationOptions
  * @property {string} [outputDir="."] - The directory to output this theme's result.
  * @property {boolean} [dryRun=false] - Whether this is a dry-run (output to stdout)
  */
-export const WriteStatus: Readonly<{
+export declare const WriteStatus: Readonly<{
     DRY_RUN: "dry-run";
     SKIPPED: "skipped";
     WRITTEN: "written";
@@ -13,6 +43,7 @@ export const WriteStatus: Readonly<{
  * See file-level docstring for responsibilities.
  */
 export default class Theme {
+    #private;
     /**
      * Sets the theme source file and derives the theme name from it.
      * Recomputes the output path after updating.
@@ -36,6 +67,14 @@ export default class Theme {
      * @returns {Theme} This instance, for chaining
      */
     setOptions(options?: RuntimeConfigurationOptions): Theme;
+    /**
+     * Recomputes the derived output path properties from current state.
+     * Called whenever cwd, themeFile, or options change so derived
+     * state remains consistent regardless of setter call order.
+     *
+     * @private
+     */
+    private #computeOutputPath;
     /**
      * Looks up a source location for a dotted key path across all dependencies.
      * Searches in reverse dependency order so the effective definition is found
@@ -299,13 +338,13 @@ export default class Theme {
      * @returns {Promise<boolean>} True when the output would produce a new write
      */
     wouldWrite(): Promise<boolean>;
-    #private;
 }
 /**
  * Dependency class represents a theme file dependency.
  * Manages the relationship between a file reference and its parsed source data.
  */
-export class Dependency {
+export declare class Dependency {
+    #private;
     /**
      * Sets the file object for this dependency.
      *
@@ -369,21 +408,5 @@ export class Dependency {
      * @returns {boolean} True if both file and source are set
      */
     isReady(): boolean;
-    #private;
 }
-export type RuntimeConfigurationOptions = {
-    /**
-     * - The directory to output this theme's result.
-     */
-    outputDir?: string;
-    /**
-     * - Whether this is a dry-run (output to stdout)
-     */
-    dryRun?: boolean;
-};
-import type { FileObject } from "@gesslar/toolkit";
-import { DirectoryObject } from "@gesslar/toolkit";
-import type { Cache } from "@gesslar/toolkit";
-import YamlSource from "./YamlSource.js";
-import ThemePool from "./ThemePool.js";
 //# sourceMappingURL=Theme.d.ts.map

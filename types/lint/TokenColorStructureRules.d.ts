@@ -8,6 +8,7 @@
  * Lint rules for tokenColors structural validation.
  */
 export default class TokenColorStructureRules {
+    #private;
     static ISSUE_TYPES: Readonly<{
         MULTIPLE_GLOBAL_DEFAULTS: "tc-multiple-global-defaults";
     }>;
