@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "update": "npx npm-check-updates -u && npm install"
+    "update": "npx -y npm-check-updates -u && npm install"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.41.1",
